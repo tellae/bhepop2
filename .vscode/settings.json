@@ -1,0 +1,7 @@
+{
+  "python.formatting.provider": "yapf",
+  "python.linting.pylintEnabled": true,
+  "python.formatting.autopep8Args": ["--max-line-length=120"],
+  "python.linting.enabled": true,
+  "python.linting.pylintArgs": ["--disable=W0401, W0614, W1514"]
+}
