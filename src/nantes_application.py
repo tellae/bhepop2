@@ -1,6 +1,7 @@
 # %% init
 
 import pandas as pd
+import numpy as np
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -10,12 +11,11 @@ ORIGINAL_SYNTHETIC_POPULATION = "synth_pop_original.feather"
 FILOSI_DECILES = "deciles_filosofi.feather"
 
 # %% script 1
+##################################################################
 
 # read raw synthetic population
 # TODO read raw data and expand with IPONDI, keep attributes for Nantes city
 synth_pop = pd.read_feather(PATH_PROCESSED + ORIGINAL_SYNTHETIC_POPULATION)
-print(synth_pop.head())
-print(synth_pop.describe())
 
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
@@ -78,5 +78,27 @@ def interpolate_income(income, distribution):
 p_R = pd.DataFrame({"income": vec_all_incomes})
 p_R["proba1"] = p_R.apply(
     lambda x: interpolate_income(x["income"], total_population_decile), axis=1)
+
+# %% script 3
+#########################################################
+
+# all combinations of modalities
+# TODO order correctly modalities
+all_combinations = group[["ownership", "age", "size", "family_comp"]]
+all_combinations["total"] = all_combinations.apply(lambda x: x[
+    "ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
+                                                   axis=1)
+
+tmp = pd.melt(all_combinations,
+              id_vars="total",
+              value_vars=["ownership", "age", "size", "family_comp"])
+tmp["key"] = 1
+tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
+print(tmp)
+
+# TODO add constant
+# TODO remove one last modality per variable in line
+# TODO correctly sort lines and columns
+# TODO replace NaN by 0 and 1.0 by 1
 
 # %%
