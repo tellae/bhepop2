@@ -21,10 +21,12 @@ synth_pop = pd.read_feather(PATH_PROCESSED + ORIGINAL_SYNTHETIC_POPULATION)
 # We have 157,647 households. Each row of synth_pop is therefore a household.
 
 synth_pop["key"] = 1
-group = synth_pop.groupby(["age", "size", "ownership", "family_comp"],
-                          as_index=False)["key"].sum()
-group = group.sort_values(by=["family_comp", "size", "age", "ownership"],
-                          ascending=[False, True, True, True])
+group = synth_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)[
+    "key"
+].sum()
+group = group.sort_values(
+    by=["family_comp", "size", "age", "ownership"], ascending=[False, True, True, True]
+)
 group["probability"] = group["key"] / sum(group["key"])
 group = group[["ownership", "age", "size", "family_comp", "probability"]]
 # TODO need to sort correctly the final table
@@ -34,7 +36,8 @@ decile_total = pd.read_feather(PATH_PROCESSED + FILOSI_DECILES)
 decile_total["D0"] = DECILE_0
 decile_total["D10"] = decile_total["D9"] * DECILE_10
 decile_total = decile_total[
-    ["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))]
+    ["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))
+]
 
 # get all deciles and sort values
 vec_all_incomes = []
@@ -54,7 +57,7 @@ total_population_decile = [
     27774.44,
     32620.00,
     41308.00,
-    75090.00  # max des déciles
+    75090.00,  # max des déciles
 ]
 
 
@@ -68,16 +71,18 @@ def interpolate_income(income, distribution):
         decile_top += 1
 
     interpolation = (income - distribution[decile_top - 1]) * (
-        decile_top * 0.1 -
-        (decile_top - 1) * 0.1) / (distribution[decile_top] - distribution[
-            decile_top - 1]) + (decile_top - 1) * 0.1
+        decile_top * 0.1 - (decile_top - 1) * 0.1
+    ) / (distribution[decile_top] - distribution[decile_top - 1]) + (
+        decile_top - 1
+    ) * 0.1
 
     return interpolation
 
 
 p_R = pd.DataFrame({"income": vec_all_incomes})
 p_R["proba1"] = p_R.apply(
-    lambda x: interpolate_income(x["income"], total_population_decile), axis=1)
+    lambda x: interpolate_income(x["income"], total_population_decile), axis=1
+)
 
 # %% script 3
 #########################################################
@@ -85,13 +90,22 @@ p_R["proba1"] = p_R.apply(
 # all combinations of modalities
 # TODO order correctly modalities
 all_combinations = group[["ownership", "age", "size", "family_comp"]]
-all_combinations["total"] = all_combinations.apply(lambda x: x[
-    "ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
-                                                   axis=1)
+all_combinations["total"] = all_combinations.apply(
+    lambda x: x["ownership"]
+    + "_"
+    + x["age"]
+    + "_"
+    + x["size"]
+    + "_"
+    + x["family_comp"],
+    axis=1,
+)
 
-tmp = pd.melt(all_combinations,
-              id_vars="total",
-              value_vars=["ownership", "age", "size", "family_comp"])
+tmp = pd.melt(
+    all_combinations,
+    id_vars="total",
+    value_vars=["ownership", "age", "size", "family_comp"],
+)
 tmp["key"] = 1
 tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 print(tmp)
