@@ -1,7 +1,10 @@
-# %% init
+"""""" ""
+
+
+# %%
+# init
 
 import pandas as pd
-import numpy as np
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -10,7 +13,8 @@ PATH_PROCESSED = "../data/processed/"
 ORIGINAL_SYNTHETIC_POPULATION = "synth_pop_original.feather"
 FILOSI_DECILES = "deciles_filosofi.feather"
 
-# %% script 1
+# %%
+# script 1
 ##################################################################
 
 # read raw synthetic population
@@ -31,7 +35,11 @@ group["probability"] = group["key"] / sum(group["key"])
 group = group[["ownership", "age", "size", "family_comp", "probability"]]
 # TODO need to sort correctly the final table
 
-# %% script 2
+# TODO add validation with R script
+
+# %%
+# script 2
+# TODO read data directly from xlsx INSEE data
 decile_total = pd.read_feather(PATH_PROCESSED + FILOSI_DECILES)
 decile_total["D0"] = DECILE_0
 decile_total["D10"] = decile_total["D9"] * DECILE_10
@@ -60,8 +68,7 @@ total_population_decile = [
     75090.00,  # max des déciles
 ]
 
-
-# %% linear extrapolation of these 190 incomes from the total population deciles
+# linear extrapolation of these 190 incomes from the total population deciles
 # TODO move function in an utils.py import
 # TODO document function params
 def interpolate_income(income, distribution):
@@ -84,7 +91,10 @@ p_R["proba1"] = p_R.apply(
     lambda x: interpolate_income(x["income"], total_population_decile), axis=1
 )
 
-# %% script 3
+# TODO add validation with R script
+
+# %%
+# script 3
 #########################################################
 
 # all combinations of modalities
@@ -108,11 +118,12 @@ tmp = pd.melt(
 )
 tmp["key"] = 1
 tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
-print(tmp)
+print(tmp.head())
 
 # TODO add constant
 # TODO remove one last modality per variable in line
 # TODO correctly sort lines and columns
 # TODO replace NaN by 0 and 1.0 by 1
+# TODO add validation with R script
 
 # %%
