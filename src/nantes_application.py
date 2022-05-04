@@ -4,6 +4,8 @@
 # %%
 # init
 
+from tqdm import tqdm
+import utils as utils
 import pandas as pd
 
 DECILE_0 = 0
@@ -72,17 +74,15 @@ group = group[["ownership", "age", "size", "family_comp", "probability"]]
 
 # script 2
 # %%
-# script 2 : read data revenu distribution from xls INSEE raw data
+# script 2 : read data incomes distribution from xls INSEE raw data
 filosofi = pd.DataFrame()
 
-for modality in FILOSOFI_MODALITIES:
+# for modality in FILOSOFI_MODALITIES:
+for i in tqdm(range(len(FILOSOFI_MODALITIES))):
+    modality = FILOSOFI_MODALITIES[i]
     SHEET = modality["sheet"]
     COL_PATTERN = modality["col_pattern"]
-    tmp = pd.read_excel(
-        PATH_RAW + FILOSOFI + "FILO_DISP_COM.xls",
-        sheet_name=SHEET,
-        skiprows=5,
-    ).query("CODGEO=='" + CODE_INSEE + "'")
+    tmp = utils.read_filosofi(PATH_RAW + FILOSOFI, SHEET, CODE_INSEE)
     tmp["modality"] = modality["name"]
     tmp = tmp.rename(
         columns={
@@ -130,13 +130,8 @@ for index, row in decile_total.iterrows():
 vec_all_incomes.sort()  # 190 modalities for the income
 
 # %%
-# script 2 : get total population revenu distribution
-filosofi_all = pd.read_excel(
-    PATH_RAW + FILOSOFI + "FILO_DISP_COM.xls",
-    sheet_name="ENSEMBLE",
-    skiprows=5,
-).query("CODGEO=='" + CODE_INSEE + "'")
-
+# script 2 : get total population incomes distribution
+filosofi_all = utils.read_filosofi(PATH_RAW + FILOSOFI, "ENSEMBLE", CODE_INSEE)
 
 total_population_decile = [
     filosofi_all["D115"].iloc[0],  # values from raw filosofi files
@@ -153,26 +148,9 @@ total_population_decile = [
 
 # %%
 # linear extrapolation of these 190 incomes from the total population deciles
-# TODO move function in an utils.py import
-# TODO document function params
-def interpolate_income(income, distribution):
-    distribution = [0] + distribution
-    decile_top = 0
-    while income > distribution[decile_top]:
-        decile_top += 1
-
-    interpolation = (income - distribution[decile_top - 1]) * (
-        decile_top * 0.1 - (decile_top - 1) * 0.1
-    ) / (distribution[decile_top] - distribution[decile_top - 1]) + (
-        decile_top - 1
-    ) * 0.1
-
-    return interpolation
-
-
 p_R = pd.DataFrame({"income": vec_all_incomes})
 p_R["proba1"] = p_R.apply(
-    lambda x: interpolate_income(x["income"], total_population_decile), axis=1
+    lambda x: utils.interpolate_income(x["income"], total_population_decile), axis=1
 )
 
 # TODO add validation with R script
@@ -202,7 +180,6 @@ tmp = pd.melt(
 )
 tmp["key"] = 1
 tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
-print(tmp.head())
 
 # TODO add constant
 # TODO remove one last modality per variable in line
