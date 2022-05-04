@@ -17,6 +17,28 @@ FILOSI_DECILES = "deciles_filosofi.feather"
 FILOSOFI = "indic-struct-distrib-revenu-2015-COMMUNES/"
 CODE_INSEE = "44109"
 
+FILOSOFI_MODALITIES = [
+    {"name": "1 person", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
+    {"name": "2 persons", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
+    {"name": "3 persons", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
+    {"name": "4 persons", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
+    {"name": "5 persons or more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
+    {"name": "Single man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
+    {"name": "Single woman", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
+    {"name": "Couple without children", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
+    {"name": "Couple with children", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
+    {"name": "Single parent family", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
+    {"name": "Complex households", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
+    {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
+    {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
+    {"name": "40_49", "sheet": "TRAGERF_3", "col_pattern": "AGE3"},
+    {"name": "50_59", "sheet": "TRAGERF_4", "col_pattern": "AGE4"},
+    {"name": "60_74", "sheet": "TRAGERF_5", "col_pattern": "AGE5"},
+    {"name": "75_or_more", "sheet": "TRAGERF_6", "col_pattern": "AGE6"},
+    {"name": "Owner", "sheet": "OCCTYPR_1", "col_pattern": "TOL1"},
+    {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
+]
+
 # Set display options
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 100)
@@ -48,37 +70,13 @@ group = group[["ownership", "age", "size", "family_comp", "probability"]]
 
 # TODO add validation with R script
 
-# %%
 # script 2
-# TODO read data directly from xlsx INSEE data
-
-FILOSOFI_MODALITIES = [
-    {"name": "1 person", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
-    {"name": "2 persons", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
-    {"name": "3 persons", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
-    {"name": "4 persons", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
-    {"name": "5 persons or more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
-    {"name": "Single man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
-    {"name": "Single woman", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
-    {"name": "Couple without children", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
-    {"name": "Couple with children", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
-    {"name": "Single parent family", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
-    {"name": "Complex households", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
-    {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
-    {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
-    {"name": "40_49", "sheet": "TRAGERF_3", "col_pattern": "AGE3"},
-    {"name": "50_59", "sheet": "TRAGERF_4", "col_pattern": "AGE4"},
-    {"name": "60_74", "sheet": "TRAGERF_5", "col_pattern": "AGE5"},
-    {"name": "75_or_more", "sheet": "TRAGERF_6", "col_pattern": "AGE6"},
-    {"name": "Owner", "sheet": "OCCTYPR_1", "col_pattern": "TOL1"},
-    {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
-]
-
+# %%
+# script 2 : read data revenu distribution from xls INSEE raw data
 filosofi = pd.DataFrame()
 
 for modality in FILOSOFI_MODALITIES:
     SHEET = modality["sheet"]
-    print(SHEET)
     COL_PATTERN = modality["col_pattern"]
     tmp = pd.read_excel(
         PATH_RAW + FILOSOFI + "FILO_DISP_COM.xls",
@@ -117,10 +115,7 @@ for modality in FILOSOFI_MODALITIES:
     ]
     filosofi = pd.concat([filosofi, tmp])
 
-
-# %%
-
-decile_total = pd.read_feather(PATH_PROCESSED + FILOSI_DECILES)
+decile_total = filosofi.copy()  # pd.read_feather(PATH_PROCESSED + FILOSI_DECILES)
 decile_total["D0"] = DECILE_0
 decile_total["D10"] = decile_total["D9"] * DECILE_10
 decile_total = decile_total[
@@ -134,20 +129,29 @@ for index, row in decile_total.iterrows():
         vec_all_incomes.append(row[r])
 vec_all_incomes.sort()  # 190 modalities for the income
 
-# TODO get those data from filosofi files
+# %%
+# script 2 : get total population revenu distribution
+filosofi_all = pd.read_excel(
+    PATH_RAW + FILOSOFI + "FILO_DISP_COM.xls",
+    sheet_name="ENSEMBLE",
+    skiprows=5,
+).query("CODGEO=='" + CODE_INSEE + "'")
+
+
 total_population_decile = [
-    10303.48,  # values from raw filosofi files
-    13336.07,
-    16023.85,
-    18631.33,
-    21262.67,
-    24188.00,
-    27774.44,
-    32620.00,
-    41308.00,
-    75090.00,  # max des déciles
+    filosofi_all["D115"].iloc[0],  # values from raw filosofi files
+    filosofi_all["D215"].iloc[0],
+    filosofi_all["D315"].iloc[0],
+    filosofi_all["D415"].iloc[0],
+    filosofi_all["Q215"].iloc[0],
+    filosofi_all["D615"].iloc[0],
+    filosofi_all["D715"].iloc[0],
+    filosofi_all["D815"].iloc[0],
+    filosofi_all["D915"].iloc[0],
+    max(decile_total["D10"]),  # maximum value of all deciles
 ]
 
+# %%
 # linear extrapolation of these 190 incomes from the total population deciles
 # TODO move function in an utils.py import
 # TODO document function params
