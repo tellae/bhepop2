@@ -10,7 +10,8 @@ DECILE_0 = 0
 DECILE_10 = 1.5
 
 PATH_PROCESSED = "../data/processed/"
-ORIGINAL_SYNTHETIC_POPULATION = "synth_pop_original.feather"
+PATH_INPUTS = "../data/inputs/"
+SYNTHETIC_POP = "nantes_synth_pop.csv"
 FILOSI_DECILES = "deciles_filosofi.feather"
 
 # %%
@@ -19,7 +20,8 @@ FILOSI_DECILES = "deciles_filosofi.feather"
 
 # read raw synthetic population
 # TODO read raw data and expand with IPONDI, keep attributes for Nantes city
-synth_pop = pd.read_feather(PATH_PROCESSED + ORIGINAL_SYNTHETIC_POPULATION)
+# TODO check if synthetic pop is related to population or households
+synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
