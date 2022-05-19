@@ -49,16 +49,16 @@ pd.set_option("mode.chained_assignment", None)
 
 # %%
 # script 1 : read raw insee population
-raw_insee = pd.read_csv(
-    PATH_RAW + "RP2015_INDCVIZC_txt/FD_INDCVIZC_2015.txt", sep=";", low_memory=False
-)
-raw_insee["COMMUNE"] = raw_insee.apply(lambda x: x["IRIS"][0:5], axis=1)
-raw_insee = raw_insee.query("COMMUNE=='" + CODE_INSEE + "'")
-raw_insee["IPONDI"].sum()
+# raw_insee = pd.read_csv(
+#     PATH_RAW + "RP2015_INDCVIZC_txt/FD_INDCVIZC_2015.txt", sep=";", low_memory=False
+# )
+# raw_insee["COMMUNE"] = raw_insee.apply(lambda x: x["IRIS"][0:5], axis=1)
+# raw_insee = raw_insee.query("COMMUNE=='" + CODE_INSEE + "'")
+# raw_insee["IPONDI"].sum()
 
-menages = raw_insee.groupby(["CANTVILLE", "NUMMI"], as_index=False).agg(
-    {"STOCD": ["first"]}
-)
+# menages = raw_insee.groupby(["CANTVILLE", "NUMMI"], as_index=False).agg(
+#     {"STOCD": ["first"]}
+# )
 # %%
 # script 1
 ##################################################################
