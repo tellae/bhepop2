@@ -4,6 +4,9 @@
 # %%
 # init
 
+import math
+from maxentropy import MinDivergenceModel
+from itertools import product
 from tqdm import tqdm
 import utils as utils
 import pandas as pd
@@ -198,5 +201,131 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 # TODO correctly sort lines and columns
 # TODO replace NaN by 0 and 1.0 by 1
 # TODO add validation with R script
+
+# %%
+# optimisation (maxentropy)
+
+# prepare variables and modalities
+ownership = ["Owner", "Tenant"]
+age = ["0_29", "30_39", "40_49", "50_59", "60_74", "75_or_more"]
+size = ["1_pers", "2_pers", "3_pers", "4_pers", "5_pers_or_more"]
+family_comp = [
+    "Single_man",
+    "Single_wom",
+    "Couple_without_child",
+    "Couple_with_child",
+    "Single_parent",
+    "complex_hh",
+]
+
+variables = ["ownership", "age", "size", "family_comp"]
+samplespace = list(product(ownership, age, size, family_comp))
+samplespace = [{variables[i]: x[i] for i in range(len(x))} for x in samplespace]
+
+
+def f0(x):
+    return x in samplespace
+
+
+def fownership(x):
+    return x["ownership"] == "Owner"
+
+
+def fage_1(x):
+    return x["age"] == "0_29"
+
+
+def fage_2(x):
+    return x["age"] == "30_39"
+
+
+def fage_3(x):
+    return x["age"] == "40_49"
+
+
+def fage_4(x):
+    return x["age"] == "50_59"
+
+
+def fage_5(x):
+    return x["age"] == "60_74"
+
+
+def fsize_1(x):
+    return x["size"] == "1_pers"
+
+
+def fsize_2(x):
+    return x["size"] == "2_pers"
+
+
+def fsize_3(x):
+    return x["size"] == "3_pers"
+
+
+def fsize_4(x):
+    return x["size"] == "4_pers"
+
+
+def fcomp_1(x):
+    return x["family_comp"] == "Single_man"
+
+
+def fcomp_2(x):
+    return x["family_comp"] == "Single_wom"
+
+
+def fcomp_3(x):
+    return x["family_comp"] == "Couple_without_child"
+
+
+def fcomp_4(x):
+    return x["family_comp"] == "Couple_with_child"
+
+
+def fcomp_5(x):
+    return x["family_comp"] == "Single_parent"
+
+
+f = [
+    f0,
+    fownership,
+    fage_1,
+    fage_2,
+    fage_3,
+    fage_4,
+    fage_5,
+    fsize_1,
+    fsize_2,
+    fsize_3,
+    fsize_4,
+    fcomp_1,
+    fcomp_2,
+    fcomp_3,
+    fcomp_4,
+    fcomp_5,
+]
+
+prior_df = pd.DataFrame.from_dict(samplespace)
+prior_df_perc = prior_df.merge(group, how="left", on=variables)
+prior_df_perc["probability"] = prior_df_perc.apply(
+    lambda x: 0 if x["probability"] != x["probability"] else x["probability"], axis=1
+)
+
+prior_df_perc_reducted = prior_df_perc.query("probability > 0")
+samplespace_reducted = prior_df_perc_reducted[variables].to_dict(orient="records")
+
+
+def function_prior_prob(x_array):
+    return prior_df_perc_reducted["probability"].apply(math.log)
+
+
+model_with_apriori = MinDivergenceModel(
+    f,
+    samplespace_reducted,
+    vectorized=False,
+    verbose=False,
+    prior_log_pdf=function_prior_prob,
+)
 
 # %%
