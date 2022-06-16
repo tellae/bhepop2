@@ -56,6 +56,12 @@ family_comp = [
     "Single_parent",
     "complex_hh",
 ]
+modalities = {
+    "ownership": ownership,
+    "age": age,
+    "size": size,
+    "family_comp": family_comp,
+}
 
 variables = ["ownership", "age", "size", "family_comp"]
 
@@ -220,70 +226,67 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 
 
 # %%
-# ech_compo
-ech_compo = {}
+# create dictionary of constraints (element of eta_total in R code)
 
-decile_compo = filosofi[filosofi["modality"].isin(family_comp)]
+ech = {}
+constraint = {}
+for variable in variables:
+    print(variable)
+    ech[variable] = {}
 
-for modality in family_comp:
-    decile_compo_tmp = decile_compo[decile_compo["modality"].isin([modality])]
-    total_population_decile_tmp = [
-        float(decile_compo_tmp["D1"]),
-        float(decile_compo_tmp["D2"]),
-        float(decile_compo_tmp["D3"]),
-        float(decile_compo_tmp["D4"]),
-        float(decile_compo_tmp["D5"]),
-        float(decile_compo_tmp["D6"]),
-        float(decile_compo_tmp["D7"]),
-        float(decile_compo_tmp["D8"]),
-        float(decile_compo_tmp["D9"]),
-        float(decile_compo_tmp["D9"]) * DECILE_10,
-    ]
-    p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
-    p_R_tmp["proba1"] = p_R_tmp.apply(
-        lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
+    decile = filosofi[filosofi["modality"].isin(modalities[variable])]
+
+    for modality in modalities[variable]:
+        decile_tmp = decile[decile["modality"].isin([modality])]
+        total_population_decile_tmp = [
+            float(decile_tmp["D1"]),
+            float(decile_tmp["D2"]),
+            float(decile_tmp["D3"]),
+            float(decile_tmp["D4"]),
+            float(decile_tmp["D5"]),
+            float(decile_tmp["D6"]),
+            float(decile_tmp["D7"]),
+            float(decile_tmp["D8"]),
+            float(decile_tmp["D9"]),
+            float(decile_tmp["D9"]) * DECILE_10,
+        ]
+        p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
+        p_R_tmp["proba1"] = p_R_tmp.apply(
+            lambda x: utils.interpolate_income(
+                x["income"], total_population_decile_tmp
+            ),
+            axis=1,
+        )
+        ech[variable][modality] = p_R_tmp
+
+    # p
+
+    # récupérer les fréquences
+    prob_1 = group.groupby([variable], as_index=False)["probability"].sum()
+
+    # multiplier les fréquences à chaque élément de ech_compo
+    for modality in ech[variable]:
+        value = prob_1[prob_1[variable].isin([modality])]
+        df = ech[variable][modality]
+        df["proba1"] = df["proba1"] * float(value["probability"])
+
+    ech_list = []
+    for modality in ech[variable]:
+        ech_list.append(ech[variable][modality])
+    C = pd.concat(
+        ech_list,
         axis=1,
     )
-    ech_compo[modality] = p_R_tmp
 
-# p_compo
+    C = C.iloc[:, 1::2]
+    C.columns = list(range(0, len(ech[variable])))
+    C["Proba"] = C.sum(axis=1)
+    p = C[["Proba"]]
 
-# récupérer les fréquences
-prob_comp1 = group.groupby(["family_comp"], as_index=False)["probability"].sum()
-
-# multiplier les fréquences à chaque élément de ech_compo
-for modality in ech_compo:
-    value = prob_comp1[prob_comp1["family_comp"].isin([modality])]
-    print(value)
-    df = ech_compo[modality]
-    print(df.head())
-    df["proba1"] = df["proba1"] * float(value["probability"])
-
-C = pd.concat(
-    [
-        ech_compo["Single_man"],
-        ech_compo["Single_wom"],
-        ech_compo["Couple_without_child"],
-        ech_compo["Couple_with_child"],
-        ech_compo["Single_parent"],
-        ech_compo["complex_hh"],
-    ],
-    axis=1,
-)
-C["Proba"] = (
-    C.iloc[:, [1]]
-    + C.iloc[:, [3]]
-    + C.iloc[:, [5]]
-    + C.iloc[:, [7]]
-    + C.iloc[:, [9]]
-    + C.iloc[:, [11]]
-)
-p_compo = C[["Proba"]]
-
-# constraint_composition
-constraint_composition = {}
-for modality in ech_compo:
-    constraint_composition[modality] = ech_compo[modality]["proba1"] / p_compo["Proba"]
+    # constraint
+    constraint[variable] = {}
+    for modality in ech[variable]:
+        constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
 
 # %%
 # optimisation (maxentropy)
