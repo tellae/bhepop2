@@ -23,17 +23,17 @@ FILOSOFI = "indic-struct-distrib-revenu-2015-COMMUNES/"
 CODE_INSEE = "44109"
 
 FILOSOFI_MODALITIES = [
-    {"name": "1 person", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
-    {"name": "2 persons", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
-    {"name": "3 persons", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
-    {"name": "4 persons", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
-    {"name": "5 persons or more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
-    {"name": "Single man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
-    {"name": "Single woman", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
-    {"name": "Couple without children", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
-    {"name": "Couple with children", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
-    {"name": "Single parent family", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
-    {"name": "Complex households", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
+    {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
+    {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
+    {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
+    {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
+    {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
+    {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
+    {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
+    {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
+    {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
+    {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
+    {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
     {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
     {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
     {"name": "40_49", "sheet": "TRAGERF_3", "col_pattern": "AGE3"},
@@ -43,6 +43,21 @@ FILOSOFI_MODALITIES = [
     {"name": "Owner", "sheet": "OCCTYPR_1", "col_pattern": "TOL1"},
     {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
 ]
+
+# prepare variables and modalities
+ownership = ["Owner", "Tenant"]
+age = ["0_29", "30_39", "40_49", "50_59", "60_74", "75_or_more"]
+size = ["1_pers", "2_pers", "3_pers", "4_pers", "5_pers_or_more"]
+family_comp = [
+    "Single_man",
+    "Single_wom",
+    "Couple_without_child",
+    "Couple_with_child",
+    "Single_parent",
+    "complex_hh",
+]
+
+variables = ["ownership", "age", "size", "family_comp"]
 
 # Set display options
 pd.set_option("display.max_rows", 500)
@@ -194,6 +209,7 @@ tmp = pd.melt(
     value_vars=["ownership", "age", "size", "family_comp"],
 )
 tmp["key"] = 1
+# matrice des moments
 tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 
 # TODO add constant
@@ -202,23 +218,76 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 # TODO replace NaN by 0 and 1.0 by 1
 # TODO add validation with R script
 
+
+# %%
+# ech_compo
+ech_compo = {}
+
+decile_compo = filosofi[filosofi["modality"].isin(family_comp)]
+
+for modality in family_comp:
+    decile_compo_tmp = decile_compo[decile_compo["modality"].isin([modality])]
+    total_population_decile_tmp = [
+        float(decile_compo_tmp["D1"]),
+        float(decile_compo_tmp["D2"]),
+        float(decile_compo_tmp["D3"]),
+        float(decile_compo_tmp["D4"]),
+        float(decile_compo_tmp["D5"]),
+        float(decile_compo_tmp["D6"]),
+        float(decile_compo_tmp["D7"]),
+        float(decile_compo_tmp["D8"]),
+        float(decile_compo_tmp["D9"]),
+        float(decile_compo_tmp["D9"]) * DECILE_10,
+    ]
+    p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
+    p_R_tmp["proba1"] = p_R_tmp.apply(
+        lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
+        axis=1,
+    )
+    ech_compo[modality] = p_R_tmp
+
+# p_compo
+
+# récupérer les fréquences
+prob_comp1 = group.groupby(["family_comp"], as_index=False)["probability"].sum()
+
+# multiplier les fréquences à chaque élément de ech_compo
+for modality in ech_compo:
+    value = prob_comp1[prob_comp1["family_comp"].isin([modality])]
+    print(value)
+    df = ech_compo[modality]
+    print(df.head())
+    df["proba1"] = df["proba1"] * float(value["probability"])
+
+C = pd.concat(
+    [
+        ech_compo["Single_man"],
+        ech_compo["Single_wom"],
+        ech_compo["Couple_without_child"],
+        ech_compo["Couple_with_child"],
+        ech_compo["Single_parent"],
+        ech_compo["complex_hh"],
+    ],
+    axis=1,
+)
+C["Proba"] = (
+    C.iloc[:, [1]]
+    + C.iloc[:, [3]]
+    + C.iloc[:, [5]]
+    + C.iloc[:, [7]]
+    + C.iloc[:, [9]]
+    + C.iloc[:, [11]]
+)
+p_compo = C[["Proba"]]
+
+# constraint_composition
+constraint_composition = {}
+for modality in ech_compo:
+    constraint_composition[modality] = ech_compo[modality]["proba1"] / p_compo["Proba"]
+
 # %%
 # optimisation (maxentropy)
 
-# prepare variables and modalities
-ownership = ["Owner", "Tenant"]
-age = ["0_29", "30_39", "40_49", "50_59", "60_74", "75_or_more"]
-size = ["1_pers", "2_pers", "3_pers", "4_pers", "5_pers_or_more"]
-family_comp = [
-    "Single_man",
-    "Single_wom",
-    "Couple_without_child",
-    "Couple_with_child",
-    "Single_parent",
-    "complex_hh",
-]
-
-variables = ["ownership", "age", "size", "family_comp"]
 samplespace = list(product(ownership, age, size, family_comp))
 samplespace = [{variables[i]: x[i] for i in range(len(x))} for x in samplespace]
 
@@ -252,39 +321,39 @@ def fage_5(x):
 
 
 def fsize_1(x):
-    return x["size"] == "1_pers"
+    return x["size"] == "1 person"
 
 
 def fsize_2(x):
-    return x["size"] == "2_pers"
+    return x["size"] == "2 persons"
 
 
 def fsize_3(x):
-    return x["size"] == "3_pers"
+    return x["size"] == "3 persons"
 
 
 def fsize_4(x):
-    return x["size"] == "4_pers"
+    return x["size"] == "4 persons"
 
 
 def fcomp_1(x):
-    return x["family_comp"] == "Single_man"
+    return x["family_comp"] == "Single man"
 
 
 def fcomp_2(x):
-    return x["family_comp"] == "Single_wom"
+    return x["family_comp"] == "Single woman"
 
 
 def fcomp_3(x):
-    return x["family_comp"] == "Couple_without_child"
+    return x["family_comp"] == "Couple without children"
 
 
 def fcomp_4(x):
-    return x["family_comp"] == "Couple_with_child"
+    return x["family_comp"] == "Couple with children"
 
 
 def fcomp_5(x):
-    return x["family_comp"] == "Single_parent"
+    return x["family_comp"] == "Single parent"
 
 
 f = [
