@@ -22,6 +22,7 @@ FILOSI_DECILES = "deciles_filosofi.feather"
 FILOSOFI = "indic-struct-distrib-revenu-2015-COMMUNES/"
 CODE_INSEE = "44109"
 
+# parameters for reading INSEE xlsx Filosofi data
 FILOSOFI_MODALITIES = [
     {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
     {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
@@ -73,6 +74,8 @@ pd.set_option("mode.chained_assignment", None)
 
 # %%
 # script 1 : read raw insee population
+
+# TODO generate synthetic population from INSEE raw data (see Fabrice R source code)
 # raw_insee = pd.read_csv(
 #     PATH_RAW + "RP2015_INDCVIZC_txt/FD_INDCVIZC_2015.txt", sep=";", low_memory=False
 # )
@@ -84,7 +87,7 @@ pd.set_option("mode.chained_assignment", None)
 #     {"STOCD": ["first"]}
 # )
 # %%
-# script 1
+# script 1 : read synthetic population
 ##################################################################
 
 # read raw synthetic population
@@ -104,7 +107,6 @@ group = group.sort_values(
 )
 group["probability"] = group["key"] / sum(group["key"])
 group = group[["ownership", "age", "size", "family_comp", "probability"]]
-# TODO need to sort correctly the final table
 
 # TODO add validation with R script
 
@@ -196,7 +198,6 @@ p_R["proba1"] = p_R.apply(
 #########################################################
 
 # all combinations of modalities
-# TODO order correctly modalities
 all_combinations = group[["ownership", "age", "size", "family_comp"]]
 all_combinations["total"] = all_combinations.apply(
     lambda x: x["ownership"]
@@ -260,11 +261,10 @@ for variable in variables:
         ech[variable][modality] = p_R_tmp
 
     # p
-
-    # récupérer les fréquences
+    # get statistics (frequency)
     prob_1 = group.groupby([variable], as_index=False)["probability"].sum()
 
-    # multiplier les fréquences à chaque élément de ech_compo
+    # multiply frequencies by each element of ech_compo
     for modality in ech[variable]:
         value = prob_1[prob_1[variable].isin([modality])]
         df = ech[variable][modality]
