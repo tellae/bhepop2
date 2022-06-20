@@ -22,18 +22,19 @@ FILOSI_DECILES = "deciles_filosofi.feather"
 FILOSOFI = "indic-struct-distrib-revenu-2015-COMMUNES/"
 CODE_INSEE = "44109"
 
+# parameters for reading INSEE xlsx Filosofi data
 FILOSOFI_MODALITIES = [
-    {"name": "1 person", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
-    {"name": "2 persons", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
-    {"name": "3 persons", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
-    {"name": "4 persons", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
-    {"name": "5 persons or more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
-    {"name": "Single man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
-    {"name": "Single woman", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
-    {"name": "Couple without children", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
-    {"name": "Couple with children", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
-    {"name": "Single parent family", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
-    {"name": "Complex households", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
+    {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
+    {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
+    {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
+    {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
+    {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
+    {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
+    {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
+    {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
+    {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
+    {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
+    {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
     {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
     {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
     {"name": "40_49", "sheet": "TRAGERF_3", "col_pattern": "AGE3"},
@@ -44,6 +45,27 @@ FILOSOFI_MODALITIES = [
     {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
 ]
 
+# prepare variables and modalities
+ownership = ["Owner", "Tenant"]
+age = ["0_29", "30_39", "40_49", "50_59", "60_74", "75_or_more"]
+size = ["1_pers", "2_pers", "3_pers", "4_pers", "5_pers_or_more"]
+family_comp = [
+    "Single_man",
+    "Single_wom",
+    "Couple_without_child",
+    "Couple_with_child",
+    "Single_parent",
+    "complex_hh",
+]
+modalities = {
+    "ownership": ownership,
+    "age": age,
+    "size": size,
+    "family_comp": family_comp,
+}
+
+variables = ["ownership", "age", "size", "family_comp"]
+
 # Set display options
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 100)
@@ -52,6 +74,8 @@ pd.set_option("mode.chained_assignment", None)
 
 # %%
 # script 1 : read raw insee population
+
+# TODO generate synthetic population from INSEE raw data (see Fabrice R source code)
 # raw_insee = pd.read_csv(
 #     PATH_RAW + "RP2015_INDCVIZC_txt/FD_INDCVIZC_2015.txt", sep=";", low_memory=False
 # )
@@ -63,7 +87,7 @@ pd.set_option("mode.chained_assignment", None)
 #     {"STOCD": ["first"]}
 # )
 # %%
-# script 1
+# script 1 : read synthetic population
 ##################################################################
 
 # read raw synthetic population
@@ -83,7 +107,6 @@ group = group.sort_values(
 )
 group["probability"] = group["key"] / sum(group["key"])
 group = group[["ownership", "age", "size", "family_comp", "probability"]]
-# TODO need to sort correctly the final table
 
 # TODO add validation with R script
 
@@ -175,7 +198,6 @@ p_R["proba1"] = p_R.apply(
 #########################################################
 
 # all combinations of modalities
-# TODO order correctly modalities
 all_combinations = group[["ownership", "age", "size", "family_comp"]]
 all_combinations["total"] = all_combinations.apply(
     lambda x: x["ownership"]
@@ -194,6 +216,7 @@ tmp = pd.melt(
     value_vars=["ownership", "age", "size", "family_comp"],
 )
 tmp["key"] = 1
+# matrice des moments
 tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 
 # TODO add constant
@@ -202,23 +225,72 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 # TODO replace NaN by 0 and 1.0 by 1
 # TODO add validation with R script
 
+
+# %%
+# create dictionary of constraints (element of eta_total in R code)
+
+ech = {}
+constraint = {}
+for variable in variables:
+    print(variable)
+    ech[variable] = {}
+
+    decile = filosofi[filosofi["modality"].isin(modalities[variable])]
+
+    for modality in modalities[variable]:
+        decile_tmp = decile[decile["modality"].isin([modality])]
+        total_population_decile_tmp = [
+            float(decile_tmp["D1"]),
+            float(decile_tmp["D2"]),
+            float(decile_tmp["D3"]),
+            float(decile_tmp["D4"]),
+            float(decile_tmp["D5"]),
+            float(decile_tmp["D6"]),
+            float(decile_tmp["D7"]),
+            float(decile_tmp["D8"]),
+            float(decile_tmp["D9"]),
+            float(decile_tmp["D9"]) * DECILE_10,
+        ]
+        p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
+        p_R_tmp["proba1"] = p_R_tmp.apply(
+            lambda x: utils.interpolate_income(
+                x["income"], total_population_decile_tmp
+            ),
+            axis=1,
+        )
+        ech[variable][modality] = p_R_tmp
+
+    # p
+    # get statistics (frequency)
+    prob_1 = group.groupby([variable], as_index=False)["probability"].sum()
+
+    # multiply frequencies by each element of ech_compo
+    for modality in ech[variable]:
+        value = prob_1[prob_1[variable].isin([modality])]
+        df = ech[variable][modality]
+        df["proba1"] = df["proba1"] * float(value["probability"])
+
+    ech_list = []
+    for modality in ech[variable]:
+        ech_list.append(ech[variable][modality])
+    C = pd.concat(
+        ech_list,
+        axis=1,
+    )
+
+    C = C.iloc[:, 1::2]
+    C.columns = list(range(0, len(ech[variable])))
+    C["Proba"] = C.sum(axis=1)
+    p = C[["Proba"]]
+
+    # constraint
+    constraint[variable] = {}
+    for modality in ech[variable]:
+        constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
+
 # %%
 # optimisation (maxentropy)
 
-# prepare variables and modalities
-ownership = ["Owner", "Tenant"]
-age = ["0_29", "30_39", "40_49", "50_59", "60_74", "75_or_more"]
-size = ["1_pers", "2_pers", "3_pers", "4_pers", "5_pers_or_more"]
-family_comp = [
-    "Single_man",
-    "Single_wom",
-    "Couple_without_child",
-    "Couple_with_child",
-    "Single_parent",
-    "complex_hh",
-]
-
-variables = ["ownership", "age", "size", "family_comp"]
 samplespace = list(product(ownership, age, size, family_comp))
 samplespace = [{variables[i]: x[i] for i in range(len(x))} for x in samplespace]
 
@@ -252,39 +324,39 @@ def fage_5(x):
 
 
 def fsize_1(x):
-    return x["size"] == "1_pers"
+    return x["size"] == "1 person"
 
 
 def fsize_2(x):
-    return x["size"] == "2_pers"
+    return x["size"] == "2 persons"
 
 
 def fsize_3(x):
-    return x["size"] == "3_pers"
+    return x["size"] == "3 persons"
 
 
 def fsize_4(x):
-    return x["size"] == "4_pers"
+    return x["size"] == "4 persons"
 
 
 def fcomp_1(x):
-    return x["family_comp"] == "Single_man"
+    return x["family_comp"] == "Single man"
 
 
 def fcomp_2(x):
-    return x["family_comp"] == "Single_wom"
+    return x["family_comp"] == "Single woman"
 
 
 def fcomp_3(x):
-    return x["family_comp"] == "Couple_without_child"
+    return x["family_comp"] == "Couple without children"
 
 
 def fcomp_4(x):
-    return x["family_comp"] == "Couple_with_child"
+    return x["family_comp"] == "Couple with children"
 
 
 def fcomp_5(x):
-    return x["family_comp"] == "Single_parent"
+    return x["family_comp"] == "Single parent"
 
 
 f = [

@@ -10,11 +10,11 @@ def interpolate_income(income: float, distribution: list):
     Linear interpolation of incomes
 
     :param income: value of income to interpolate
-    :param distribution: list of incomes for each decile from 1 to 10
+    :param distribution: list of incomes for each decile from 1 to 10 (without value for 0)
     :return: probability of being lower than income value
     """
     distribution = [0] + distribution
-    if income > distribution[9]:
+    if income > distribution[10]:
         return 1
     if income < distribution[0]:
         return 0
