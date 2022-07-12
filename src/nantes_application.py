@@ -10,6 +10,7 @@ from itertools import product
 from tqdm import tqdm
 import utils as utils
 import pandas as pd
+import numpy as np
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -268,7 +269,9 @@ for variable in variables:
     for modality in ech[variable]:
         value = prob_1[prob_1[variable].isin([modality])]
         df = ech[variable][modality]
-        df["proba1"] = df["proba1"] * float(value["probability"])
+        df["proba1"] = df["proba1"] * float(
+            value["probability"]
+        )  # prob(income | modality) * frequency // ech is modified inplace here
 
     ech_list = []
     for modality in ech[variable]:
@@ -324,39 +327,39 @@ def fage_5(x):
 
 
 def fsize_1(x):
-    return x["size"] == "1 person"
+    return x["size"] == "1_pers"
 
 
 def fsize_2(x):
-    return x["size"] == "2 persons"
+    return x["size"] == "2_pers"
 
 
 def fsize_3(x):
-    return x["size"] == "3 persons"
+    return x["size"] == "3_pers"
 
 
 def fsize_4(x):
-    return x["size"] == "4 persons"
+    return x["size"] == "4_pers"
 
 
 def fcomp_1(x):
-    return x["family_comp"] == "Single man"
+    return x["family_comp"] == "Single_man"
 
 
 def fcomp_2(x):
-    return x["family_comp"] == "Single woman"
+    return x["family_comp"] == "Single_wom"
 
 
 def fcomp_3(x):
-    return x["family_comp"] == "Couple without children"
+    return x["family_comp"] == "Couple_without_child"
 
 
 def fcomp_4(x):
-    return x["family_comp"] == "Couple with children"
+    return x["family_comp"] == "Couple_with_child"
 
 
 def fcomp_5(x):
-    return x["family_comp"] == "Single parent"
+    return x["family_comp"] == "Single_parent"
 
 
 f = [
@@ -392,12 +395,54 @@ def function_prior_prob(x_array):
     return prior_df_perc_reducted["probability"].apply(math.log)
 
 
-model_with_apriori = MinDivergenceModel(
-    f,
-    samplespace_reducted,
-    vectorized=False,
-    verbose=False,
-    prior_log_pdf=function_prior_prob,
-)
+# %%
+# build K
 
+
+probs = pd.DataFrame()
+from scipy.optimize import linprog
+from maxentropy.utils import DivergenceError
+
+
+# loop on incomes
+for i in range(100):
+    try:
+        # we do build the model again because it seemed to break after a failed fit
+        model_with_apriori = MinDivergenceModel(
+            f,
+            samplespace_reducted,
+            vectorized=False,
+            verbose=False,
+            prior_log_pdf=function_prior_prob,
+        )
+        A = model_with_apriori.F.A
+
+        K = [1]
+
+        for variable in modalities:
+
+            for modality in modalities[variable][:-1]:
+
+                K.append(constraint[variable][modality][i])
+        K = np.array(K).reshape(1, len(K))
+
+        I = np.identity(np.shape(K)[1])
+        A_eq = np.concatenate([model_with_apriori.F.A, I], axis=1)
+
+        c = np.concatenate(
+            [np.zeros(np.shape(A)[1]), np.ones(np.shape(K)[1])], axis=None
+        )
+
+        res = linprog(c, A_eq=A_eq, b_eq=K, method="simplex")
+
+        model_with_apriori.fit(K)
+
+        probs[i] = model_with_apriori.probdist()
+        print("SUCCESS on income " + str(i) + " with fun=" + str(res.fun))
+    except (Exception, DivergenceError):
+        print("ERROR on income " + str(i) + " with fun=" + str(res.fun))
+
+    # model_with_apriori.resetparams()
+
+print(probs)
 # %%
