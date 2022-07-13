@@ -24,9 +24,7 @@ def interpolate_income(income: float, distribution: list):
 
     interpolation = (income - distribution[decile_top - 1]) * (
         decile_top * 0.1 - (decile_top - 1) * 0.1
-    ) / (distribution[decile_top] - distribution[decile_top - 1]) + (
-        decile_top - 1
-    ) * 0.1
+    ) / (distribution[decile_top] - distribution[decile_top - 1]) + (decile_top - 1) * 0.1
 
     return interpolation
 

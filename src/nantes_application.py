@@ -100,9 +100,7 @@ synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 # We have 157,647 households. Each row of synth_pop is therefore a household.
 
 synth_pop["key"] = 1
-group = synth_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)[
-    "key"
-].sum()
+group = synth_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)["key"].sum()
 group = group.sort_values(
     by=["family_comp", "size", "age", "ownership"], ascending=[False, True, True, True]
 )
@@ -157,9 +155,7 @@ for i in tqdm(range(len(FILOSOFI_MODALITIES))):
 decile_total = filosofi.copy()  # pd.read_feather(PATH_PROCESSED + FILOSI_DECILES)
 decile_total["D0"] = DECILE_0
 decile_total["D10"] = decile_total["D9"] * DECILE_10
-decile_total = decile_total[
-    ["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))
-]
+decile_total = decile_total[["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))]
 
 # get all deciles and sort values
 vec_all_incomes = []
@@ -201,13 +197,7 @@ p_R["proba1"] = p_R.apply(
 # all combinations of modalities
 all_combinations = group[["ownership", "age", "size", "family_comp"]]
 all_combinations["total"] = all_combinations.apply(
-    lambda x: x["ownership"]
-    + "_"
-    + x["age"]
-    + "_"
-    + x["size"]
-    + "_"
-    + x["family_comp"],
+    lambda x: x["ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
     axis=1,
 )
 
@@ -254,9 +244,7 @@ for variable in variables:
         ]
         p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
         p_R_tmp["proba1"] = p_R_tmp.apply(
-            lambda x: utils.interpolate_income(
-                x["income"], total_population_decile_tmp
-            ),
+            lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
             axis=1,
         )
         ech[variable][modality] = p_R_tmp
@@ -429,9 +417,7 @@ for i in range(100):
         I = np.identity(np.shape(K)[1])
         A_eq = np.concatenate([model_with_apriori.F.A, I], axis=1)
 
-        c = np.concatenate(
-            [np.zeros(np.shape(A)[1]), np.ones(np.shape(K)[1])], axis=None
-        )
+        c = np.concatenate([np.zeros(np.shape(A)[1]), np.ones(np.shape(K)[1])], axis=None)
 
         res = linprog(c, A_eq=A_eq, b_eq=K, method="simplex")
 
