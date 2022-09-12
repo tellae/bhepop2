@@ -4,13 +4,10 @@
 # %%
 # init
 
-import math
-from maxentropy import MinDivergenceModel
-from itertools import product
 from tqdm import tqdm
 import utils as utils
-import pandas as pd
-import numpy as np
+
+from functions import *
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -223,7 +220,6 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 ech = {}
 constraint = {}
 for variable in variables:
-    print(variable)
     ech[variable] = {}
 
     decile = filosofi[filosofi["modality"].isin(modalities[variable])]
@@ -282,105 +278,8 @@ for variable in variables:
 # %%
 # optimisation (maxentropy)
 
-samplespace = list(product(ownership, age, size, family_comp))
-samplespace = [{variables[i]: x[i] for i in range(len(x))} for x in samplespace]
 
-
-def f0(x):
-    return x in samplespace
-
-
-def fownership(x):
-    return x["ownership"] == "Owner"
-
-
-def fage_1(x):
-    return x["age"] == "0_29"
-
-
-def fage_2(x):
-    return x["age"] == "30_39"
-
-
-def fage_3(x):
-    return x["age"] == "40_49"
-
-
-def fage_4(x):
-    return x["age"] == "50_59"
-
-
-def fage_5(x):
-    return x["age"] == "60_74"
-
-
-def fsize_1(x):
-    return x["size"] == "1_pers"
-
-
-def fsize_2(x):
-    return x["size"] == "2_pers"
-
-
-def fsize_3(x):
-    return x["size"] == "3_pers"
-
-
-def fsize_4(x):
-    return x["size"] == "4_pers"
-
-
-def fcomp_1(x):
-    return x["family_comp"] == "Single_man"
-
-
-def fcomp_2(x):
-    return x["family_comp"] == "Single_wom"
-
-
-def fcomp_3(x):
-    return x["family_comp"] == "Couple_without_child"
-
-
-def fcomp_4(x):
-    return x["family_comp"] == "Couple_with_child"
-
-
-def fcomp_5(x):
-    return x["family_comp"] == "Single_parent"
-
-
-f = [
-    f0,
-    fownership,
-    fage_1,
-    fage_2,
-    fage_3,
-    fage_4,
-    fage_5,
-    fsize_1,
-    fsize_2,
-    fsize_3,
-    fsize_4,
-    fcomp_1,
-    fcomp_2,
-    fcomp_3,
-    fcomp_4,
-    fcomp_5,
-]
-
-prior_df = pd.DataFrame.from_dict(samplespace)
-prior_df_perc = prior_df.merge(group, how="left", on=variables)
-prior_df_perc["probability"] = prior_df_perc.apply(
-    lambda x: 0 if x["probability"] != x["probability"] else x["probability"], axis=1
-)
-
-prior_df_perc_reducted = prior_df_perc.query("probability > 0")
-samplespace_reducted = prior_df_perc_reducted[variables].to_dict(orient="records")
-
-
-def function_prior_prob(x_array):
-    return prior_df_perc_reducted["probability"].apply(math.log)
+samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, group)
 
 
 # %%
@@ -388,47 +287,23 @@ def function_prior_prob(x_array):
 
 
 probs = pd.DataFrame()
-from scipy.optimize import linprog
-from maxentropy.utils import DivergenceError
 
 
+model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
+
+
+
+
+incomes = [0]
 # loop on incomes
-for i in range(100):
-    try:
-        # we do build the model again because it seemed to break after a failed fit
-        model_with_apriori = MinDivergenceModel(
-            f,
-            samplespace_reducted,
-            vectorized=False,
-            verbose=False,
-            prior_log_pdf=function_prior_prob,
-        )
-        A = model_with_apriori.F.A
+for i in incomes:
+    print("Running model for income " + str(i))
+    # we do build the model again because it seemed to break after a failed fit
 
-        K = [1]
+    run_model_on_income(model_with_apriori, i, modalities, constraint)
 
-        for variable in modalities:
-
-            for modality in modalities[variable][:-1]:
-
-                K.append(constraint[variable][modality][i])
-        K = np.array(K).reshape(1, len(K))
-
-        I = np.identity(np.shape(K)[1])
-        A_eq = np.concatenate([model_with_apriori.F.A, I], axis=1)
-
-        c = np.concatenate([np.zeros(np.shape(A)[1]), np.ones(np.shape(K)[1])], axis=None)
-
-        res = linprog(c, A_eq=A_eq, b_eq=K, method="simplex")
-
-        model_with_apriori.fit(K)
-
-        probs[i] = model_with_apriori.probdist()
-        print("SUCCESS on income " + str(i) + " with fun=" + str(res.fun))
-    except (Exception, DivergenceError):
-        print("ERROR on income " + str(i) + " with fun=" + str(res.fun))
-
+    # need to reset dual for next iterations !
     # model_with_apriori.resetparams()
 
-print(probs)
+# print(probs)
 # %%
