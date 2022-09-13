@@ -4,7 +4,118 @@ import maxentropy
 import pandas as pd
 import numpy as np
 import math
+import utils
 
+# is this global ?
+DECILE_0 = 0
+DECILE_10 = 1.5
+
+
+# run assignment
+
+def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
+    # %%
+    # create dictionary of constraints (element of eta_total in R code)
+    constraint = create_constraints(modalities, external_date, vec_all_incomes, grouped_pop)
+    # %%
+    # optimisation (maxentropy)
+
+    samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, grouped_pop)
+
+    # %%
+    # build K
+
+    model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
+
+    incomes = [0]
+    # loop on incomes
+    for i in incomes:
+        print("Running model for income " + str(i))
+        # we do build the model again because it seemed to break after a failed fit
+
+        run_model_on_income(model_with_apriori, i, modalities, constraint)
+
+        # need to reset dual for next iterations !
+        model_with_apriori.resetparams()
+
+
+# prepare data
+
+# TODO : group on dynamic list of variables
+def group_synthetic_population(synthetic_pop):
+    synthetic_pop["count"] = 1
+    group = synthetic_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)["count"].sum()
+    group = group.sort_values(
+        by=["family_comp", "size", "age", "ownership"], ascending=[False, True, True, True]
+    )
+    group["probability"] = group["count"] / sum(group["count"])
+    group = group[["ownership", "age", "size", "family_comp", "probability"]]
+
+    return group
+
+
+def create_constraints(variables_modalities, external_data, vec_all_incomes, grouped_pop):
+    variables = list(variables_modalities.keys())
+
+    ech = {}
+    constraint = {}
+    for variable in variables:
+        ech[variable] = {}
+
+        decile = external_data[external_data["modality"].isin(variables_modalities[variable])]
+
+        for modality in variables_modalities[variable]:
+            decile_tmp = decile[decile["modality"].isin([modality])]
+            total_population_decile_tmp = [
+                float(decile_tmp["D1"]),
+                float(decile_tmp["D2"]),
+                float(decile_tmp["D3"]),
+                float(decile_tmp["D4"]),
+                float(decile_tmp["D5"]),
+                float(decile_tmp["D6"]),
+                float(decile_tmp["D7"]),
+                float(decile_tmp["D8"]),
+                float(decile_tmp["D9"]),
+                float(decile_tmp["D9"]) * DECILE_10,
+            ]
+            p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
+            p_R_tmp["proba1"] = p_R_tmp.apply(
+                lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
+                axis=1,
+            )
+            ech[variable][modality] = p_R_tmp
+
+        # p
+        # get statistics (frequency)
+        prob_1 = grouped_pop.groupby([variable], as_index=False)["probability"].sum()
+
+        # multiply frequencies by each element of ech_compo
+        for modality in ech[variable]:
+            value = prob_1[prob_1[variable].isin([modality])]
+            df = ech[variable][modality]
+            df["proba1"] = df["proba1"] * float(
+                value["probability"]
+            )  # prob(income | modality) * frequency // ech is modified inplace here
+
+        ech_list = []
+        for modality in ech[variable]:
+            ech_list.append(ech[variable][modality])
+        C = pd.concat(
+            ech_list,
+            axis=1,
+        )
+
+        C = C.iloc[:, 1::2]
+        C.columns = list(range(0, len(ech[variable])))
+        C["Proba"] = C.sum(axis=1)
+        p = C[["Proba"]]
+
+        # constraint
+        constraint[variable] = {}
+        for modality in ech[variable]:
+            constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
+
+    return constraint
 
 # functions for creating and running model
 
@@ -37,9 +148,7 @@ def create_samplespace_and_features(variables_modalities, group):
             features.append(modality_feature(variable, modality))
 
     # create prior df
-    print(samplespace)
     prior_df = pd.DataFrame.from_dict(samplespace)
-    print(prior_df)
     prior_df_perc = prior_df.merge(group, how="left", on=variables)
     prior_df_perc["probability"] = prior_df_perc.apply(
         lambda x: 0 if x["probability"] != x["probability"] else x["probability"], axis=1

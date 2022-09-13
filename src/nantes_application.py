@@ -5,7 +5,6 @@
 # init
 
 from tqdm import tqdm
-import utils as utils
 
 from functions import *
 
@@ -96,13 +95,7 @@ synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
 
-synth_pop["key"] = 1
-group = synth_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)["key"].sum()
-group = group.sort_values(
-    by=["family_comp", "size", "age", "ownership"], ascending=[False, True, True, True]
-)
-group["probability"] = group["key"] / sum(group["key"])
-group = group[["ownership", "age", "size", "family_comp", "probability"]]
+group = group_synthetic_population(synth_pop)
 
 # TODO add validation with R script
 
@@ -163,6 +156,8 @@ vec_all_incomes.sort()  # 190 modalities for the income
 
 # %%
 # script 2 : get total population incomes distribution
+# TODO : à quoi sert cette partie ??
+
 filosofi_all = utils.read_filosofi(PATH_RAW + FILOSOFI, "ENSEMBLE", CODE_INSEE)
 
 total_population_decile = [
@@ -214,96 +209,37 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 # TODO add validation with R script
 
 
-# %%
-# create dictionary of constraints (element of eta_total in R code)
+run_assignment(filosofi, vec_all_incomes, group, modalities)
 
-ech = {}
-constraint = {}
-for variable in variables:
-    ech[variable] = {}
-
-    decile = filosofi[filosofi["modality"].isin(modalities[variable])]
-
-    for modality in modalities[variable]:
-        decile_tmp = decile[decile["modality"].isin([modality])]
-        total_population_decile_tmp = [
-            float(decile_tmp["D1"]),
-            float(decile_tmp["D2"]),
-            float(decile_tmp["D3"]),
-            float(decile_tmp["D4"]),
-            float(decile_tmp["D5"]),
-            float(decile_tmp["D6"]),
-            float(decile_tmp["D7"]),
-            float(decile_tmp["D8"]),
-            float(decile_tmp["D9"]),
-            float(decile_tmp["D9"]) * DECILE_10,
-        ]
-        p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
-        p_R_tmp["proba1"] = p_R_tmp.apply(
-            lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
-            axis=1,
-        )
-        ech[variable][modality] = p_R_tmp
-
-    # p
-    # get statistics (frequency)
-    prob_1 = group.groupby([variable], as_index=False)["probability"].sum()
-
-    # multiply frequencies by each element of ech_compo
-    for modality in ech[variable]:
-        value = prob_1[prob_1[variable].isin([modality])]
-        df = ech[variable][modality]
-        df["proba1"] = df["proba1"] * float(
-            value["probability"]
-        )  # prob(income | modality) * frequency // ech is modified inplace here
-
-    ech_list = []
-    for modality in ech[variable]:
-        ech_list.append(ech[variable][modality])
-    C = pd.concat(
-        ech_list,
-        axis=1,
-    )
-
-    C = C.iloc[:, 1::2]
-    C.columns = list(range(0, len(ech[variable])))
-    C["Proba"] = C.sum(axis=1)
-    p = C[["Proba"]]
-
-    # constraint
-    constraint[variable] = {}
-    for modality in ech[variable]:
-        constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
-
-# %%
-# optimisation (maxentropy)
-
-
-samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, group)
-
-
-# %%
-# build K
-
-
-probs = pd.DataFrame()
-
-
-model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
-
-
-
-
-incomes = [0]
-# loop on incomes
-for i in incomes:
-    print("Running model for income " + str(i))
-    # we do build the model again because it seemed to break after a failed fit
-
-    run_model_on_income(model_with_apriori, i, modalities, constraint)
-
-    # need to reset dual for next iterations !
-    # model_with_apriori.resetparams()
-
-# print(probs)
-# %%
+# # %%
+# # create dictionary of constraints (element of eta_total in R code)
+# constraint = create_constraints(modalities, filosofi, vec_all_incomes, group)
+# # %%
+# # optimisation (maxentropy)
+#
+#
+# samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, group)
+#
+#
+# # %%
+# # build K
+#
+#
+# model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
+#
+#
+#
+#
+# incomes = [0]
+# # loop on incomes
+# for i in incomes:
+#     print("Running model for income " + str(i))
+#     # we do build the model again because it seemed to break after a failed fit
+#
+#     run_model_on_income(model_with_apriori, i, modalities, constraint)
+#
+#     # need to reset dual for next iterations !
+#     model_with_apriori.resetparams()
+#
+# # print(probs)
+# # %%
