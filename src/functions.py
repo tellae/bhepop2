@@ -14,15 +14,14 @@ DECILE_10 = 1.5
 # run assignment
 
 def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
-    # %%
+    
     # create dictionary of constraints (element of eta_total in R code)
     constraint = create_constraints(modalities, external_date, vec_all_incomes, grouped_pop)
-    # %%
+    
     # optimisation (maxentropy)
 
     samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, grouped_pop)
 
-    # %%
     # build K
 
     model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
