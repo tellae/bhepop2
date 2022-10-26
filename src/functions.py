@@ -25,17 +25,21 @@ def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
     # build K
 
     model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
-
-    incomes = [0]
+    incomes = [0, 1, 2]
+    res = pd.DataFrame()
     # loop on incomes
     for i in incomes:
         print("Running model for income " + str(i))
         # we do build the model again because it seemed to break after a failed fit
 
         run_model_on_income(model_with_apriori, i, modalities, constraint)
+        res.loc[:, i] = model_with_apriori.probdist()
 
         # need to reset dual for next iterations !
         model_with_apriori.resetparams()
+
+    return res
+
 
 
 # prepare data
@@ -210,9 +214,6 @@ def run_model_on_income(model_with_apriori, i, modalities, constraint):
         res = compute_rq(model_with_apriori, np.shape(K)[1], K)
 
         model_with_apriori.fit(K)
-
-        print(K)
-        print(model_with_apriori.expectations())
 
         print("SUCCESS on income " + str(i) + " with fun=" + str(res.fun))
     except (Exception, maxentropy.utils.DivergenceError) as e:

@@ -5,8 +5,9 @@
 # init
 
 from tqdm import tqdm
-
-from functions import *
+import utils
+import pandas as pd
+import functions
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -94,8 +95,7 @@ synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
-
-group = group_synthetic_population(synth_pop)
+group = functions.group_synthetic_population(synth_pop)
 
 # TODO add validation with R script
 
@@ -208,38 +208,48 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 # TODO replace NaN by 0 and 1.0 by 1
 # TODO add validation with R script
 
+# %% run assignment
+import importlib
+importlib.reload(functions)
+res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
 
-run_assignment(filosofi, vec_all_incomes, group, modalities)
+# test : pas de prob négative et les sommes valent 1
 
-# # %%
-# # create dictionary of constraints (element of eta_total in R code)
-# constraint = create_constraints(modalities, filosofi, vec_all_incomes, group)
-# # %%
-# # optimisation (maxentropy)
-#
-#
-# samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, group)
-#
-#
-# # %%
-# # build K
-#
-#
-# model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
-#
-#
-#
-#
-# incomes = [0]
-# # loop on incomes
-# for i in incomes:
-#     print("Running model for income " + str(i))
-#     # we do build the model again because it seemed to break after a failed fit
-#
-#     run_model_on_income(model_with_apriori, i, modalities, constraint)
-#
-#     # need to reset dual for next iterations !
-#     model_with_apriori.resetparams()
-#
-# # print(probs)
-# # %%
+# clean income probs
+
+# Ce qu'on a comme probas ici : 
+# matrice M(i,j) pour i dans les modalités croisées (360)
+# et j dans les incomes (190)
+# M(i,j) est la probabilité d'être dans la modalité croisée i
+# sachant qu'on a un income entre Ij et Ij+1
+# On veut l'inverse : la proba d'avoir l'income [Ij, Ij+1] sachant
+# la modalité croisée
+
+# donc on veut inverser la proba (Bayes). On connait la proba de chaque modalité croisée
+# (fréquence dans la pop. synthétique). Potentiellement 0, dans ce cas
+# on ne calcule pas la proba car la modalité croisée n'est pas présente.
+
+# TODO : vérifier ordre bien conservé
+# print(res)
+# print(len(res))
+# print(group)
+# for i in res.columns:
+#     res.loc[:, i] = res.loc[:, i].div(group.loc[:, "probability"])
+
+# print(res)
+# print(len(res))
+
+# TODO : multiplier les incomes (colonnes) par les probas de chaque income
+# ces probas sont dans p_R["proba1"]
+
+# tester de nouveau si négatif et somme à 1 
+# (somme en ligne, besoin de tous les incomes)
+
+# et là normalement c'est fini
+
+# si négatif, élargir les intervalles de revenus
+
+# pour finir, tirage des revenus :
+# tirer autant d'intervalles que d'individus pour une modalité croisée
+# donnée (et une fois l'intervalle tiré, tirer une valeur dans l'intervalle)
+# on termine avec un vecteur d'incomes pour les individus de ce type.
