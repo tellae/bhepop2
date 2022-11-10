@@ -210,6 +210,7 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 
 # %% run assignment
 import importlib
+
 importlib.reload(functions)
 res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
 
@@ -217,7 +218,7 @@ res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
 
 # clean income probs
 
-# Ce qu'on a comme probas ici : 
+# Ce qu'on a comme probas ici :
 # matrice M(i,j) pour i dans les modalités croisées (360)
 # et j dans les incomes (190)
 # M(i,j) est la probabilité d'être dans la modalité croisée i
@@ -233,23 +234,23 @@ res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
 # print(res)
 # print(len(res))
 # print(group)
-# for i in res.columns:
-#     res.loc[:, i] = res.loc[:, i].div(group.loc[:, "probability"])
 
-# print(res)
-# print(len(res))
+for i in range(3):
+    res[i] = res[i] * p_R["proba1"][i]
+res["sum"] = res.sum(axis=1)
+for i in range(3):
+    res[i] = res[i] / res["sum"]
+res["sum"] = res.sum(axis=1)
 
-# TODO : multiplier les incomes (colonnes) par les probas de chaque income
-# ces probas sont dans p_R["proba1"]
-
-# tester de nouveau si négatif et somme à 1 
-# (somme en ligne, besoin de tous les incomes)
 
 # et là normalement c'est fini
 
 # si négatif, élargir les intervalles de revenus
 
-# pour finir, tirage des revenus :
+# TODO : pour finir, tirage des revenus :
 # tirer autant d'intervalles que d'individus pour une modalité croisée
 # donnée (et une fois l'intervalle tiré, tirer une valeur dans l'intervalle)
 # on termine avec un vecteur d'incomes pour les individus de ce type.
+
+# TODO : prendre la population synthétique synth_pop et tirer une tranche de revenu, puis un revenu
+# %%
