@@ -4,13 +4,10 @@
 # %%
 # init
 
-import math
-from maxentropy import MinDivergenceModel
-from itertools import product
 from tqdm import tqdm
-import utils as utils
+import utils
 import pandas as pd
-import numpy as np
+import functions
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -98,14 +95,7 @@ synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
-
-synth_pop["key"] = 1
-group = synth_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)["key"].sum()
-group = group.sort_values(
-    by=["family_comp", "size", "age", "ownership"], ascending=[False, True, True, True]
-)
-group["probability"] = group["key"] / sum(group["key"])
-group = group[["ownership", "age", "size", "family_comp", "probability"]]
+group = functions.group_synthetic_population(synth_pop)
 
 # TODO add validation with R script
 
@@ -166,6 +156,8 @@ vec_all_incomes.sort()  # 190 modalities for the income
 
 # %%
 # script 2 : get total population incomes distribution
+# TODO : à quoi sert cette partie ??
+
 filosofi_all = utils.read_filosofi(PATH_RAW + FILOSOFI, "ENSEMBLE", CODE_INSEE)
 
 total_population_decile = [
@@ -216,219 +208,49 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 # TODO replace NaN by 0 and 1.0 by 1
 # TODO add validation with R script
 
+# %% run assignment
+import importlib
 
-# %%
-# create dictionary of constraints (element of eta_total in R code)
+importlib.reload(functions)
+res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
 
-ech = {}
-constraint = {}
-for variable in variables:
-    print(variable)
-    ech[variable] = {}
+# test : pas de prob négative et les sommes valent 1
 
-    decile = filosofi[filosofi["modality"].isin(modalities[variable])]
+# clean income probs
 
-    for modality in modalities[variable]:
-        decile_tmp = decile[decile["modality"].isin([modality])]
-        total_population_decile_tmp = [
-            float(decile_tmp["D1"]),
-            float(decile_tmp["D2"]),
-            float(decile_tmp["D3"]),
-            float(decile_tmp["D4"]),
-            float(decile_tmp["D5"]),
-            float(decile_tmp["D6"]),
-            float(decile_tmp["D7"]),
-            float(decile_tmp["D8"]),
-            float(decile_tmp["D9"]),
-            float(decile_tmp["D9"]) * DECILE_10,
-        ]
-        p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
-        p_R_tmp["proba1"] = p_R_tmp.apply(
-            lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
-            axis=1,
-        )
-        ech[variable][modality] = p_R_tmp
+# Ce qu'on a comme probas ici :
+# matrice M(i,j) pour i dans les modalités croisées (360)
+# et j dans les incomes (190)
+# M(i,j) est la probabilité d'être dans la modalité croisée i
+# sachant qu'on a un income entre Ij et Ij+1
+# On veut l'inverse : la proba d'avoir l'income [Ij, Ij+1] sachant
+# la modalité croisée
 
-    # p
-    # get statistics (frequency)
-    prob_1 = group.groupby([variable], as_index=False)["probability"].sum()
+# donc on veut inverser la proba (Bayes). On connait la proba de chaque modalité croisée
+# (fréquence dans la pop. synthétique). Potentiellement 0, dans ce cas
+# on ne calcule pas la proba car la modalité croisée n'est pas présente.
 
-    # multiply frequencies by each element of ech_compo
-    for modality in ech[variable]:
-        value = prob_1[prob_1[variable].isin([modality])]
-        df = ech[variable][modality]
-        df["proba1"] = df["proba1"] * float(
-            value["probability"]
-        )  # prob(income | modality) * frequency // ech is modified inplace here
+# TODO : vérifier ordre bien conservé
+# print(res)
+# print(len(res))
+# print(group)
 
-    ech_list = []
-    for modality in ech[variable]:
-        ech_list.append(ech[variable][modality])
-    C = pd.concat(
-        ech_list,
-        axis=1,
-    )
+for i in range(3):
+    res[i] = res[i] * p_R["proba1"][i]
+res["sum"] = res.sum(axis=1)
+for i in range(3):
+    res[i] = res[i] / res["sum"]
+res["sum"] = res.sum(axis=1)
 
-    C = C.iloc[:, 1::2]
-    C.columns = list(range(0, len(ech[variable])))
-    C["Proba"] = C.sum(axis=1)
-    p = C[["Proba"]]
 
-    # constraint
-    constraint[variable] = {}
-    for modality in ech[variable]:
-        constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
+# et là normalement c'est fini
 
-# %%
-# optimisation (maxentropy)
+# si négatif, élargir les intervalles de revenus
 
-samplespace = list(product(ownership, age, size, family_comp))
-samplespace = [{variables[i]: x[i] for i in range(len(x))} for x in samplespace]
+# TODO : pour finir, tirage des revenus :
+# tirer autant d'intervalles que d'individus pour une modalité croisée
+# donnée (et une fois l'intervalle tiré, tirer une valeur dans l'intervalle)
+# on termine avec un vecteur d'incomes pour les individus de ce type.
 
-
-def f0(x):
-    return x in samplespace
-
-
-def fownership(x):
-    return x["ownership"] == "Owner"
-
-
-def fage_1(x):
-    return x["age"] == "0_29"
-
-
-def fage_2(x):
-    return x["age"] == "30_39"
-
-
-def fage_3(x):
-    return x["age"] == "40_49"
-
-
-def fage_4(x):
-    return x["age"] == "50_59"
-
-
-def fage_5(x):
-    return x["age"] == "60_74"
-
-
-def fsize_1(x):
-    return x["size"] == "1_pers"
-
-
-def fsize_2(x):
-    return x["size"] == "2_pers"
-
-
-def fsize_3(x):
-    return x["size"] == "3_pers"
-
-
-def fsize_4(x):
-    return x["size"] == "4_pers"
-
-
-def fcomp_1(x):
-    return x["family_comp"] == "Single_man"
-
-
-def fcomp_2(x):
-    return x["family_comp"] == "Single_wom"
-
-
-def fcomp_3(x):
-    return x["family_comp"] == "Couple_without_child"
-
-
-def fcomp_4(x):
-    return x["family_comp"] == "Couple_with_child"
-
-
-def fcomp_5(x):
-    return x["family_comp"] == "Single_parent"
-
-
-f = [
-    f0,
-    fownership,
-    fage_1,
-    fage_2,
-    fage_3,
-    fage_4,
-    fage_5,
-    fsize_1,
-    fsize_2,
-    fsize_3,
-    fsize_4,
-    fcomp_1,
-    fcomp_2,
-    fcomp_3,
-    fcomp_4,
-    fcomp_5,
-]
-
-prior_df = pd.DataFrame.from_dict(samplespace)
-prior_df_perc = prior_df.merge(group, how="left", on=variables)
-prior_df_perc["probability"] = prior_df_perc.apply(
-    lambda x: 0 if x["probability"] != x["probability"] else x["probability"], axis=1
-)
-
-prior_df_perc_reducted = prior_df_perc.query("probability > 0")
-samplespace_reducted = prior_df_perc_reducted[variables].to_dict(orient="records")
-
-
-def function_prior_prob(x_array):
-    return prior_df_perc_reducted["probability"].apply(math.log)
-
-
-# %%
-# build K
-
-
-probs = pd.DataFrame()
-from scipy.optimize import linprog
-from maxentropy.utils import DivergenceError
-
-
-# loop on incomes
-for i in range(100):
-    try:
-        # we do build the model again because it seemed to break after a failed fit
-        model_with_apriori = MinDivergenceModel(
-            f,
-            samplespace_reducted,
-            vectorized=False,
-            verbose=False,
-            prior_log_pdf=function_prior_prob,
-        )
-        A = model_with_apriori.F.A
-
-        K = [1]
-
-        for variable in modalities:
-
-            for modality in modalities[variable][:-1]:
-
-                K.append(constraint[variable][modality][i])
-        K = np.array(K).reshape(1, len(K))
-
-        I = np.identity(np.shape(K)[1])
-        A_eq = np.concatenate([model_with_apriori.F.A, I], axis=1)
-
-        c = np.concatenate([np.zeros(np.shape(A)[1]), np.ones(np.shape(K)[1])], axis=None)
-
-        res = linprog(c, A_eq=A_eq, b_eq=K, method="simplex")
-
-        model_with_apriori.fit(K)
-
-        probs[i] = model_with_apriori.probdist()
-        print("SUCCESS on income " + str(i) + " with fun=" + str(res.fun))
-    except (Exception, DivergenceError):
-        print("ERROR on income " + str(i) + " with fun=" + str(res.fun))
-
-    # model_with_apriori.resetparams()
-
-print(probs)
+# TODO : prendre la population synthétique synth_pop et tirer une tranche de revenu, puis un revenu
 # %%
