@@ -21,7 +21,28 @@ def read_filosofi(path2file: str) -> dict:
             ],
         },
         {
-            "name": "tax_referent_age",
+            "name": "size",
+            "modalities": [
+                {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
+                {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
+                {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
+                {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
+                {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
+            ],
+        },
+        {
+            "name": "family_comp",
+            "modalities": [
+                {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
+                {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
+                {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
+                {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
+                {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
+                {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
+            ],
+        },
+        {
+            "name": "age",
             "modalities": [
                 {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
                 {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
@@ -32,31 +53,10 @@ def read_filosofi(path2file: str) -> dict:
             ],
         },
         {
-            "name": "household_size",
-            "modalities": [
-                {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
-                {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
-                {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
-                {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
-                {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
-            ],
-        },
-        {
-            "name": "housing_tenure",
+            "name": "ownership",
             "modalities": [
                 {"name": "Owner", "sheet": "OCCTYPR_1", "col_pattern": "TOL1"},
                 {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
-            ],
-        },
-        {
-            "name": "household_type",
-            "modalities": [
-                {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
-                {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
-                {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
-                {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
-                {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
-                {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
             ],
         },
         {
