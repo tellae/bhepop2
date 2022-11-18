@@ -37,8 +37,6 @@ MODALITIES = {
     ],
 }
 
-variables = ["ownership", "age", "size", "family_comp"]
-
 # %%
 # script 1 : read synthetic population
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
@@ -77,7 +75,7 @@ p_R = functions.compute_p_r(vec_all_incomes, df_income_attributes, CODE_INSEE)
 # not used
 
 # all combinations of modalities
-all_combinations = crossed_probabilities[["ownership", "age", "size", "family_comp"]]
+all_combinations = crossed_probabilities[functions.get_attributes(MODALITIES)]
 all_combinations["total"] = all_combinations.apply(
     lambda x: x["ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
     axis=1,
