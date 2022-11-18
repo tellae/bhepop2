@@ -74,21 +74,21 @@ p_R = functions.compute_p_r(vec_all_incomes, df_income_attributes, CODE_INSEE)
 # %%
 # not used
 
-# all combinations of modalities
-all_combinations = crossed_probabilities[functions.get_attributes(MODALITIES)]
-all_combinations["total"] = all_combinations.apply(
-    lambda x: x["ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
-    axis=1,
-)
+# # all combinations of modalities
+# all_combinations = crossed_probabilities[functions.get_attributes(MODALITIES)]
+# all_combinations["total"] = all_combinations.apply(
+#     lambda x: x["ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
+#     axis=1,
+# )
 
-tmp = pd.melt(
-    all_combinations,
-    id_vars="total",
-    value_vars=["ownership", "age", "size", "family_comp"],
-)
-tmp["key"] = 1
-# matrice des moments
-tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
+# tmp = pd.melt(
+#     all_combinations,
+#     id_vars="total",
+#     value_vars=functions.get_attributes(MODALITIES),
+# )
+# tmp["key"] = 1
+# # matrice des moments
+# tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 
 # TODO add constant
 # TODO remove one last modality per variable in line
@@ -157,7 +157,3 @@ res["sum"] = res.sum(axis=1)
 # SUCCESS on income 1 with fun=0.0006522246419894961
 # Running model for income 2
 # SUCCESS on income 2 with fun=0.000738048106135869
-
-res_old = pd.read_pickle("../data/output/res_old.pkl")
-
-# %%
