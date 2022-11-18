@@ -20,6 +20,8 @@ FILOSI_DECILES = "deciles_filosofi.feather"
 FILOSOFI = "indic-struct-distrib-revenu-2015-COMMUNES/"
 CODE_INSEE = "44109"
 
+ATTRIBUTES = ["ownership", "age", "size", "family_comp"]
+
 # parameters for reading INSEE xlsx Filosofi data
 FILOSOFI_MODALITIES = [
     {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
@@ -95,7 +97,7 @@ synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
-group = functions.group_synthetic_population(synth_pop)
+crossed_probabilities = functions.compute_crossed_probabilities(synth_pop, ATTRIBUTES)
 
 # TODO add validation with R script
 
@@ -187,7 +189,7 @@ p_R["proba1"] = p_R.apply(
 #########################################################
 
 # all combinations of modalities
-all_combinations = group[["ownership", "age", "size", "family_comp"]]
+all_combinations = crossed_probabilities[["ownership", "age", "size", "family_comp"]]
 all_combinations["total"] = all_combinations.apply(
     lambda x: x["ownership"] + "_" + x["age"] + "_" + x["size"] + "_" + x["family_comp"],
     axis=1,
@@ -212,7 +214,7 @@ tmp = tmp.pivot(index=["variable", "value"], columns="total", values="key")
 import importlib
 
 importlib.reload(functions)
-res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
+res = functions.run_assignment(filosofi, vec_all_incomes, crossed_probabilities, modalities)
 
 # test : pas de prob négative et les sommes valent 1
 
@@ -233,7 +235,7 @@ res = functions.run_assignment(filosofi, vec_all_incomes, group, modalities)
 # TODO : vérifier ordre bien conservé
 # print(res)
 # print(len(res))
-# print(group)
+# print(crossed_probabilities)
 
 for i in range(3):
     res[i] = res[i] * p_R["proba1"][i]

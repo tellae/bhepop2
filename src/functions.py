@@ -6,21 +6,119 @@ import numpy as np
 import math
 import utils
 
-# is this global ?
 DECILE_0 = 0
 DECILE_10 = 1.5
 
 
+def compute_p_r(vec_all, df_imputed: pd.DataFrame, code_insee: str) -> list:
+    """
+    Compute p_R
+
+    :param vec_all:
+    :param df_imputed:
+
+    return: p_R
+    """
+    distribution_all = df_imputed.query(f"commune_id == '{code_insee}'")
+
+    total_population_decile = [
+        distribution_all["q1"].iloc[0],
+        distribution_all["q2"].iloc[0],
+        distribution_all["q3"].iloc[0],
+        distribution_all["q4"].iloc[0],
+        distribution_all["q5"].iloc[0],
+        distribution_all["q6"].iloc[0],
+        distribution_all["q7"].iloc[0],
+        distribution_all["q8"].iloc[0],
+        distribution_all["q9"].iloc[0],
+        max(vec_all),  # maximum value of all deciles
+    ]
+    # linear extrapolation of these 190 incomes from the total population deciles
+    p_R = pd.DataFrame({"income": vec_all})
+    p_R["proba1"] = p_R.apply(
+        lambda x: utils.interpolate_income(x["income"], total_population_decile), axis=1
+    )
+
+    return p_R
+
+
+def compute_vec_all(distribution, decile_0: float = DECILE_0, decile_10: float = DECILE_10) -> list:
+    """
+    Compute vector of values in distribution
+
+    :param distribution: dataframe of distribution
+    :param decile_0: value of decile 0
+    :param decile_10: value of decile 10 relative to decile 9
+
+    return: list of values
+    """
+    decile_total = distribution.copy()
+    decile_total["D0"] = decile_0
+    decile_total["D10"] = decile_total["D9"] * decile_10
+    decile_total = decile_total[
+        ["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))
+    ]
+
+    # get all deciles and sort values
+    vec_all = []
+    for index, row in decile_total.iterrows():
+        for r in list(map(lambda a: "D" + str(a), list(range(1, 11)))):
+            vec_all.append(row[r])
+    vec_all.sort()
+
+    return vec_all
+
+
+def compute_distribution(
+    df_attributes: pd.DataFrame, df_imputed: pd.DataFrame, code_insee: str, modalities: dict
+) -> pd.DataFrame:
+    """
+    Format income and imputed data if needed
+
+    :param df_attributes: income distribution per attributes
+    :param df_imputed: income distribution imputed for all
+    :param code_insee: insee code of selected city
+    :param modalities: dictionary of modalities
+
+    return: dataframe of formated distribution
+    """
+    attributes = get_attributes(modalities)
+
+    filosofi = df_attributes.query(f"commune_id == '{code_insee}'")
+    if len(filosofi["attribute"].unique()) < len(attributes):
+        print("ERROR : need imputation of income")
+        # TODO implement an imputation method when data is missing
+
+    filosofi.rename(
+        columns={
+            "q1": "D1",
+            "q2": "D2",
+            "q3": "D3",
+            "q4": "D4",
+            "q5": "D5",
+            "q6": "D6",
+            "q7": "D7",
+            "q8": "D8",
+            "q9": "D9",
+        },
+        inplace=True,
+    )
+    return filosofi
+
+
 # run assignment
 
+
 def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
-    
+
     # create dictionary of constraints (element of eta_total in R code)
     constraint = create_constraints(modalities, external_date, vec_all_incomes, grouped_pop)
-    
+
     # optimisation (maxentropy)
 
-    samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(modalities, grouped_pop)
+    samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(
+        modalities, grouped_pop
+    )
 
     # build K
 
@@ -41,18 +139,33 @@ def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
     return res
 
 
+def get_attributes(modalities: dict) -> list:
+    """
+    Get attributes list from dictionary of modalities
+
+    :param modalities:
+
+    return: attributes
+    """
+    return list(modalities.keys())
+
 
 # prepare data
+def compute_crossed_probabilities(synthetic_pop: pd.DataFrame, modalities: dict) -> pd.DataFrame:
+    """
+    Computed crossed probabilities on attribues
 
-# TODO : group on dynamic list of variables
-def group_synthetic_population(synthetic_pop):
+    :param synthetic_pop: dataframe of population
+    :param modalities: dictionary of modalities
+
+    return: dataframe of crossed probabilities
+    """
+    attributes = get_attributes(modalities)
+
     synthetic_pop["count"] = 1
-    group = synthetic_pop.groupby(["age", "size", "ownership", "family_comp"], as_index=False)["count"].sum()
-    group = group.sort_values(
-        by=["family_comp", "size", "age", "ownership"], ascending=[False, True, True, True]
-    )
+    group = synthetic_pop.groupby(attributes, as_index=False)["count"].sum()
     group["probability"] = group["count"] / sum(group["count"])
-    group = group[["ownership", "age", "size", "family_comp", "probability"]]
+    group = group[attributes + ["probability"]]
 
     return group
 
@@ -63,6 +176,7 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
     ech = {}
     constraint = {}
     for variable in variables:
+        print("****** ", variable)
         ech[variable] = {}
 
         decile = external_data[external_data["modality"].isin(variables_modalities[variable])]
@@ -91,13 +205,19 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
         # p
         # get statistics (frequency)
         prob_1 = grouped_pop.groupby([variable], as_index=False)["probability"].sum()
-
+        print("**************")
+        print("*** prob_1")
+        print(prob_1)
         # multiply frequencies by each element of ech_compo
         for modality in ech[variable]:
             value = prob_1[prob_1[variable].isin([modality])]
+            if len(value) > 0:
+                probability = value["probability"]
+            else:
+                probability = 0
             df = ech[variable][modality]
             df["proba1"] = df["proba1"] * float(
-                value["probability"]
+                probability
             )  # prob(income | modality) * frequency // ech is modified inplace here
 
         ech_list = []
@@ -119,6 +239,7 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
             constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
 
     return constraint
+
 
 # functions for creating and running model
 
