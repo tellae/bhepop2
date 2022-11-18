@@ -123,7 +123,7 @@ def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
     # build K
 
     model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
-    incomes = [0, 1, 2]
+    incomes = [0, 1, 2, 3, 4, 5, 6]
     res = pd.DataFrame()
     # loop on incomes
     for i in incomes:
@@ -293,7 +293,7 @@ def modality_feature(variable, modality):
     return feature
 
 
-def create_model(features, samplespace, prior_log_pdf):
+def create_model(features, samplespace, prior_log_pdf, algorithm: str = "Nelder-Mead"):
     """
     Create a MinDivergenceModel instance on the given parameters.
 
@@ -310,6 +310,7 @@ def create_model(features, samplespace, prior_log_pdf):
         vectorized=False,
         verbose=0,
         prior_log_pdf=prior_log_pdf,
+        algorithm=algorithm,
     )
     return model
 
