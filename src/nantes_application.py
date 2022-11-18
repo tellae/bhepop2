@@ -97,7 +97,7 @@ synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 
 # The dataframe synth_pop is the synthetic household population for the city of nantes.
 # We have 157,647 households. Each row of synth_pop is therefore a household.
-crossed_probabilities = functions.compute_crossed_probabilities(synth_pop, ATTRIBUTES)
+crossed_probabilities = functions.compute_crossed_probabilities(synth_pop, modalities)
 
 # TODO add validation with R script
 

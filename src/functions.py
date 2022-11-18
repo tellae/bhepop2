@@ -176,7 +176,6 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
     ech = {}
     constraint = {}
     for variable in variables:
-        print("****** ", variable)
         ech[variable] = {}
 
         decile = external_data[external_data["modality"].isin(variables_modalities[variable])]
@@ -205,9 +204,6 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
         # p
         # get statistics (frequency)
         prob_1 = grouped_pop.groupby([variable], as_index=False)["probability"].sum()
-        print("**************")
-        print("*** prob_1")
-        print(prob_1)
         # multiply frequencies by each element of ech_compo
         for modality in ech[variable]:
             value = prob_1[prob_1[variable].isin([modality])]
