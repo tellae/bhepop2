@@ -9,6 +9,9 @@ import utils
 import pandas as pd
 import functions
 from tools import read_filosofi
+import warnings
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 # Set display options
 pd.set_option("display.max_rows", 500)

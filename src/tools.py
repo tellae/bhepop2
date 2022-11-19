@@ -165,7 +165,7 @@ def add_attributes_households(population: pd.DataFrame, households: pd.DataFrame
     df_households_single_woman = df_households_info.query(
         "household_size==1 and sex=='female'"
     ).reset_index()
-    df_households_single_woman["family_comp"] = "Single_woman"
+    df_households_single_woman["family_comp"] = "Single_wom"
 
     # compute couple without child
     # 2 persons and all have couple=True
@@ -173,6 +173,7 @@ def add_attributes_households(population: pd.DataFrame, households: pd.DataFrame
         df_population.query("couple==True")
         .groupby(["household_id"], as_index=False)
         .agg({"couple": "count", "household_size": "first"})
+        .query("couple==2")
     )
     df_households_couple_without_child = df_households_couple.query(
         "couple==2 and household_size==2"

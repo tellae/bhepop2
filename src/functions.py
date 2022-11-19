@@ -167,6 +167,15 @@ def compute_crossed_probabilities(synthetic_pop: pd.DataFrame, modalities: dict)
     group["probability"] = group["count"] / sum(group["count"])
     group = group[attributes + ["probability"]]
 
+    error = False
+    for attribute in attributes:
+        for i in list(group[attribute].unique()):
+            if i not in modalities[attribute]:
+                print("ERROR modality not recognized for %s (%s)" % (i, attribute))
+                error = True
+
+    assert error is False
+
     return group
 
 

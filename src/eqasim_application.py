@@ -3,6 +3,7 @@ Application based on eqasim pipeline
 """
 # %%
 # Init
+import warnings
 import pandas as pd
 from tools import add_attributes_households, read_filosofi
 from functions import (
@@ -13,6 +14,7 @@ from functions import (
     run_assignment,
 )
 
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 pd.set_option("mode.chained_assignment", None)
 
 
@@ -35,10 +37,16 @@ CODE_INSEE = "44109"
 # %%
 # Prepare data
 df_population = pd.read_csv(
-    "../data/inputs/eqasim_population_44.csv", sep=";", dtype={"commune_id": str}
+    "../data/inputs/eqasim_population_0.01.csv",
+    sep=";",
+    dtype={"commune_id": str},
+    low_memory=False,
 )
 df_households = pd.read_csv(
-    "../data/inputs/eqasim_households_44.csv", sep=";", dtype={"commune_id": str}
+    "../data/inputs/eqasim_households_0.01.csv",
+    sep=";",
+    dtype={"commune_id": str},
+    low_memory=False,
 )
 df_households = add_attributes_households(df_population, df_households)
 df_income_imputed = pd.read_csv(
@@ -49,9 +57,12 @@ df_income_attributes = read_filosofi(
 )
 
 # %%
-# RUN
+# Prepare synthetic population
 synth_pop = df_households.query(f"commune_id == '{CODE_INSEE}'")
 crossed_probabilities = compute_crossed_probabilities(synth_pop, MODALITIES)
+
+# %%
+# Run assignment
 filosofi = compute_distribution(df_income_attributes, df_income_imputed, CODE_INSEE, MODALITIES)
 vec_all_incomes = compute_vec_all(filosofi)
 p_R = compute_p_r(vec_all_incomes, df_income_imputed, CODE_INSEE)
