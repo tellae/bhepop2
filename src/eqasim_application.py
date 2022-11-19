@@ -37,13 +37,13 @@ CODE_INSEE = "44109"
 # %%
 # Prepare data
 df_population = pd.read_csv(
-    "../data/inputs/eqasim_population_0.01.csv",
+    "../data/inputs/eqasim_population_0.001.csv",
     sep=";",
     dtype={"commune_id": str},
     low_memory=False,
 )
 df_households = pd.read_csv(
-    "../data/inputs/eqasim_households_0.01.csv",
+    "../data/inputs/eqasim_households_0.001.csv",
     sep=";",
     dtype={"commune_id": str},
     low_memory=False,
