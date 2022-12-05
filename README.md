@@ -35,7 +35,11 @@ It is a `DataFrame` containing one entry per population individual. The expected
 - `commune_id`, the commune identifier to which the entry is associated
 - one column for each attribute used by the algorithm. Entries contain the value (modality) of each attribute
 
-TODO : maybe add example table
+| { id } | commune_id  | ownership |
+|--------|-------------|-----------|
+| 7865   | 44109       | Owner     |
+| 1235   | 44109       | Tenant    |
+| 4651   | 44109       | Tenant    |
 
 Source data for the formatted population can be _Eqasim_ population/households or any type of synthetic population.
 
@@ -50,12 +54,16 @@ It is a `DataFrame` containing one entry per distribution. The expected columns 
 - `attribute`, name of the attribute associated to this distribution
 - `modality`, name of the modality associated to this distribution
 
-TODO : maybe add example table
+
+| commune_id | D1     | ... | D9     | attribute | modality |
+|------------|--------|-----|--------|-----------|----------|
+| 44109      | 16 542 | ... | 50 060 | ownership | Owner    |
+| 44109      | 8 764  | ... | 29 860 | ownership | Tenant   |
 
 > The values of the `attribute` column define the columns that must be present in the population data.
 > 
 > The values of the `modality` column define the possible values that can be taken by the corresponding attribute in
-the population data.
+> the population data.
 
 Source data for the formatted distributions can be _INSEE_ databases (_Filosofi_, ..) or other demographic data sources.
 
