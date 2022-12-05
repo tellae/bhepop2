@@ -14,6 +14,8 @@ def compute_p_r(vec_all, df_imputed: pd.DataFrame, code_insee: str) -> list:
     """
     Compute p_R
 
+    Compute probabilities on global deciles.
+
     :param vec_all:
     :param df_imputed:
 
@@ -74,6 +76,10 @@ def compute_distribution(
 ) -> pd.DataFrame:
     """
     Format income and imputed data if needed
+
+    Filter data on selected commune id.
+    Test if all attributes are present.
+    Transform "qN" columns into "DN" columns.
 
     :param df_attributes: income distribution per attributes
     :param df_imputed: income distribution imputed for all
