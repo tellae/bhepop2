@@ -4,7 +4,7 @@ import maxentropy
 import pandas as pd
 import numpy as np
 import math
-import utils
+import src.utils as utils
 
 DECILE_0 = 0
 DECILE_10 = 1.5

@@ -5,10 +5,9 @@
 # init
 
 from tqdm import tqdm
-import utils
 import pandas as pd
-import functions
-from tools import read_filosofi
+from src import functions
+from src.tools import read_filosofi
 import warnings
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
