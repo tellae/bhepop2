@@ -238,7 +238,7 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
             ech_list,
             axis=1,
         )
-
+        # Somme P(income & modality) sur les modality = P(income)
         C = C.iloc[:, 1::2]
         C.columns = list(range(0, len(ech[variable])))
         C["Proba"] = C.sum(axis=1)

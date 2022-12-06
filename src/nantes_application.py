@@ -122,11 +122,11 @@ res = functions.run_assignment(filosofi, vec_all_incomes, crossed_probabilities,
 # print(res)
 # print(len(res))
 # print(crossed_probabilities)
-
-for i in range(3):
+nb_columns = len(res.columns)
+for i in range(nb_columns):
     res[i] = res[i] * p_R["proba1"][i]
 res["sum"] = res.sum(axis=1)
-for i in range(3):
+for i in range(nb_columns):
     res[i] = res[i] / res["sum"]
 res["sum"] = res.sum(axis=1)
 
