@@ -4,7 +4,7 @@ import maxentropy
 import pandas as pd
 import numpy as np
 import math
-import utils
+import src.utils as utils
 
 DECILE_0 = 0
 DECILE_10 = 1.5
@@ -13,6 +13,8 @@ DECILE_10 = 1.5
 def compute_p_r(vec_all, df_imputed: pd.DataFrame, code_insee: str) -> list:
     """
     Compute p_R
+
+    Compute probabilities on global deciles.
 
     :param vec_all:
     :param df_imputed:
@@ -74,6 +76,10 @@ def compute_distribution(
 ) -> pd.DataFrame:
     """
     Format income and imputed data if needed
+
+    Filter data on selected commune id.
+    Test if all attributes are present.
+    Transform "qN" columns into "DN" columns.
 
     :param df_attributes: income distribution per attributes
     :param df_imputed: income distribution imputed for all
@@ -232,7 +238,7 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
             ech_list,
             axis=1,
         )
-
+        # Somme P(income & modality) sur les modality = P(income)
         C = C.iloc[:, 1::2]
         C.columns = list(range(0, len(ech[variable])))
         C["Proba"] = C.sum(axis=1)
