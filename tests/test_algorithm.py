@@ -2,6 +2,7 @@ from src import functions
 from src.tools import *
 from src.nantes_application import PATH_INPUTS, SYNTHETIC_POP, CODE_INSEE, MODALITIES
 import pandas as pd
+import numpy as np
 
 
 def test_algorithm():
@@ -40,6 +41,11 @@ def test_algorithm():
     assert p_R.iloc[-1, 1] == 1.0
 
     res = functions.run_assignment(filosofi, vec_all_incomes, crossed_probabilities, MODALITIES)
+
+    expected = pd.read_csv("../tests/nantes_result.csv")
+    expected.columns = [int(x) for x in expected.columns]
+
+    assert np.all(np.isclose(expected.to_numpy(), res.to_numpy()))
 
     for i in range(7):
         res[i] = res[i] * p_R["proba1"][i]
