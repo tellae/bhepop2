@@ -55,13 +55,23 @@ class MaxEntropyEnrichment:
         # optimization constraints
         self.constraints = None
 
-        self.log("Initialisation of optimisation data")
+        self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
         self._init_distributions(distributions, modalities)
         self._init_modalities(modalities)
         self._init_population(population)
 
     def _init_distributions(self, distributions, modalities):
+        """
+        Validate and filter the input distributions.
+
+        When done, set the *distributions* field.
+
+        :param distributions: input distributions DataFrame
+        :param modalities: input modalities
+        """
+
+        self.log("Setup distributions data")
 
         functions2.validate_distributions(distributions)
 
@@ -74,11 +84,23 @@ class MaxEntropyEnrichment:
         self.distributions = distributions
 
     def _init_modalities(self, modalities):
+        """
+        Set the modalities.
+
+        :param modalities: dict of modalities by attribute
+        """
         self.modalities = modalities
         # infer modalities from distributions if None
 
-
     def _init_population(self, population):
+        """
+        Validate and filter the input population.
+
+        When done, set the *population* field.
+
+        :param population: input population DataFrame
+        """
+        self.log("Setup population data")
         functions2.validate_population(population, self.modalities)
         # population = population.query(f"commune_id == '{self.commune_id}'")
         self.population = population
