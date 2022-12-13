@@ -16,7 +16,7 @@ def test_max_entropy_enrich():
 
     filosofi = get_filosofi_distributions()
 
-    enrich_class = MaxEntropyEnrichment(synth_pop, filosofi, CODE_INSEE, MODALITIES, parameters=parameters)
+    enrich_class = MaxEntropyEnrichment(synth_pop, filosofi, CODE_INSEE, list(MODALITIES.keys()), parameters=parameters)
 
     res = enrich_class.main()
 

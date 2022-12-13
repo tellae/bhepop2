@@ -7,18 +7,18 @@ from src import utils
 from src import functions2
 import maxentropy
 import math
-
+from tests.conftest import MODALITIES
 
 class MaxEntropyEnrichment:
 
-    def __init__(self, population, distributions, commune_id, modalities=None, parameters=None):
+    def __init__(self, population: pd.DataFrame, distributions: pd.DataFrame, commune_id: str, attribute_selection: list=None, parameters=None):
         """
         Synthetic population enrichment class.
 
         :param population: enriched population
         :param distributions: enriching data distributions
         :param commune_id: spatial selection
-        :param modalities: distribution modalities used. Default is all
+        :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
         :param parameters: enrichment parameters
         """
 
@@ -57,40 +57,40 @@ class MaxEntropyEnrichment:
 
         self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
-        self._init_distributions(distributions, modalities)
-        self._init_modalities(modalities)
+        self._init_distributions(distributions, attribute_selection)
         self._init_population(population)
 
-    def _init_distributions(self, distributions, modalities):
+    def _init_distributions(self, distributions, attribute_selection):
         """
         Validate and filter the input distributions.
 
         When done, set the *distributions* field.
 
         :param distributions: input distributions DataFrame
-        :param modalities: input modalities
+        :param attribute_selection: distribution attributes selection
         """
 
         self.log("Setup distributions data")
 
+        # validate distributions format and contents
         functions2.validate_distributions(distributions)
 
         distributions = distributions.copy()
 
         distributions = distributions.query(f"commune_id == '{self.commune_id}'")
 
-        distributions = distributions[distributions["attribute"].isin(functions2.get_attributes(modalities))]
+        # filter distributions using the attribute selection
+        if attribute_selection is not None:
+            distributions = distributions[distributions["attribute"].isin(attribute_selection)]
+            assert set(distributions["attribute"]) == set(attribute_selection), "Mismatch between distribution attributes and attribute selection"
 
+        # set distributions
         self.distributions = distributions
 
-    def _init_modalities(self, modalities):
-        """
-        Set the modalities.
-
-        :param modalities: dict of modalities by attribute
-        """
-        self.modalities = modalities
-        # infer modalities from distributions if None
+        # infer attributes and their modalities from the filtered distribution
+        # self.modalities = functions2.infer_modalities_from_distributions(distributions)
+        assert MODALITIES == functions2.infer_modalities_from_distributions(distributions)
+        self.modalities = MODALITIES
 
     def _init_population(self, population):
         """
@@ -104,6 +104,8 @@ class MaxEntropyEnrichment:
         functions2.validate_population(population, self.modalities)
         # population = population.query(f"commune_id == '{self.commune_id}'")
         self.population = population
+
+        # TODO ? remove distributions unused by population
 
     def main(self):
         # compute crossed modalities frequencies
@@ -170,11 +172,9 @@ class MaxEntropyEnrichment:
 
         try:
             K = [1]
-
-            for variable in self.modalities:
-
-                for modality in self.modalities[variable][:-1]:
-                    K.append(self.constraints[variable][modality][i])
+            for attribute in self.modalities:
+                for modality in self.modalities[attribute][:-1]:
+                    K.append(self.constraints[attribute][modality][i])
 
             K = np.array(K).reshape(1, len(K))
 
