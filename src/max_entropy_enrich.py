@@ -29,7 +29,7 @@ class MaxEntropyEnrichment:
         self.distributions = None
 
         # attributes considered for the assignment, with their modalities
-        # { attribute: [modalities]
+        # { attribute: [modalities] }
         self.modalities = None
 
         # execution parameters TODO : validate with json schema
@@ -63,7 +63,7 @@ class MaxEntropyEnrichment:
 
     def _init_distributions(self, distributions, modalities):
 
-        validate_distributions(distributions)
+        functions2.validate_distributions(distributions)
 
         distributions = distributions.copy()
 
@@ -79,11 +79,9 @@ class MaxEntropyEnrichment:
 
 
     def _init_population(self, population):
-        validate_population(population, self.modalities)
+        functions2.validate_population(population, self.modalities)
         # population = population.query(f"commune_id == '{self.commune_id}'")
         self.population = population
-
-
 
     def main(self):
         # compute crossed modalities frequencies
@@ -163,7 +161,7 @@ class MaxEntropyEnrichment:
             self.maxentropy_model.fit(K)
 
         except (Exception, maxentropy.utils.DivergenceError) as e:
-            self.log("ERROR on feature " + str(i), lg.ERROR)
+            self.log("Error while running optimization model on feature " + str(i), lg.ERROR)
             raise e
 
 
@@ -370,17 +368,3 @@ class MaxEntropyEnrichment:
         utils.log(message, level)
 
     log = staticmethod(log)
-
-def validate_distributions(distributions):
-    # we could validate the distributions (positive, monotony ?)
-    assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(distributions.columns)
-
-def validate_population(population, modalities):
-
-    attributes = functions2.get_attributes(modalities)
-
-    # { id } and commune_id mandatory ?
-    assert {*attributes} <= set(population.columns)
-
-    for attribute in attributes:
-        assert population[attribute].isin(modalities[attribute]).all()

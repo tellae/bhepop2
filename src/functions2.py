@@ -42,7 +42,7 @@ def validate_distributions(distributions):
     """
 
     # we could validate the distributions (positive, monotony ?)
-    assert {COMMUNE_ID, *["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(distributions.columns)
+    assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(distributions.columns)
 
 
 def compute_feature_values(distribution: pd.DataFrame, abs_minimum: float, relative_maximum: float) -> list:
