@@ -45,6 +45,25 @@ def validate_distributions(distributions):
     assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(distributions.columns)
 
 
+def infer_modalities_from_distributions(distributions: pd.DataFrame):
+    """
+    Infer attributes and their modalities from the given distributions.
+
+    :param distributions: distributions DataFrame
+
+    :return: dict of attributes and their modalities, { attribute: [modalities] }
+    """
+
+    # group by attribute and get all modality values
+    modalities = distributions.groupby('attribute')['modality'].apply(list).to_dict()
+
+    # remove global distribution
+    if "all" in modalities:
+        del modalities["all"]
+
+    return modalities
+
+
 def compute_feature_values(distribution: pd.DataFrame, abs_minimum: float, relative_maximum: float) -> list:
     """
     Compute the list of feature values that will define the assignment intervals.

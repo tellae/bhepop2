@@ -14,6 +14,15 @@ def test_compute_crossed_modalities_frequencies():
     assert list(freq_df.columns) == get_attributes(MODALITIES) + ["probability"]
     assert np.isclose(freq_df["probability"].sum(), 1)
 
+def test_infer_modalities_from_distributions():
+    filosofi = get_filosofi_distributions()
+    filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
+
+    modalities = infer_modalities_from_distributions(filosofi)
+
+    assert isinstance(modalities, dict)
+    assert "all" not in modalities
+
 def test_compute_feature_values():
     """
     Test that the feature values list have the correct length and is sorted.
