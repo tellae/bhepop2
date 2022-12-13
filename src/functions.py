@@ -38,7 +38,7 @@ def compute_p_r(vec_all, df_imputed: pd.DataFrame, code_insee: str) -> list:
     # linear extrapolation of these 190 incomes from the total population deciles
     p_R = pd.DataFrame({"income": vec_all})
     p_R["proba1"] = p_R.apply(
-        lambda x: utils.interpolate_income(x["income"], total_population_decile), axis=1
+        lambda x: utils.interpolate_feature_prob(x["income"], total_population_decile), axis=1
     )
 
     return p_R
@@ -211,7 +211,7 @@ def create_constraints(variables_modalities, external_data, vec_all_incomes, gro
             ]
             p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
             p_R_tmp["proba1"] = p_R_tmp.apply(
-                lambda x: utils.interpolate_income(x["income"], total_population_decile_tmp),
+                lambda x: utils.interpolate_feature_prob(x["income"], total_population_decile_tmp),
                 axis=1,
             )
             ech[variable][modality] = p_R_tmp

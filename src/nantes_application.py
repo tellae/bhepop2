@@ -71,6 +71,9 @@ filosofi.rename(
 )
 
 vec_all_incomes = functions.compute_vec_all(filosofi)
+print(vec_all_incomes)
+print(len(vec_all_incomes))
+exit(0)
 p_R = functions.compute_p_r(vec_all_incomes, df_income_attributes, CODE_INSEE)
 
 # %%

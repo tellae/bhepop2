@@ -3,30 +3,49 @@ Utility functions
 """
 
 import pandas as pd
+import logging as lg
+
+logger_level = lg.DEBUG
+logger_name = "hepop2_logger"
 
 
-def interpolate_income(income: float, distribution: list):
+def log(message, level):
     """
-    Linear interpolation of incomes
+    Log a message using the logging library.
 
-    :param income: value of income to interpolate
-    :param distribution: list of incomes for each decile from 1 to 10 (without value for 0)
-    :return: probability of being lower than income value
+    :param message: message to log
+    :param level: logging level
     """
-    distribution = [0] + distribution
-    if income > distribution[10]:
-        return 1
-    if income < distribution[0]:
-        return 0
-    decile_top = 0
-    while income > distribution[decile_top]:
-        decile_top += 1
 
-    interpolation = (income - distribution[decile_top - 1]) * (
-        decile_top * 0.1 - (decile_top - 1) * 0.1
-    ) / (distribution[decile_top] - distribution[decile_top - 1]) + (decile_top - 1) * 0.1
+    # get logger object
+    logger = _get_logger()
 
-    return interpolation
+    # log message
+    logger.log(level, message)
+
+def _get_logger():
+    """
+    Create a logger or return the current one if already instantiated.
+
+    :return: logging.logger
+    """
+
+    logger = lg.getLogger(logger_name)
+
+    # if a logger with this name is not already set up
+    if not getattr(logger, "handler_set", None):
+
+        logger.propagate = False
+        formatter = lg.Formatter("%(levelname)s :: %(message)s")
+        stream_handler = lg.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+        logger.setLevel(logger_level)
+        logger.handler_set = True
+
+    return logger
+
+
 
 
 def read_filosofi(
