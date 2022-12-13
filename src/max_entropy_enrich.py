@@ -52,6 +52,9 @@ class MaxEntropyEnrichment:
         # maxentropy MinDivergenceModel instance
         self.maxentropy_model = None
 
+        # optimization constraints
+        self.constraints = None
+
         self.log("Initialisation of optimisation data")
 
         self._init_distributions(distributions, modalities)
@@ -84,70 +87,93 @@ class MaxEntropyEnrichment:
 
     def main(self):
         # compute crossed modalities frequencies
+        self.log("Computing frequencies of crossed modalities", lg.INFO)
         self.crossed_modalities_frequencies = functions2.compute_crossed_modalities_frequencies(self.population, self.modalities)
+        self.log("Number of crossed modalities present in the population: {}".format(len(self.crossed_modalities_frequencies)))
 
         # compute vector of feature values
+        self.log("Computing vector of all feature values", lg.INFO)
         self.feature_values = functions2.compute_feature_values(self.distributions, self.parameters["abs_minimum"], self.parameters["relative_maximum"])
+        self.log("Number of feature values: {}".format(len(self.feature_values)))
 
-        self.create_maxentropy_model()
+        # create and set the maxentropy model
+        self.log("Creating optimization model", lg.INFO)
+        self._create_maxentropy_model()
+
+        # compute matrix of constraints
+        self.log("Computing optimization constraints", lg.INFO)
+        self._compute_constraints()
 
         # run resolution
-        res = self.run_assignment()
+        self.log("Starting optimization by entropy maximisation", lg.INFO)
+        res = self._run_optimization()
 
         return res
 
-    def create_maxentropy_model(self):
+    def _run_optimization(self) -> pd.DataFrame:
+        """
+        Run optimization model on each feature value.
 
-        # prepare data for maxentropy resolution
+        The resulting probabilities are the P(Mk | f in [fi, fi+1]).
 
-        samplespace_reducted, model_features_functions, function_prior_prob = self.create_samplespace_and_features()
+        :return: DataFrame containing the result probabilities
+        """
 
-        self.create_model(model_features_functions, samplespace_reducted, function_prior_prob)
-
-    def run_assignment(self):
-
-        constraints = self.compute_constraints()
-
+        # this is for testing, change to self.feature_values
         features = [0, 1, 2, 3, 4, 5, 6]
         res = pd.DataFrame()
+
         # loop on features
         for i in features:
-            print("Running model for feature " + str(i))
+            # run optimization model on the current feature
+            self.log("Running optimization model on feature " + str(i))
+            self.run_model_on_feature(i)
 
-            self.run_model_on_feature(self.maxentropy_model, i, self.modalities, constraints)
+            # store result in DataFrame
             res.loc[:, i] = self.maxentropy_model.probdist()
 
-            # need to reset dual for next iterations !
+            # reset dual for next iterations
             self.maxentropy_model.resetparams()
 
         return res
 
-    def run_model_on_feature(self, model_with_apriori, i, modalities, constraint):
+    def run_model_on_feature(self, i):
+        """
+        Run the optimization model on the feature of index i.
+
+        Nothing is returned, but the result can be obtained on the model,
+        for instance with self.maxentropy_model.probdist().
+
+        :param i: index of optimized feature
+        """
         # res = None
 
         try:
             K = [1]
 
-            for variable in modalities:
+            for variable in self.modalities:
 
-                for modality in modalities[variable][:-1]:
-                    K.append(constraint[variable][modality][i])
+                for modality in self.modalities[variable][:-1]:
+                    K.append(self.constraints[variable][modality][i])
 
             K = np.array(K).reshape(1, len(K))
 
             # res = compute_rq(model_with_apriori, np.shape(K)[1], K)
 
-            model_with_apriori.fit(K)
-
-            # print("SUCCESS on feature " + str(i) + " with fun=" + str(res.fun))
+            self.maxentropy_model.fit(K)
 
         except (Exception, maxentropy.utils.DivergenceError) as e:
-            pass
-            # print("ERROR on feature " + str(i) + " with fun=" + str(res.fun))
+            self.log("ERROR on feature " + str(i), lg.ERROR)
+            raise e
+
 
     def create_samplespace_and_features(self):
         """
         Create model samplespace and features from variables and their modalities.
+
+        features: list of feature functions
+        samplespace: model samplespace
+        prior_log_pdf: prior function
 
         :return: samplespace, features
         """
@@ -195,7 +221,7 @@ class MaxEntropyEnrichment:
 
         return samplespace_reducted, features, function_prior_prob
 
-    def compute_constraints(self):
+    def _compute_constraints(self):
         """
         For each modality of each attribute, compute the probability of belonging to each feature interval.
 
@@ -208,12 +234,14 @@ class MaxEntropyEnrichment:
         attributes = functions2.get_attributes(self.modalities)
 
         ech = {}
-        constraint = {}
+        constraints = {}
         for attribute in attributes:
             ech[attribute] = {}
             # get attribute frequency
             attribute_freq = self.crossed_modalities_frequencies.groupby([attribute], as_index=False)["probability"].sum()
             for modality in self.modalities[attribute]:
+                self.log("Computing constraints for modality: {} = {}".format(attribute, modality))
+
                 # compute probability of each feature interval when being in a modality
                 ech[attribute][modality] = self.compute_feature_prob(attribute, modality)
 
@@ -243,24 +271,23 @@ class MaxEntropyEnrichment:
             p = C[["Proba"]]
 
             # constraint
-            constraint[attribute] = {}
+            constraints[attribute] = {}
             for modality in ech[attribute]:
-                constraint[attribute][modality] = ech[attribute][modality]["prob"] / p["Proba"]
+                constraints[attribute][modality] = ech[attribute][modality]["prob"] / p["Proba"]
 
-        return constraint
+        self.constraints = constraints
 
-    def create_model(self, features, samplespace, prior_log_pdf):
+    def _create_maxentropy_model(self):
         """
         Create and set a MinDivergenceModel instance on the given parameters.
-
-        :param features: list of feature functions
-        :param samplespace: model samplespace
-        :param prior_log_pdf: prior function
         """
+
+        # create data structures describing the optimization problem
+        samplespace, model_features_functions, prior_log_pdf = self.create_samplespace_and_features()
 
         # create and set MinDivergenceModel instance
         self.maxentropy_model = maxentropy.MinDivergenceModel(
-            features,
+            model_features_functions,
             samplespace,
             vectorized=False,
             verbose=self.parameters["maxentropy_verbose"],
