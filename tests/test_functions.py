@@ -26,3 +26,15 @@ def test_compute_feature_values():
 
     assert len(feature_values) == 190
     assert feature_values == sorted(feature_values)
+
+def test_interpolate_feature_prob():
+    """
+    Test that the feature probability interpolation is a float and has a coherent value.
+    """
+
+    distribution = [9794, 12961, 14914, 16865, 18687, 20763, 23357, 27069, 33514, 50271]
+    feature_value = 16000
+    interpolation = interpolate_feature_prob(feature_value, distribution)
+
+    assert isinstance(interpolation, float)
+    assert 0.3 <= interpolation <= 0.4
