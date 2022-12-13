@@ -17,7 +17,7 @@ def get_attributes(modalities: dict) -> list:
     return list(modalities.keys())
 
 
-def modality_feature(attribute, modality):
+def modality_feature(attribute, modality) -> callable:
     """
     Create a function that checks if a sample belongs to the given attribute and modality.
 

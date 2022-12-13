@@ -3,6 +3,27 @@ from tests.conftest import *
 from src.functions2 import *
 import numpy as np
 
+def test_get_attributes():
+    """
+    Test that the returned attributes are correct.
+    """
+
+    assert get_attributes(MODALITIES) == ["ownership", "age", "size", "family_comp"]
+
+def test_modality_feature():
+    """
+    Test that the result is a function with expected behaviour.
+    """
+
+    attribute = "my_attribute"
+    modality_0 = "modality_0"
+    modality_1 = "modality_1"
+
+    feature = modality_feature(attribute, modality_0)
+
+    assert callable(feature)
+    assert feature({attribute: modality_0})
+    assert not feature({attribute: modality_1})
 
 def test_compute_crossed_modalities_frequencies():
     """

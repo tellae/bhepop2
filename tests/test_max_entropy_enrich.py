@@ -1,6 +1,4 @@
 from src.max_entropy_enrich import MaxEntropyEnrichment
-from src.tools import read_filosofi
-import src.functions as functions
 from tests.conftest import *
 import numpy as np
 
