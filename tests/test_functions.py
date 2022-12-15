@@ -49,7 +49,7 @@ def test_infer_modalities_from_distributions():
     "delta_min, expected_length",
     [
         (None, 190),
-        (1000, 33),
+        (1000, 41),
     ],
 )
 def test_compute_feature_values(delta_min, expected_length):
@@ -60,7 +60,7 @@ def test_compute_feature_values(delta_min, expected_length):
     filosofi = get_filosofi_distributions()
     filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
     filosofi = filosofi[filosofi["attribute"].isin(get_attributes(MODALITIES))]
-    feature_values = compute_feature_values(filosofi, 0, delta_min)
+    feature_values = compute_feature_values(filosofi, 1.5, delta_min)
 
     assert len(feature_values) == expected_length
     assert feature_values == sorted(feature_values)
