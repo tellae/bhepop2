@@ -2,12 +2,6 @@ from src.max_entropy_enrich import MaxEntropyEnrichment
 from tests.conftest import *
 import numpy as np
 
-parameters = {
-    "abs_minimum": 0,
-    "relative_maximum": 1.5,
-    "maxentropy_algorithm": "Nelder-Mead",
-    "maxentropy_verbose": 0
-}
 
 def test_max_entropy_enrich():
     synth_pop = get_synth_pop_nantes()

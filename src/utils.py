@@ -4,6 +4,7 @@ Utility functions
 
 import pandas as pd
 import logging as lg
+from jsonschema import validate, ValidationError
 
 logger_level = lg.DEBUG
 logger_name = "hepop2_logger"
@@ -45,8 +46,31 @@ def _get_logger():
 
     return logger
 
+def add_defaults_and_validate_against_schema(instance, schema):
+    """
+    Add default values then validate instance against the schema.
 
+    :param instance: data instance
+    :param schema: json schema
 
+    :return: result data (copy of instance)
+    """
+
+    result = instance.copy()
+
+    # superficial default values set
+    for key in schema["properties"]:
+        if "default" in schema["properties"][key] and not key in result:
+            result[key] = schema["properties"][key]["default"]
+
+    # validate instance against schema
+    try:
+        validate(result, schema)
+    except ValidationError as e:
+        msg = e.message
+        raise ValueError(msg) from None
+
+    return result
 
 def read_filosofi(
     path: str, sheet: str, code_insee: str, xls_file="FILO_DISP_COM.xls", skip_rows=5

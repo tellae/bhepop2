@@ -11,6 +11,40 @@ from tests.conftest import MODALITIES
 
 class MaxEntropyEnrichment:
 
+    parameters_schema = {
+        "title": "MaxEntropyEnrichment parameters",
+        "description": "Parameters of a population enrichment run",
+        "type": "object",
+        "required": ["abs_minimum", "relative_maximum", "maxentropy_algorithm", "maxentropy_verbose"],
+        "properties": {
+            "abs_minimum": {
+                "title": "Distributions absolute minimum",
+                "description": "Minimum value of the feature distributions. This value is absolute, and thus equal for all distributions.",
+                "type": "number",
+                "default": 0
+            },
+            "relative_maximum": {
+                "title": "Distributions relative maximum",
+                "description": "Maximum value of the feature distributions. This value is relative and will be multiplied to the last value of each distribution.",
+                "type": "number",
+                "default": 1.5,
+                "minimum": 1
+            },
+            "maxentropy_algorithm": {
+                "title": "maxentropy algorithm parameter",
+                "description": "Algorithm used for maxentropy optimization. See maxentropy BaseModel class for more information.",
+                "type": "string",
+                "default": "Nelder-Mead"
+            },
+            "maxentropy_verbose": {
+                "title": "maxentropy verbose parameter",
+                "description": "Verbosity of maxentropy library. Set to 1 for detailed output.",
+                "enum": [0, 1],
+                "default": 0
+            }
+        }
+    }
+
     def __init__(self, population: pd.DataFrame, distributions: pd.DataFrame, commune_id: str, attribute_selection: list=None, parameters=None):
         """
         Synthetic population enrichment class.
@@ -32,8 +66,8 @@ class MaxEntropyEnrichment:
         # { attribute: [modalities] }
         self.modalities = None
 
-        # execution parameters TODO : validate with json schema
-        self.parameters = parameters
+        # execution parameters
+        self.parameters = utils.add_defaults_and_validate_against_schema(parameters, self.parameters_schema)
 
         # commune id
         self.commune_id = commune_id
