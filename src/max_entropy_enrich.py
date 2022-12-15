@@ -30,6 +30,13 @@ class MaxEntropyEnrichment:
                 "default": 1.5,
                 "minimum": 1
             },
+            "delta_min": {
+                "title": "Minimum feature value delta",
+                "description": "Minimum size of the feature intervals",
+                "type": ["null", "number"],
+                "default": None,
+                "minimum": 0
+            },
             "maxentropy_algorithm": {
                 "title": "maxentropy algorithm parameter",
                 "description": "Algorithm used for maxentropy optimization. See maxentropy BaseModel class for more information.",
@@ -149,7 +156,7 @@ class MaxEntropyEnrichment:
 
         # compute vector of feature values
         self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = functions2.compute_feature_values(self.distributions, self.parameters["abs_minimum"], self.parameters["relative_maximum"])
+        self.feature_values = functions2.compute_feature_values(self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"])
         self.log("Number of feature values: {}".format(len(self.feature_values)))
 
         # create and set the maxentropy model

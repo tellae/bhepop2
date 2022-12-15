@@ -64,7 +64,7 @@ def infer_modalities_from_distributions(distributions: pd.DataFrame):
     return modalities
 
 
-def compute_feature_values(distribution: pd.DataFrame, abs_minimum: float, relative_maximum: float) -> list:
+def compute_feature_values(distribution: pd.DataFrame, relative_maximum: float, delta_min=None) -> list:
     """
     Compute the list of feature values that will define the assignment intervals.
 
@@ -74,29 +74,34 @@ def compute_feature_values(distribution: pd.DataFrame, abs_minimum: float, relat
     The maximum is computed by multiplying the relative_maximum parameter to the last value of each distribution.
 
     :param distribution: dataframe of distribution
-    :param abs_minimum: absolute value of the first feature value of each distribution
     :param relative_maximum: multiplicand applied to compute the last feature value of each distribution
+    :param delta_min: minimum delta between two feature values. None to keep all values.
 
     :return: list of feature values
     """
+    deciles = distribution.copy()
 
-    decile_total = distribution.copy()
+    # set maximum values
+    deciles["D10"] = deciles["D9"] * relative_maximum
 
-    # set minimum and maximum values
-    decile_total["D0"] = abs_minimum
-    decile_total["D10"] = decile_total["D9"] * relative_maximum
-
-    # restraint columns (why ?)
-    decile_total = decile_total[
-        ["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))
+    # restraint columns to distribution values and get vector
+    deciles = deciles[
+        list(map(lambda a: "D" + str(a), list(range(1, 11))))
     ]
+    vec_all = list(deciles.to_numpy().flatten())
 
-    # get all deciles and sort values
-    vec_all = []
-    for index, row in decile_total.iterrows():
-        for r in list(map(lambda a: "D" + str(a), list(range(1, 11)))):
-            vec_all.append(row[r])
+    # sort values vector
     vec_all.sort()
+
+    # remove close values using delta min
+    if delta_min is not None:
+        last_value = vec_all[0]
+        filtered_vec = [last_value]
+        for val in vec_all[1:]:
+            if val - last_value >= delta_min:
+                filtered_vec.append(val)
+                last_value = val
+        vec_all = filtered_vec
 
     return vec_all
 

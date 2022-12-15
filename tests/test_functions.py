@@ -1,7 +1,8 @@
 from tests.conftest import *
-
 from src.functions2 import *
 import numpy as np
+
+import pytest
 
 def test_get_attributes():
     """
@@ -44,7 +45,14 @@ def test_infer_modalities_from_distributions():
     assert isinstance(modalities, dict)
     assert "all" not in modalities
 
-def test_compute_feature_values():
+@pytest.mark.parametrize(
+    "delta_min, expected_length",
+    [
+        (None, 190),
+        (1000, 33),
+    ],
+)
+def test_compute_feature_values(delta_min, expected_length):
     """
     Test that the feature values list have the correct length and is sorted.
     """
@@ -52,9 +60,9 @@ def test_compute_feature_values():
     filosofi = get_filosofi_distributions()
     filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
     filosofi = filosofi[filosofi["attribute"].isin(get_attributes(MODALITIES))]
-    feature_values = compute_feature_values(filosofi, 0, 1.5)
+    feature_values = compute_feature_values(filosofi, 0, delta_min)
 
-    assert len(feature_values) == 190
+    assert len(feature_values) == expected_length
     assert feature_values == sorted(feature_values)
 
 def test_interpolate_feature_prob():
