@@ -185,12 +185,10 @@ class MaxEntropyEnrichment:
         :return: DataFrame containing the result probabilities
         """
 
-        # this is for testing, change to self.feature_values
-        features = [0, 1, 2, 3, 4, 5, 6]
         res = pd.DataFrame()
 
         # loop on features
-        for i in features:
+        for i in range(len(self.feature_values)):
             # run optimization model on the current feature
             self.log("Running optimization model on feature " + str(i))
             self.run_model_on_feature(i)
@@ -275,7 +273,8 @@ class MaxEntropyEnrichment:
         # print(prior_df_perc_reducted)
         # self.crossed_modalities_frequencies.reset_index(inplace=True, drop=True)
         # print(self.crossed_modalities_frequencies)
-        # print(prior_df_perc_reducted == self.crossed_modalities_frequencies)
+        # print((prior_df_perc_reducted == self.crossed_modalities_frequencies).to_numpy())
+        # print(np.all((prior_df_perc_reducted == self.crossed_modalities_frequencies).to_numpy()))
 
         # get reducted samplespace
         samplespace_reducted = prior_df_perc_reducted[attributes].to_dict(orient="records")
@@ -404,8 +403,6 @@ class MaxEntropyEnrichment:
 
         feature_probs = self.compute_feature_probabilities_from_distributions()
 
-        print(feature_probs)
-
         res = self.optim_result
 
         nb_columns = len(res.columns)
@@ -415,8 +412,6 @@ class MaxEntropyEnrichment:
         for i in range(nb_columns):
             res[i] = res[i] / res["sum"]
         res["sum"] = res.sum(axis=1)
-
-        print(res)
 
     def compute_feature_probabilities_from_distributions(self):
         """
