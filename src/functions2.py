@@ -106,9 +106,29 @@ def compute_feature_values(distribution: pd.DataFrame, relative_maximum: float, 
     return vec_all
 
 
+def compute_features_prob(feature_values: list, distribution: list):
+    """
+    Create a DataFrame containing probabilities for the given feature values.
+
+    :param feature_values: list of feature values
+    :param distribution: list of distribution values
+
+    :return: DataFrame of feature probabilities
+    """
+    # set features column
+    probs_df = pd.DataFrame({"feature": feature_values})
+
+    # compute prob of being in each feature interval
+    probs_df["prob"] = probs_df.apply(
+        lambda x: interpolate_feature_prob(x["feature"], distribution),
+        axis=1,
+    )
+
+    return probs_df
+
 def interpolate_feature_prob(feature_value: float, distribution: list):
     """
-    Linear interpolation of feature probability.
+    Linear interpolation of a feature value probability.
 
     :param feature_value: value of feature to interpolate
     :param distribution: feature values for each decile from 1 to 10 (without value for 0)

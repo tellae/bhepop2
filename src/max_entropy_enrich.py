@@ -96,6 +96,9 @@ class MaxEntropyEnrichment:
         # optimization constraints
         self.constraints = None
 
+        # optimization result
+        self.optim_result = None
+
         self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
         self._init_distributions(distributions, attribute_selection)
@@ -169,9 +172,9 @@ class MaxEntropyEnrichment:
 
         # run resolution
         self.log("Starting optimization by entropy maximisation", lg.INFO)
-        res = self._run_optimization()
+        self.optim_result = self._run_optimization()
 
-        return res
+        return self.optim_result
 
     def _run_optimization(self) -> pd.DataFrame:
         """
@@ -373,13 +376,9 @@ class MaxEntropyEnrichment:
             float(decile_tmp["D9"]) * self.parameters["relative_maximum"],
         ]
 
-        p_R_tmp = pd.DataFrame({"feature": self.feature_values})
-        p_R_tmp["prob"] = p_R_tmp.apply(
-            lambda x: functions2.interpolate_feature_prob(x["feature"], total_population_decile_tmp),
-            axis=1,
-        )
+        prob_df = functions2.compute_features_prob(self.feature_values, total_population_decile_tmp)
 
-        return p_R_tmp
+        return prob_df
 
     def compute_crossed_modality_probs(self):
         """
@@ -403,6 +402,22 @@ class MaxEntropyEnrichment:
         :return: DataFrame
         """
 
+        feature_probs = self.compute_feature_probabilities_from_distributions()
+
+        print(feature_probs)
+
+        res = self.optim_result
+
+        nb_columns = len(res.columns)
+        for i in range(nb_columns):
+            res[i] = res[i] * feature_probs["prob"][i]
+        res["sum"] = res.sum(axis=1)
+        for i in range(nb_columns):
+            res[i] = res[i] / res["sum"]
+        res["sum"] = res.sum(axis=1)
+
+        print(res)
+
     def compute_feature_probabilities_from_distributions(self):
         """
         Compute the probability of each feature interval.
@@ -413,8 +428,26 @@ class MaxEntropyEnrichment:
 
         :return: DataFrame
         """
+        distrib_all_df = self.distributions[self.distributions["attribute"] == "all"]
 
-        pass
+        assert len(distrib_all_df) == 1
+
+        total_population_decile = [
+            self.distributions["D1"].iloc[0],
+            self.distributions["D2"].iloc[0],
+            self.distributions["D3"].iloc[0],
+            self.distributions["D4"].iloc[0],
+            self.distributions["D5"].iloc[0],
+            self.distributions["D6"].iloc[0],
+            self.distributions["D7"].iloc[0],
+            self.distributions["D8"].iloc[0],
+            self.distributions["D9"].iloc[0],
+            self.feature_values[-1],  # maximum value of all deciles
+        ]
+
+        prob_df = functions2.compute_features_prob(self.feature_values, total_population_decile)
+
+        return prob_df
 
     # utils methods
 
