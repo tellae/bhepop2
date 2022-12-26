@@ -2,6 +2,7 @@
 import logging as lg
 import numpy as np
 from itertools import product
+import random
 import pandas as pd
 from src import utils
 from src import functions2
@@ -52,7 +53,7 @@ class MaxEntropyEnrichment:
         }
     }
 
-    def __init__(self, population: pd.DataFrame, distributions: pd.DataFrame, commune_id: str, attribute_selection: list=None, parameters=None):
+    def __init__(self, population: pd.DataFrame, distributions: pd.DataFrame, commune_id: str, attribute_selection: list=None, parameters=None, seed=None):
         """
         Synthetic population enrichment class.
 
@@ -61,7 +62,13 @@ class MaxEntropyEnrichment:
         :param commune_id: spatial selection
         :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
         :param parameters: enrichment parameters
+        :param seed: random seed
         """
+
+        # random seed (maybe use a random generator instead)
+        self.seed = seed
+        if seed is not None:
+            random.seed(seed)
 
         # original population to be enriched
         self.population = None
@@ -99,6 +106,8 @@ class MaxEntropyEnrichment:
         # optimization result
         self.optim_result = None
 
+        self.prior = None
+
         self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
         self._init_distributions(distributions, attribute_selection)
@@ -125,8 +134,8 @@ class MaxEntropyEnrichment:
 
         # filter distributions using the attribute selection
         if attribute_selection is not None:
-            distributions = distributions[distributions["attribute"].isin(attribute_selection)]
-            assert set(distributions["attribute"]) == set(attribute_selection), "Mismatch between distribution attributes and attribute selection"
+            distributions = distributions[distributions["attribute"].isin(attribute_selection + ["all"])]
+            assert set(distributions["attribute"]) == set(attribute_selection + ["all"]), "Mismatch between distribution attributes and attribute selection"
 
         # set distributions
         self.distributions = distributions
@@ -147,7 +156,7 @@ class MaxEntropyEnrichment:
         self.log("Setup population data")
         functions2.validate_population(population, self.modalities)
         # population = population.query(f"commune_id == '{self.commune_id}'")
-        self.population = population
+        self.population = population.copy()
 
         # TODO ? remove distributions unused by population
 
@@ -267,6 +276,7 @@ class MaxEntropyEnrichment:
 
         # get non zero entries
         prior_df_perc_reducted = prior_df_perc.query("probability > 0")
+        self.prior = prior_df_perc_reducted
 
         # TODO : just use crossed modalities freq for prior
         # prior_df_perc_reducted.reset_index(inplace=True, drop=True)
@@ -412,6 +422,43 @@ class MaxEntropyEnrichment:
         for i in range(nb_columns):
             res[i] = res[i] / res["sum"]
         res["sum"] = res.sum(axis=1)
+        res.drop("sum", axis=1, inplace=True)
+
+        return res
+
+    def assign_feature_value_to_pop(self):
+
+        res = self.get_feature_probs()
+
+        self.prior["index"] = self.prior.index
+
+        merge = self.population.merge(self.prior, how="left", on=functions2.get_attributes(self.modalities))
+
+        merge["feature"] = merge["index"].apply(lambda x: self.draw_feature(res, x))
+
+        merge.drop(["index", "probability"], axis=1, inplace=True)
+
+        return merge
+
+    def draw_feature(self, res, index):
+
+        # get probs
+        probs = res.loc[index, ].to_numpy()
+        interval_values = [self.parameters["abs_minimum"]] + self.feature_values
+
+        values = list(range(len(self.feature_values)))
+
+
+
+        feature_interval = random.choices(values, probs)[0]
+
+        lower, upper = interval_values[feature_interval], interval_values[feature_interval+1]
+
+        draw = random.random()
+        final = lower + round((upper - lower)*draw)
+
+        return final
+
 
     def compute_feature_probabilities_from_distributions(self):
         """

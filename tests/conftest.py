@@ -2,6 +2,8 @@ from src.tools import read_filosofi
 
 import pandas as pd
 
+SEED = 42
+
 PATH_INPUTS = "../data/inputs/"
 SYNTHETIC_POP = "nantes_synth_pop.csv"
 CODE_INSEE = "44109"

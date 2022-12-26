@@ -194,4 +194,7 @@ def compute_crossed_modalities_frequencies(population: pd.DataFrame, modalities:
     freq_df["probability"] = freq_df["count"] / sum(freq_df["count"])
     freq_df = freq_df[attributes + ["probability"]]
 
+    # remove count column
+    population.drop("count", axis=1, inplace=True)
+
     return freq_df
