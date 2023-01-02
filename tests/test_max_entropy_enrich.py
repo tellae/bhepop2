@@ -10,6 +10,7 @@ def test_max_entropy_enrich():
 
     enrich_class = MaxEntropyEnrichment(synth_pop, filosofi, CODE_INSEE, list(MODALITIES.keys()), parameters=parameters, seed=SEED)
 
+    enrich_class.main()
 
     pop = enrich_class.assign_feature_value_to_pop()
 

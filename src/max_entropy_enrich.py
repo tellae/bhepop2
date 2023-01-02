@@ -106,8 +106,6 @@ class MaxEntropyEnrichment:
         # optimization result
         self.optim_result = None
 
-        self.prior = None
-
         self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
         self._init_distributions(distributions, attribute_selection)
@@ -252,12 +250,8 @@ class MaxEntropyEnrichment:
         # samplespace is the set of all possible combinations
         attributes = functions2.get_attributes(self.modalities)
 
-        # create prior df
-        prior_df_perc_reducted = self.crossed_modalities_frequencies
-        self.prior = prior_df_perc_reducted
-
         # get samplespace
-        samplespace_reducted = prior_df_perc_reducted[attributes].to_dict(orient="records")
+        samplespace_reducted = self.crossed_modalities_frequencies[attributes].to_dict(orient="records")
 
         features = []
 
@@ -274,7 +268,7 @@ class MaxEntropyEnrichment:
 
 
         def function_prior_prob(x_array):
-            return prior_df_perc_reducted["probability"].apply(math.log)
+            return self.crossed_modalities_frequencies["probability"].apply(math.log)
 
         return samplespace_reducted, features, function_prior_prob
 
@@ -414,9 +408,9 @@ class MaxEntropyEnrichment:
 
         res = self.get_feature_probs()
 
-        self.prior["index"] = self.prior.index
+        self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
 
-        merge = self.population.merge(self.prior, how="left", on=functions2.get_attributes(self.modalities))
+        merge = self.population.merge(self.crossed_modalities_frequencies, how="left", on=functions2.get_attributes(self.modalities))
 
         merge["feature"] = merge["index"].apply(lambda x: self.draw_feature(res, x))
 
