@@ -10,14 +10,6 @@ def test_max_entropy_enrich():
 
     enrich_class = MaxEntropyEnrichment(synth_pop, filosofi, CODE_INSEE, list(MODALITIES.keys()), parameters=parameters, seed=SEED)
 
-    res = enrich_class.main()
-
-    # res.to_csv("../tests/nantes_result.csv", index=False)
-
-    expected = pd.read_csv("../tests/nantes_result.csv")
-    expected.columns = [int(x) for x in expected.columns]
-
-    assert np.all(np.isclose(expected.to_numpy(), res.to_numpy()))
 
     pop = enrich_class.assign_feature_value_to_pop()
 

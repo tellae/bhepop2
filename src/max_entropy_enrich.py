@@ -246,19 +246,24 @@ class MaxEntropyEnrichment:
         samplespace: model samplespace
         prior_log_pdf: prior function
 
-        :return: samplespace, features
+        :return: samplespace, features, prior function
         """
 
         # samplespace is the set of all possible combinations
         attributes = functions2.get_attributes(self.modalities)
-        samplespace = list(product(*self.modalities.values()))
-        samplespace = [{attributes[i]: x[i] for i in range(len(x))} for x in samplespace]
+
+        # create prior df
+        prior_df_perc_reducted = self.crossed_modalities_frequencies
+        self.prior = prior_df_perc_reducted
+
+        # get samplespace
+        samplespace_reducted = prior_df_perc_reducted[attributes].to_dict(orient="records")
 
         features = []
 
         # base feature is x in samplespace
         def f0(x):
-            return x in samplespace
+            return x in samplespace_reducted
 
         features.append(f0)
 
@@ -267,27 +272,6 @@ class MaxEntropyEnrichment:
             for modality in self.modalities[attribute][:-1]:
                 features.append(functions2.modality_feature(attribute, modality))
 
-        # create prior df
-        prior_df = pd.DataFrame.from_dict(samplespace)
-        prior_df_perc = prior_df.merge(self.crossed_modalities_frequencies, how="left", on=attributes)
-        prior_df_perc["probability"] = prior_df_perc.apply(
-            lambda x: 0 if x["probability"] != x["probability"] else x["probability"], axis=1
-        )
-
-        # get non zero entries
-        prior_df_perc_reducted = prior_df_perc.query("probability > 0")
-        self.prior = prior_df_perc_reducted
-
-        # TODO : just use crossed modalities freq for prior
-        # prior_df_perc_reducted.reset_index(inplace=True, drop=True)
-        # print(prior_df_perc_reducted)
-        # self.crossed_modalities_frequencies.reset_index(inplace=True, drop=True)
-        # print(self.crossed_modalities_frequencies)
-        # print((prior_df_perc_reducted == self.crossed_modalities_frequencies).to_numpy())
-        # print(np.all((prior_df_perc_reducted == self.crossed_modalities_frequencies).to_numpy()))
-
-        # get reducted samplespace
-        samplespace_reducted = prior_df_perc_reducted[attributes].to_dict(orient="records")
 
         def function_prior_prob(x_array):
             return prior_df_perc_reducted["probability"].apply(math.log)
