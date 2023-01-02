@@ -1,7 +1,6 @@
 
 import logging as lg
 import numpy as np
-from itertools import product
 import random
 import pandas as pd
 from src import utils
@@ -405,6 +404,8 @@ class MaxEntropyEnrichment:
         return res
 
     def assign_feature_value_to_pop(self):
+
+        self.log("Drawing feature values for the population", lg.INFO)
 
         res = self.get_feature_probs()
 
