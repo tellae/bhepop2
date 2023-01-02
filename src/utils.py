@@ -6,7 +6,10 @@ import pandas as pd
 import logging as lg
 from jsonschema import validate, ValidationError
 
+#: logging level (see logging library)
 logger_level = lg.DEBUG
+
+#: logger name (see logging library)
 logger_name = "hepop2_logger"
 
 

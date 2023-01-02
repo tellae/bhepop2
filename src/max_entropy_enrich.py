@@ -10,6 +10,9 @@ import math
 from tests.conftest import MODALITIES
 
 class MaxEntropyEnrichment:
+    """
+    A class for enriching population using entropy maximisation.
+    """
 
     parameters_schema = {
         "title": "MaxEntropyEnrichment parameters",
