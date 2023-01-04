@@ -3,12 +3,25 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import importlib
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath("../"))
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'bhepop2'
 copyright = '2023, uge-tellae'
 author = 'uge-tellae'
+
+# Get the version from the __init__ module
+version_module = importlib.import_module("src.__init__")
+version = ".".join(version_module.__version__.split(".")[0:2])
+
+# The full version, including alpha/beta/rc tags
+release = version_module.__version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
