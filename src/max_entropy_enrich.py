@@ -4,7 +4,7 @@ import numpy as np
 import random
 import pandas as pd
 from src import utils
-from src import functions2
+from src import functions
 import maxentropy
 import math
 from tests.conftest import MODALITIES
@@ -14,6 +14,7 @@ class MaxEntropyEnrichment:
     A class for enriching population using entropy maximisation.
     """
 
+    #: json schema of the enrichment parameters
     parameters_schema = {
         "title": "MaxEntropyEnrichment parameters",
         "description": "Parameters of a population enrichment run",
@@ -126,7 +127,7 @@ class MaxEntropyEnrichment:
         self.log("Setup distributions data")
 
         # validate distributions format and contents
-        functions2.validate_distributions(distributions)
+        functions.validate_distributions(distributions)
 
         distributions = distributions.copy()
 
@@ -141,8 +142,8 @@ class MaxEntropyEnrichment:
         self.distributions = distributions
 
         # infer attributes and their modalities from the filtered distribution
-        # self.modalities = functions2.infer_modalities_from_distributions(distributions)
-        assert MODALITIES == functions2.infer_modalities_from_distributions(distributions)
+        # self.modalities = functions.infer_modalities_from_distributions(distributions)
+        assert MODALITIES == functions.infer_modalities_from_distributions(distributions)
         self.modalities = MODALITIES
 
     def _init_population(self, population):
@@ -154,7 +155,7 @@ class MaxEntropyEnrichment:
         :param population: input population DataFrame
         """
         self.log("Setup population data")
-        functions2.validate_population(population, self.modalities)
+        functions.validate_population(population, self.modalities)
         # population = population.query(f"commune_id == '{self.commune_id}'")
         self.population = population.copy()
 
@@ -163,12 +164,12 @@ class MaxEntropyEnrichment:
     def main(self):
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
-        self.crossed_modalities_frequencies = functions2.compute_crossed_modalities_frequencies(self.population, self.modalities)
+        self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(self.population, self.modalities)
         self.log("Number of crossed modalities present in the population: {}".format(len(self.crossed_modalities_frequencies)))
 
         # compute vector of feature values
         self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = functions2.compute_feature_values(self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"])
+        self.feature_values = functions.compute_feature_values(self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"])
         self.log("Number of feature values: {}".format(len(self.feature_values)))
 
         # create and set the maxentropy model
@@ -189,7 +190,7 @@ class MaxEntropyEnrichment:
         """
         Run optimization model on each feature value.
 
-        The resulting probabilities are the P(Mk | f in [fi, fi+1]).
+        The resulting probabilities are the :math:`P(M_{k} | f \in [f_{i}, f_{i+1}])`.
 
         :return: DataFrame containing the result probabilities
         """
@@ -250,7 +251,7 @@ class MaxEntropyEnrichment:
         """
 
         # samplespace is the set of all possible combinations
-        attributes = functions2.get_attributes(self.modalities)
+        attributes = functions.get_attributes(self.modalities)
 
         # get samplespace
         samplespace_reducted = self.crossed_modalities_frequencies[attributes].to_dict(orient="records")
@@ -266,7 +267,7 @@ class MaxEntropyEnrichment:
         # add a feature for all modalities except one for all variables
         for attribute in attributes:
             for modality in self.modalities[attribute][:-1]:
-                features.append(functions2.modality_feature(attribute, modality))
+                features.append(functions.modality_feature(attribute, modality))
 
 
         def function_prior_prob(x_array):
@@ -284,7 +285,7 @@ class MaxEntropyEnrichment:
         """
 
         # compute constraints on each modality
-        attributes = functions2.get_attributes(self.modalities)
+        attributes = functions.get_attributes(self.modalities)
 
         ech = {}
         constraints = {}
@@ -365,7 +366,7 @@ class MaxEntropyEnrichment:
             float(decile_tmp["D9"]) * self.parameters["relative_maximum"],
         ]
 
-        prob_df = functions2.compute_features_prob(self.feature_values, total_population_decile_tmp)
+        prob_df = functions.compute_features_prob(self.feature_values, total_population_decile_tmp)
 
         return prob_df
 
@@ -414,7 +415,7 @@ class MaxEntropyEnrichment:
 
         self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
 
-        merge = self.population.merge(self.crossed_modalities_frequencies, how="left", on=functions2.get_attributes(self.modalities))
+        merge = self.population.merge(self.crossed_modalities_frequencies, how="left", on=functions.get_attributes(self.modalities))
 
         merge["feature"] = merge["index"].apply(lambda x: self.draw_feature(res, x))
 
@@ -469,7 +470,7 @@ class MaxEntropyEnrichment:
             self.feature_values[-1],  # maximum value of all deciles
         ]
 
-        prob_df = functions2.compute_features_prob(self.feature_values, total_population_decile)
+        prob_df = functions.compute_features_prob(self.feature_values, total_population_decile)
 
         return prob_df
 

@@ -1,149 +1,12 @@
-from itertools import product
-from scipy.optimize import linprog
-import maxentropy
+
 import pandas as pd
 import numpy as np
-import math
-import src.utils as utils
+from scipy.optimize import linprog
 
-DECILE_0 = 0
-DECILE_10 = 1.5
+COMMUNE_ID = "commune_id"
 
 
-def compute_p_r(vec_all, df_imputed: pd.DataFrame, code_insee: str) -> list:
-    """
-    Compute p_R
-
-    Compute probabilities on global deciles.
-
-    :param vec_all:
-    :param df_imputed:
-
-    return: p_R
-    """
-    distribution_all = df_imputed.query(f"commune_id == '{code_insee}'")
-
-    total_population_decile = [
-        distribution_all["q1"].iloc[0],
-        distribution_all["q2"].iloc[0],
-        distribution_all["q3"].iloc[0],
-        distribution_all["q4"].iloc[0],
-        distribution_all["q5"].iloc[0],
-        distribution_all["q6"].iloc[0],
-        distribution_all["q7"].iloc[0],
-        distribution_all["q8"].iloc[0],
-        distribution_all["q9"].iloc[0],
-        max(vec_all),  # maximum value of all deciles
-    ]
-    # linear extrapolation of these 190 incomes from the total population deciles
-    p_R = pd.DataFrame({"income": vec_all})
-    p_R["proba1"] = p_R.apply(
-        lambda x: utils.interpolate_feature_prob(x["income"], total_population_decile), axis=1
-    )
-
-    return p_R
-
-
-def compute_vec_all(distribution, decile_0: float = DECILE_0, decile_10: float = DECILE_10) -> list:
-    """
-    Compute vector of values in distribution
-
-    :param distribution: dataframe of distribution
-    :param decile_0: value of decile 0
-    :param decile_10: value of decile 10 relative to decile 9
-
-    return: list of values
-    """
-    decile_total = distribution.copy()
-    decile_total["D0"] = decile_0
-    decile_total["D10"] = decile_total["D9"] * decile_10
-    decile_total = decile_total[
-        ["modality"] + list(map(lambda a: "D" + str(a), list(range(0, 11))))
-    ]
-
-    # get all deciles and sort values
-    vec_all = []
-    for index, row in decile_total.iterrows():
-        for r in list(map(lambda a: "D" + str(a), list(range(1, 11)))):
-            vec_all.append(row[r])
-    vec_all.sort()
-
-    return vec_all
-
-
-def compute_distribution(
-    df_attributes: pd.DataFrame, df_imputed: pd.DataFrame, code_insee: str, modalities: dict
-) -> pd.DataFrame:
-    """
-    Format income and imputed data if needed
-
-    Filter data on selected commune id.
-    Test if all attributes are present.
-    Transform "qN" columns into "DN" columns.
-
-    :param df_attributes: income distribution per attributes
-    :param df_imputed: income distribution imputed for all
-    :param code_insee: insee code of selected city
-    :param modalities: dictionary of modalities
-
-    return: dataframe of formated distribution
-    """
-    attributes = get_attributes(modalities)
-
-    filosofi = df_attributes.query(f"commune_id == '{code_insee}'")
-    if len(filosofi["attribute"].unique()) < len(attributes):
-        print("ERROR : need imputation of income")
-        # TODO implement an imputation method when data is missing
-
-    filosofi.rename(
-        columns={
-            "q1": "D1",
-            "q2": "D2",
-            "q3": "D3",
-            "q4": "D4",
-            "q5": "D5",
-            "q6": "D6",
-            "q7": "D7",
-            "q8": "D8",
-            "q9": "D9",
-        },
-        inplace=True,
-    )
-    return filosofi
-
-
-# run assignment
-
-
-def run_assignment(external_date, vec_all_incomes, grouped_pop, modalities):
-
-    # create dictionary of constraints (element of eta_total in R code)
-    constraint = create_constraints(modalities, external_date, vec_all_incomes, grouped_pop)
-
-    # optimisation (maxentropy)
-
-    samplespace_reducted, f, function_prior_prob = create_samplespace_and_features(
-        modalities, grouped_pop
-    )
-
-    # build K
-
-    model_with_apriori = create_model(f, samplespace_reducted, function_prior_prob)
-    incomes = [0, 1, 2, 3, 4, 5, 6]
-    res = pd.DataFrame()
-    # loop on incomes
-    for i in incomes:
-        print("Running model for income " + str(i))
-        # we do build the model again because it seemed to break after a failed fit
-
-        run_model_on_income(model_with_apriori, i, modalities, constraint)
-        res.loc[:, i] = model_with_apriori.probdist()
-
-        # need to reset dual for next iterations !
-        model_with_apriori.resetparams()
-
-    return res
-
+# generic functions
 
 def get_attributes(modalities: dict) -> list:
     """
@@ -151,210 +14,195 @@ def get_attributes(modalities: dict) -> list:
 
     :param modalities:
 
-    return: attributes
+    :return: attributes
     """
     return list(modalities.keys())
 
 
-# prepare data
-def compute_crossed_probabilities(synthetic_pop: pd.DataFrame, modalities: dict) -> pd.DataFrame:
+def modality_feature(attribute, modality) -> callable:
     """
-    Computed crossed probabilities on attribues
+    Create a function that checks if a sample belongs to the given attribute and modality.
 
-    :param synthetic_pop: dataframe of population
-    :param modalities: dictionary of modalities
+    :param attribute: attribute value
+    :param modality: modality value
 
-    return: dataframe of crossed probabilities
+    :return: feature checking function
     """
-    attributes = get_attributes(modalities)
-
-    synthetic_pop["count"] = 1
-    group = synthetic_pop.groupby(attributes, as_index=False)["count"].sum()
-    group["probability"] = group["count"] / sum(group["count"])
-    group = group[attributes + ["probability"]]
-
-    error = False
-    for attribute in attributes:
-        for i in list(group[attribute].unique()):
-            if i not in modalities[attribute]:
-                print("ERROR modality not recognized for %s (%s)" % (i, attribute))
-                error = True
-
-    assert error is False
-
-    return group
-
-
-def create_constraints(variables_modalities, external_data, vec_all_incomes, grouped_pop):
-    variables = list(variables_modalities.keys())
-
-    ech = {}
-    constraint = {}
-    for variable in variables:
-        ech[variable] = {}
-
-        decile = external_data[external_data["modality"].isin(variables_modalities[variable])]
-
-        for modality in variables_modalities[variable]:
-            decile_tmp = decile[decile["modality"].isin([modality])]
-            total_population_decile_tmp = [
-                float(decile_tmp["D1"]),
-                float(decile_tmp["D2"]),
-                float(decile_tmp["D3"]),
-                float(decile_tmp["D4"]),
-                float(decile_tmp["D5"]),
-                float(decile_tmp["D6"]),
-                float(decile_tmp["D7"]),
-                float(decile_tmp["D8"]),
-                float(decile_tmp["D9"]),
-                float(decile_tmp["D9"]) * DECILE_10,
-            ]
-            p_R_tmp = pd.DataFrame({"income": vec_all_incomes})
-            p_R_tmp["proba1"] = p_R_tmp.apply(
-                lambda x: utils.interpolate_feature_prob(x["income"], total_population_decile_tmp),
-                axis=1,
-            )
-            ech[variable][modality] = p_R_tmp
-
-        # p
-        # get statistics (frequency)
-        prob_1 = grouped_pop.groupby([variable], as_index=False)["probability"].sum()
-        # multiply frequencies by each element of ech_compo
-        for modality in ech[variable]:
-            value = prob_1[prob_1[variable].isin([modality])]
-            if len(value) > 0:
-                probability = value["probability"]
-            else:
-                probability = 0
-            df = ech[variable][modality]
-            df["proba1"] = df["proba1"] * float(
-                probability
-            )  # prob(income | modality) * frequency // ech is modified inplace here
-
-        ech_list = []
-        for modality in ech[variable]:
-            ech_list.append(ech[variable][modality])
-        C = pd.concat(
-            ech_list,
-            axis=1,
-        )
-        # Somme P(income & modality) sur les modality = P(income)
-        C = C.iloc[:, 1::2]
-        C.columns = list(range(0, len(ech[variable])))
-        C["Proba"] = C.sum(axis=1)
-        p = C[["Proba"]]
-
-        # constraint
-        constraint[variable] = {}
-        for modality in ech[variable]:
-            constraint[variable][modality] = ech[variable][modality]["proba1"] / p["Proba"]
-
-    return constraint
-
-
-# functions for creating and running model
-
-
-def create_samplespace_and_features(variables_modalities, group):
-    """
-    Create model samplespace and features from variables and their modalities.
-
-    :param variables_modalities: {variable: [variable modalities]}
-
-    :return: samplespace, features
-    """
-
-    # samplespace is the set of all possible combinations
-    variables = list(variables_modalities.keys())
-    samplespace = list(product(*variables_modalities.values()))
-    samplespace = [{variables[i]: x[i] for i in range(len(x))} for x in samplespace]
-
-    features = []
-
-    # base feature is x in samplespace
-    def f0(x):
-        return x in samplespace
-
-    features.append(f0)
-
-    # add a feature for all modalities except one for all variables
-    for variable in variables_modalities.keys():
-        for modality in variables_modalities[variable][:-1]:
-            features.append(modality_feature(variable, modality))
-
-    # create prior df
-    prior_df = pd.DataFrame.from_dict(samplespace)
-    prior_df_perc = prior_df.merge(group, how="left", on=variables)
-    prior_df_perc["probability"] = prior_df_perc.apply(
-        lambda x: 0 if x["probability"] != x["probability"] else x["probability"], axis=1
-    )
-
-    # get non zero entries
-    prior_df_perc_reducted = prior_df_perc.query("probability > 0")
-
-    # get reducted samplespace
-    samplespace_reducted = prior_df_perc_reducted[variables].to_dict(orient="records")
-
-    def function_prior_prob(x_array):
-        return prior_df_perc_reducted["probability"].apply(math.log)
-
-    return samplespace_reducted, features, function_prior_prob
-
-
-def modality_feature(variable, modality):
     def feature(x):
-        return x[variable] == modality
+        return x[attribute] == modality
 
     return feature
 
+# distribution functions
 
-def create_model(features, samplespace, prior_log_pdf, algorithm: str = "Nelder-Mead"):
+def validate_distributions(distributions):
     """
-    Create a MinDivergenceModel instance on the given parameters.
+    Validate the format and contents of the given distribution.
 
-    :param features: list of feature functions
-    :param samplespace: model samplespace
-    :param prior_log_pdf: prior function
-
-    :return: MinDivergenceModel instance
-
+    :param distributions: distribution DataFrame
+    :raises: AssertionError
     """
-    model = maxentropy.MinDivergenceModel(
-        features,
-        samplespace,
-        vectorized=False,
-        verbose=0,
-        prior_log_pdf=prior_log_pdf,
-        algorithm=algorithm,
+
+    # we could validate the distributions (positive, monotony ?)
+    assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(distributions.columns)
+
+
+def infer_modalities_from_distributions(distributions: pd.DataFrame):
+    """
+    Infer attributes and their modalities from the given distributions.
+
+    :param distributions: distributions DataFrame
+
+    :return: dict of attributes and their modalities, { attribute: [modalities] }
+    """
+
+    # group by attribute and get all modality values
+    modalities = distributions.groupby('attribute')['modality'].apply(list).to_dict()
+
+    # remove global distribution
+    if "all" in modalities:
+        del modalities["all"]
+
+    return modalities
+
+
+def compute_feature_values(distribution: pd.DataFrame, relative_maximum: float, delta_min=None) -> list:
+    """
+    Compute the list of feature values that will define the assignment intervals.
+
+    The distributions do not give the knowledge of the minimum and maximum
+    feature values, so we have to choose them.
+    The minimum is the same for all distributions, it is directly equal to the abs_first_value parameter.
+    The maximum is computed by multiplying the relative_maximum parameter to the last value of each distribution.
+
+    :param distribution: dataframe of distribution
+    :param relative_maximum: multiplicand applied to compute the last feature value of each distribution
+    :param delta_min: minimum delta between two feature values. None to keep all values.
+
+    :return: list of feature values
+    """
+    deciles = distribution.copy()
+
+    # set maximum values
+    deciles["D10"] = deciles["D9"] * relative_maximum
+
+    # restraint columns to distribution values and get vector
+    deciles = deciles[
+        list(map(lambda a: "D" + str(a), list(range(1, 11))))
+    ]
+    vec_all = list(deciles.to_numpy().flatten())
+
+    # sort values vector
+    vec_all.sort()
+
+    # remove close values using delta min
+    if delta_min is not None:
+        last_value = vec_all[0]
+        filtered_vec = [last_value]
+        for val in vec_all[1:]:
+            if val - last_value >= delta_min:
+                filtered_vec.append(val)
+                last_value = val
+        vec_all = filtered_vec
+
+    return vec_all
+
+
+def compute_features_prob(feature_values: list, distribution: list):
+    """
+    Create a DataFrame containing probabilities for the given feature values.
+
+    :param feature_values: list of feature values
+    :param distribution: list of distribution values
+
+    :return: DataFrame of feature probabilities
+    """
+    # set features column
+    probs_df = pd.DataFrame({"feature": feature_values})
+
+    # compute prob of being in each feature interval
+    probs_df["prob"] = probs_df.apply(
+        lambda x: interpolate_feature_prob(x["feature"], distribution),
+        axis=1,
     )
-    return model
+
+    return probs_df
+
+def interpolate_feature_prob(feature_value: float, distribution: list):
+    """
+    Linear interpolation of a feature value probability.
+
+    :param feature_value: value of feature to interpolate
+    :param distribution: feature values for each decile from 1 to 10 (without value for 0)
+
+    :return: probability of being lower than the input feature value
+    """
+    distribution = [0] + distribution
+    if feature_value > distribution[10]:
+        return 1
+    if feature_value < distribution[0]:
+        return 0
+    decile_top = 0
+    while feature_value > distribution[decile_top]:
+        decile_top += 1
+
+    interpolation = (feature_value - distribution[decile_top - 1]) * (
+        decile_top * 0.1 - (decile_top - 1) * 0.1
+    ) / (distribution[decile_top] - distribution[decile_top - 1]) + (decile_top - 1) * 0.1
+
+    return interpolation
 
 
-def run_model_on_income(model_with_apriori, i, modalities, constraint):
-    res = None
+# population functions
 
-    try:
-        K = [1]
+def validate_population(population: pd.DataFrame, modalities):
+    """
+    Validate the format and contents of the given population.
 
-        for variable in modalities:
+    Check that the population is compatible with the chosen modalities.
 
-            for modality in modalities[variable][:-1]:
+    :param population: distribution DataFrame
+    :param modalities:
+    :raises: AssertionError
+    """
 
-                K.append(constraint[variable][modality][i])
+    attributes = get_attributes(modalities)
 
-        K = np.array(K).reshape(1, len(K))
+    # { id } and commune_id mandatory ?
+    assert {*attributes} <= set(population.columns)
 
-        res = compute_rq(model_with_apriori, np.shape(K)[1], K)
+    for attribute in attributes:
+        assert population[attribute].isin(modalities[attribute]).all()
 
-        model_with_apriori.fit(K)
 
-        print("SUCCESS on income " + str(i) + " with fun=" + str(res.fun))
-    except (Exception, maxentropy.utils.DivergenceError) as e:
-        print("ERROR on income " + str(i) + " with fun=" + str(res.fun))
+def compute_crossed_modalities_frequencies(population: pd.DataFrame, modalities: dict) -> pd.DataFrame:
+    """
+    Compute the frequency of each crossed modality present in the population.
+
+    Columns other than attributes are removed from the result DataFrame, and a
+    'probability' column is added.
+
+    :param population: population DataFrame
+    :param modalities: modalities dict
+
+    :return: DataFrame of crossed modalities frequencies
+    """
+
+    attributes = get_attributes(modalities)
+
+    # group by attributes and count the number of individuals, then divide by total
+    population["count"] = 1
+    freq_df = population.groupby(attributes, as_index=False)["count"].sum()
+    freq_df["probability"] = freq_df["count"] / sum(freq_df["count"])
+    freq_df = freq_df[attributes + ["probability"]]
+
+    # remove count column
+    population.drop("count", axis=1, inplace=True)
+
+    return freq_df
 
 
 # check functions
-
 
 def compute_rq(model, nb_modalities, K):
     I = np.identity(nb_modalities)

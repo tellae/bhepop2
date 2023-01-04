@@ -1,5 +1,5 @@
 from tests.conftest import *
-from src.functions2 import *
+from src.functions import *
 import numpy as np
 
 import pytest

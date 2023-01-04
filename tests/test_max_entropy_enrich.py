@@ -19,9 +19,3 @@ def test_max_entropy_enrich():
     expected_enriched_pop = pd.read_csv("../tests/nantes_enriched.csv")
 
     assert np.all((pop == expected_enriched_pop).to_numpy())
-
-
-    # constraints_old = functions.create_constraints(MODALITIES, enrich_class.distributions, enrich_class.feature_values, enrich_class.crossed_modalities_frequencies)
-    # for attribute in MODALITIES:
-    #     for modality in MODALITIES[attribute]:
-    #         assert (constraints[attribute][modality] == constraints_old[attribute][modality]).all()
