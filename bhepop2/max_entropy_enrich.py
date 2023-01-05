@@ -6,12 +6,16 @@ from bhepop2 import utils
 from bhepop2 import functions
 import maxentropy
 import math
-from tests.conftest import MODALITIES
 
 
 class MaxEntropyEnrichment:
     """
     A class for enriching population using entropy maximisation.
+
+    Notations used in this class documentation:
+
+    - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
+    - :math:`[F_{i}, F_{i+1}]` : interval of feature values
     """
 
     #: json schema of the enrichment parameters
@@ -215,7 +219,7 @@ class MaxEntropyEnrichment:
         """
         Run optimization model on each feature value.
 
-        The resulting probabilities are the :math:`P(M_{k} | f \in [f_{i}, f_{i+1}])`.
+        The resulting probabilities are the :math:`P(M_{k} \mid f \in [F_{i}, F_{i+1}])`.
 
         :return: DataFrame containing the result probabilities
         """
@@ -242,6 +246,8 @@ class MaxEntropyEnrichment:
 
         Nothing is returned, but the result can be obtained on the model,
         for instance with self.maxentropy_model.probdist().
+
+        The computed probs are the :math:`P(M_{k} \mid f \in [F_{i}, F_{i+1}])`
 
         :param i: index of optimized feature
         """
@@ -304,9 +310,8 @@ class MaxEntropyEnrichment:
         """
         For each modality of each attribute, compute the probability of belonging to each feature interval.
 
-        P(f in [Fi, Fi+1] | Modality) = P(f in [Fi, Fi+1] | Modality) * P(Modality) / P(f in F[i, Fi+1])
-
-        :return:
+        .. math::
+            P(Modality \mid f \in [F_{i}, F_{i+1}]) = P(f \in [F_{i}, F_{i+1}] \mid Modality) \\cdot \\frac{P(Modality)}{P(f \in [F_{i}, F_{i+1}])}
         """
 
         # compute constraints on each modality
@@ -379,6 +384,14 @@ class MaxEntropyEnrichment:
         )
 
     def compute_feature_prob(self, attribute, modality):
+        """
+        Compute the probability of being in each feature interval with the given modality.
+
+        :param attribute: attribute name
+        :param modality: attribute modality
+
+        :return: DataFrame
+        """
 
         decile_tmp = self.distributions[
             self.distributions["modality"].isin([modality])
@@ -402,22 +415,17 @@ class MaxEntropyEnrichment:
 
         return prob_df
 
-    def compute_crossed_modality_probs(self):
-        """
-        For each feature interval, compute the probability of belonging to a crossed modality.
-
-        P(Mk | f in [Fi, Fi+1])
-
-        :return: DataFrame with K lines and N columns
-        """
-
     def get_feature_probs(self):
         """
         For each crossed modality, compute the probability of belonging to a feature interval.
 
         Invert the crossed modality probabilities using Bayes.
 
-        Compute P(F in [Fi, Fi+1] | Mk) = P(Mk | f in [Fi, Fi+1]) * P(Mk) / P(f in [Fi, Fi+1])
+        Compute
+
+        .. math::
+
+            P(f \in [F_{i}, F_{i+1}] \mid M_{k}) = P(M_{k} \mid f \in [F_{i}, F_{i+1}]) \\cdot \\frac{P(M_{k})}{P(f \in [F_{i}, F_{i+1}])}
 
         :return: DataFrame
         """
@@ -438,26 +446,42 @@ class MaxEntropyEnrichment:
         return res
 
     def assign_feature_value_to_pop(self):
+        """
+        Assign feature values to the population individuals using the algorithm results.
+
+        :return: enriched population DataFrame
+        """
 
         self.log("Drawing feature values for the population", lg.INFO)
 
+        # compute the probability of being in each feature interval, for each crossed modality
         res = self.get_feature_probs()
 
+        # associate each individual to a crossed modality
         self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
-
         merge = self.population.merge(
             self.crossed_modalities_frequencies,
             how="left",
             on=functions.get_attributes(self.modalities),
         )
 
+        # associate a feature value to the population individuals
         merge["feature"] = merge["index"].apply(lambda x: self.draw_feature(res, x))
 
+        # remove irrelevant columns
         merge.drop(["index", "probability"], axis=1, inplace=True)
 
         return merge
 
     def draw_feature(self, res, index):
+        """
+        Draw a feature value using the given distribution.
+
+        :param res: feature distributions by crossed modality
+        :param index: index of the crossed modality
+
+        :return: Drawn feature value
+        """
 
         # get probs
         probs = res.loc[
@@ -465,12 +489,12 @@ class MaxEntropyEnrichment:
         ].to_numpy()
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
+        # draw a feature interval using the probs
         values = list(range(len(self.feature_values)))
-
         feature_interval = random.choices(values, probs)[0]
 
+        # draw a feature value using a uniform distribution in the interval
         lower, upper = interval_values[feature_interval], interval_values[feature_interval + 1]
-
         draw = random.random()
         final = lower + round((upper - lower) * draw)
 
@@ -482,7 +506,7 @@ class MaxEntropyEnrichment:
 
         Use the global distribution of the features to interpolate the interval probabilities.
 
-        The resulting DataFrame contains P(f in [Fi, Fi+1]) for i in N
+        The resulting DataFrame contains :math:`P(f \in [F_{i}, F_{i+1}])` for i in N
 
         :return: DataFrame
         """
