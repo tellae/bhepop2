@@ -5,7 +5,7 @@ Utility functions
 import pandas as pd
 
 
-def read_filosofi(path2file: str) -> dict:
+def read_filosofi(path2file: str) -> pd.DataFrame:
     """
     Read Filosofi data
     :param path2file: path to raw xlsx file
