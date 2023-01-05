@@ -161,9 +161,7 @@ class MaxEntropyEnrichment:
         self.distributions = distributions
 
         # infer attributes and their modalities from the filtered distribution
-        # self.modalities = functions.infer_modalities_from_distributions(distributions)
-        assert MODALITIES == functions.infer_modalities_from_distributions(distributions)
-        self.modalities = MODALITIES
+        self.modalities = functions.infer_modalities_from_distributions(distributions)
 
     def _init_population(self, population):
         """
