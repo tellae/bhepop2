@@ -1,4 +1,4 @@
-from src.tools import read_filosofi
+from bhepop2.tools import read_filosofi
 
 import pandas as pd
 

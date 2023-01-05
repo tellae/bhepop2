@@ -1,4 +1,4 @@
-from src.max_entropy_enrich import MaxEntropyEnrichment
+from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
 from tests.conftest import *
 import numpy as np
 

@@ -1,5 +1,5 @@
-from src.max_entropy_enrich import MaxEntropyEnrichment
-from src.utils import *
+from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
+from bhepop2.utils import *
 from tests.conftest import *
 
 

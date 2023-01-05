@@ -6,7 +6,7 @@ See license in LICENSE.txt.
 
 import setuptools
 import os
-from src import __version__
+from bhepop2 import __version__
 
 # short description of the project
 DESC = "TODO"

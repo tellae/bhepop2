@@ -2,8 +2,8 @@ import logging as lg
 import numpy as np
 import random
 import pandas as pd
-from src import utils
-from src import functions
+from bhepop2 import utils
+from bhepop2 import functions
 import maxentropy
 import math
 from tests.conftest import MODALITIES

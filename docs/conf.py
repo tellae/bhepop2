@@ -17,7 +17,7 @@ copyright = "2023, uge-tellae"
 author = "uge-tellae"
 
 # Get the version from the __init__ module
-version_module = importlib.import_module("src.__init__")
+version_module = importlib.import_module("bhepop2.__init__")
 version = ".".join(version_module.__version__.split(".")[0:2])
 
 # The full version, including alpha/beta/rc tags
@@ -45,7 +45,7 @@ autodoc_default_options = {
 }
 
 # package directory to document with autoapi
-autoapi_dirs = ["../src"]
+autoapi_dirs = ["../bhepop2"]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

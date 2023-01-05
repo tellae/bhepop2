@@ -1,5 +1,5 @@
 from tests.conftest import *
-from src.functions import *
+from bhepop2.functions import *
 import numpy as np
 
 import pytest
