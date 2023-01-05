@@ -8,5 +8,5 @@ TODO
 .. toctree::
    :maxdepth: 4
 
-   autoapi/index
+   autoapi/bhepop2/index
 

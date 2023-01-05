@@ -30,9 +30,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
     "autoapi.extension",
-    "sphinx.ext.doctest",
     "sphinx.ext.todo",
-    "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
 ]
 
@@ -43,6 +41,9 @@ autodoc_default_options = {
     "private-members": True,
     "show-inheritance": True,
 }
+
+# The master toctree document.
+master_doc = "contents"
 
 # package directory to document with autoapi
 autoapi_dirs = ["../bhepop2"]
@@ -56,3 +57,5 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+
+todo_include_todos = True

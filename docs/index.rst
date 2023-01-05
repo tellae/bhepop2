@@ -1,16 +1,16 @@
-Documentation of Bhepop2
-========================
+Overview
+********
+
+.. todo::
+    Write documentation on :
+
+        - global goal of the package
+        - algorithm logic (cite original paper)
+        - data formats
+        - usage and examples
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
 
+For detailed documentation of the code, see the :ref:`api-ref`.
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+For more information about Bhepop2, see :ref:`this section <about>`.
