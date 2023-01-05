@@ -4,7 +4,7 @@ import pandas as pd
 
 SEED = 42
 
-PATH_INPUTS = "../data/inputs/"
+PATH_INPUTS = "data/inputs/"
 SYNTHETIC_POP = "nantes_synth_pop.csv"
 CODE_INSEE = "44109"
 MODALITIES = {
@@ -38,7 +38,7 @@ def get_synth_pop_nantes():
 
 def get_filosofi_distributions():
     df_income_attributes = read_filosofi(
-        "../data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls"
+        "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls"
     )
     filosofi = df_income_attributes.copy()
     filosofi.rename(

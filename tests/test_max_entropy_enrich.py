@@ -18,6 +18,6 @@ def test_max_entropy_enrich():
 
     # pop.to_csv("../tests/nantes_enriched.csv", index=False)
 
-    expected_enriched_pop = pd.read_csv("../tests/nantes_enriched.csv")
+    expected_enriched_pop = pd.read_csv("tests/nantes_enriched.csv")
 
     assert np.all((pop == expected_enriched_pop).to_numpy())
