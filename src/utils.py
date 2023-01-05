@@ -27,6 +27,7 @@ def log(message, level):
     # log message
     logger.log(level, message)
 
+
 def _get_logger():
     """
     Create a logger or return the current one if already instantiated.
@@ -48,6 +49,7 @@ def _get_logger():
         logger.handler_set = True
 
     return logger
+
 
 def add_defaults_and_validate_against_schema(instance, schema):
     """
@@ -74,6 +76,7 @@ def add_defaults_and_validate_against_schema(instance, schema):
         raise ValueError(msg) from None
 
     return result
+
 
 def read_filosofi(
     path: str, sheet: str, code_insee: str, xls_file="FILO_DISP_COM.xls", skip_rows=5

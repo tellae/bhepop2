@@ -1,4 +1,3 @@
-
 import logging as lg
 import numpy as np
 import random
@@ -8,6 +7,7 @@ from src import functions
 import maxentropy
 import math
 from tests.conftest import MODALITIES
+
 
 class MaxEntropyEnrichment:
     """
@@ -19,44 +19,57 @@ class MaxEntropyEnrichment:
         "title": "MaxEntropyEnrichment parameters",
         "description": "Parameters of a population enrichment run",
         "type": "object",
-        "required": ["abs_minimum", "relative_maximum", "maxentropy_algorithm", "maxentropy_verbose"],
+        "required": [
+            "abs_minimum",
+            "relative_maximum",
+            "maxentropy_algorithm",
+            "maxentropy_verbose",
+        ],
         "properties": {
             "abs_minimum": {
                 "title": "Distributions absolute minimum",
                 "description": "Minimum value of the feature distributions. This value is absolute, and thus equal for all distributions.",
                 "type": "number",
-                "default": 0
+                "default": 0,
             },
             "relative_maximum": {
                 "title": "Distributions relative maximum",
                 "description": "Maximum value of the feature distributions. This value is relative and will be multiplied to the last value of each distribution.",
                 "type": "number",
                 "default": 1.5,
-                "minimum": 1
+                "minimum": 1,
             },
             "delta_min": {
                 "title": "Minimum feature value delta",
                 "description": "Minimum size of the feature intervals",
                 "type": ["null", "number"],
                 "default": None,
-                "minimum": 0
+                "minimum": 0,
             },
             "maxentropy_algorithm": {
                 "title": "maxentropy algorithm parameter",
                 "description": "Algorithm used for maxentropy optimization. See maxentropy BaseModel class for more information.",
                 "type": "string",
-                "default": "Nelder-Mead"
+                "default": "Nelder-Mead",
             },
             "maxentropy_verbose": {
                 "title": "maxentropy verbose parameter",
                 "description": "Verbosity of maxentropy library. Set to 1 for detailed output.",
                 "enum": [0, 1],
-                "default": 0
-            }
-        }
+                "default": 0,
+            },
+        },
     }
 
-    def __init__(self, population: pd.DataFrame, distributions: pd.DataFrame, commune_id: str, attribute_selection: list=None, parameters=None, seed=None):
+    def __init__(
+        self,
+        population: pd.DataFrame,
+        distributions: pd.DataFrame,
+        commune_id: str,
+        attribute_selection: list = None,
+        parameters=None,
+        seed=None,
+    ):
         """
         Synthetic population enrichment class.
 
@@ -84,7 +97,9 @@ class MaxEntropyEnrichment:
         self.modalities = None
 
         # execution parameters
-        self.parameters = utils.add_defaults_and_validate_against_schema(parameters, self.parameters_schema)
+        self.parameters = utils.add_defaults_and_validate_against_schema(
+            parameters, self.parameters_schema
+        )
 
         # commune id
         self.commune_id = commune_id
@@ -135,8 +150,12 @@ class MaxEntropyEnrichment:
 
         # filter distributions using the attribute selection
         if attribute_selection is not None:
-            distributions = distributions[distributions["attribute"].isin(attribute_selection + ["all"])]
-            assert set(distributions["attribute"]) == set(attribute_selection + ["all"]), "Mismatch between distribution attributes and attribute selection"
+            distributions = distributions[
+                distributions["attribute"].isin(attribute_selection + ["all"])
+            ]
+            assert set(distributions["attribute"]) == set(
+                attribute_selection + ["all"]
+            ), "Mismatch between distribution attributes and attribute selection"
 
         # set distributions
         self.distributions = distributions
@@ -164,12 +183,20 @@ class MaxEntropyEnrichment:
     def main(self):
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
-        self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(self.population, self.modalities)
-        self.log("Number of crossed modalities present in the population: {}".format(len(self.crossed_modalities_frequencies)))
+        self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(
+            self.population, self.modalities
+        )
+        self.log(
+            "Number of crossed modalities present in the population: {}".format(
+                len(self.crossed_modalities_frequencies)
+            )
+        )
 
         # compute vector of feature values
         self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = functions.compute_feature_values(self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"])
+        self.feature_values = functions.compute_feature_values(
+            self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"]
+        )
         self.log("Number of feature values: {}".format(len(self.feature_values)))
 
         # create and set the maxentropy model
@@ -238,7 +265,6 @@ class MaxEntropyEnrichment:
             self.log("Error while running optimization model on feature " + str(i), lg.ERROR)
             raise e
 
-
     def create_samplespace_and_features(self):
         """
         Create model samplespace and features from variables and their modalities.
@@ -254,7 +280,9 @@ class MaxEntropyEnrichment:
         attributes = functions.get_attributes(self.modalities)
 
         # get samplespace
-        samplespace_reducted = self.crossed_modalities_frequencies[attributes].to_dict(orient="records")
+        samplespace_reducted = self.crossed_modalities_frequencies[attributes].to_dict(
+            orient="records"
+        )
 
         features = []
 
@@ -268,7 +296,6 @@ class MaxEntropyEnrichment:
         for attribute in attributes:
             for modality in self.modalities[attribute][:-1]:
                 features.append(functions.modality_feature(attribute, modality))
-
 
         def function_prior_prob(x_array):
             return self.crossed_modalities_frequencies["probability"].apply(math.log)
@@ -292,7 +319,9 @@ class MaxEntropyEnrichment:
         for attribute in attributes:
             ech[attribute] = {}
             # get attribute frequency
-            attribute_freq = self.crossed_modalities_frequencies.groupby([attribute], as_index=False)["probability"].sum()
+            attribute_freq = self.crossed_modalities_frequencies.groupby(
+                [attribute], as_index=False
+            )["probability"].sum()
             for modality in self.modalities[attribute]:
                 self.log("Computing constraints for modality: {} = {}".format(attribute, modality))
 
@@ -307,9 +336,7 @@ class MaxEntropyEnrichment:
                     probability = 0
                 df = ech[attribute][modality]
                 # prob(feature | modality) * frequency // ech is modified inplace here
-                df["prob"] = df["prob"] * float(
-                    probability
-                )
+                df["prob"] = df["prob"] * float(probability)
 
             ech_list = []
             for modality in ech[attribute]:
@@ -337,7 +364,11 @@ class MaxEntropyEnrichment:
         """
 
         # create data structures describing the optimization problem
-        samplespace, model_features_functions, prior_log_pdf = self.create_samplespace_and_features()
+        (
+            samplespace,
+            model_features_functions,
+            prior_log_pdf,
+        ) = self.create_samplespace_and_features()
 
         # create and set MinDivergenceModel instance
         self.maxentropy_model = maxentropy.MinDivergenceModel(
@@ -351,7 +382,10 @@ class MaxEntropyEnrichment:
 
     def compute_feature_prob(self, attribute, modality):
 
-        decile_tmp = self.distributions[self.distributions["modality"].isin([modality]) & self.distributions["attribute"].isin([attribute])]
+        decile_tmp = self.distributions[
+            self.distributions["modality"].isin([modality])
+            & self.distributions["attribute"].isin([attribute])
+        ]
 
         total_population_decile_tmp = [
             float(decile_tmp["D1"]),
@@ -378,8 +412,6 @@ class MaxEntropyEnrichment:
 
         :return: DataFrame with K lines and N columns
         """
-
-
 
     def get_feature_probs(self):
         """
@@ -415,7 +447,11 @@ class MaxEntropyEnrichment:
 
         self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
 
-        merge = self.population.merge(self.crossed_modalities_frequencies, how="left", on=functions.get_attributes(self.modalities))
+        merge = self.population.merge(
+            self.crossed_modalities_frequencies,
+            how="left",
+            on=functions.get_attributes(self.modalities),
+        )
 
         merge["feature"] = merge["index"].apply(lambda x: self.draw_feature(res, x))
 
@@ -426,22 +462,21 @@ class MaxEntropyEnrichment:
     def draw_feature(self, res, index):
 
         # get probs
-        probs = res.loc[index, ].to_numpy()
+        probs = res.loc[
+            index,
+        ].to_numpy()
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
         values = list(range(len(self.feature_values)))
 
-
-
         feature_interval = random.choices(values, probs)[0]
 
-        lower, upper = interval_values[feature_interval], interval_values[feature_interval+1]
+        lower, upper = interval_values[feature_interval], interval_values[feature_interval + 1]
 
         draw = random.random()
-        final = lower + round((upper - lower)*draw)
+        final = lower + round((upper - lower) * draw)
 
         return final
-
 
     def compute_feature_probabilities_from_distributions(self):
         """

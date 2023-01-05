@@ -4,12 +4,14 @@ import numpy as np
 
 import pytest
 
+
 def test_get_attributes():
     """
     Test that the returned attributes are correct.
     """
 
     assert get_attributes(MODALITIES) == ["ownership", "age", "size", "family_comp"]
+
 
 def test_modality_feature():
     """
@@ -26,6 +28,7 @@ def test_modality_feature():
     assert feature({attribute: modality_0})
     assert not feature({attribute: modality_1})
 
+
 def test_compute_crossed_modalities_frequencies():
     """
     Test the crossed modalities frequencies have the correct columns and sum to 1.
@@ -36,6 +39,7 @@ def test_compute_crossed_modalities_frequencies():
     assert list(freq_df.columns) == get_attributes(MODALITIES) + ["probability"]
     assert np.isclose(freq_df["probability"].sum(), 1)
 
+
 def test_infer_modalities_from_distributions():
     filosofi = get_filosofi_distributions()
     filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
@@ -44,6 +48,7 @@ def test_infer_modalities_from_distributions():
 
     assert isinstance(modalities, dict)
     assert "all" not in modalities
+
 
 @pytest.mark.parametrize(
     "delta_min, expected_length",
@@ -64,6 +69,7 @@ def test_compute_feature_values(delta_min, expected_length):
 
     assert len(feature_values) == expected_length
     assert feature_values == sorted(feature_values)
+
 
 def test_interpolate_feature_prob():
     """

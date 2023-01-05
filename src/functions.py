@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 from scipy.optimize import linprog
@@ -7,6 +6,7 @@ COMMUNE_ID = "commune_id"
 
 
 # generic functions
+
 
 def get_attributes(modalities: dict) -> list:
     """
@@ -28,12 +28,15 @@ def modality_feature(attribute, modality) -> callable:
 
     :return: feature checking function
     """
+
     def feature(x):
         return x[attribute] == modality
 
     return feature
 
+
 # distribution functions
+
 
 def validate_distributions(distributions):
     """
@@ -44,7 +47,9 @@ def validate_distributions(distributions):
     """
 
     # we could validate the distributions (positive, monotony ?)
-    assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(distributions.columns)
+    assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(
+        distributions.columns
+    )
 
 
 def infer_modalities_from_distributions(distributions: pd.DataFrame):
@@ -57,7 +62,7 @@ def infer_modalities_from_distributions(distributions: pd.DataFrame):
     """
 
     # group by attribute and get all modality values
-    modalities = distributions.groupby('attribute')['modality'].apply(list).to_dict()
+    modalities = distributions.groupby("attribute")["modality"].apply(list).to_dict()
 
     # remove global distribution
     if "all" in modalities:
@@ -66,7 +71,9 @@ def infer_modalities_from_distributions(distributions: pd.DataFrame):
     return modalities
 
 
-def compute_feature_values(distribution: pd.DataFrame, relative_maximum: float, delta_min=None) -> list:
+def compute_feature_values(
+    distribution: pd.DataFrame, relative_maximum: float, delta_min=None
+) -> list:
     """
     Compute the list of feature values that will define the assignment intervals.
 
@@ -87,9 +94,7 @@ def compute_feature_values(distribution: pd.DataFrame, relative_maximum: float, 
     deciles["D10"] = deciles["D9"] * relative_maximum
 
     # restraint columns to distribution values and get vector
-    deciles = deciles[
-        list(map(lambda a: "D" + str(a), list(range(1, 11))))
-    ]
+    deciles = deciles[list(map(lambda a: "D" + str(a), list(range(1, 11))))]
     vec_all = list(deciles.to_numpy().flatten())
 
     # sort values vector
@@ -128,6 +133,7 @@ def compute_features_prob(feature_values: list, distribution: list):
 
     return probs_df
 
+
 def interpolate_feature_prob(feature_value: float, distribution: list):
     """
     Linear interpolation of a feature value probability.
@@ -155,6 +161,7 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
 
 # population functions
 
+
 def validate_population(population: pd.DataFrame, modalities):
     """
     Validate the format and contents of the given population.
@@ -175,7 +182,9 @@ def validate_population(population: pd.DataFrame, modalities):
         assert population[attribute].isin(modalities[attribute]).all()
 
 
-def compute_crossed_modalities_frequencies(population: pd.DataFrame, modalities: dict) -> pd.DataFrame:
+def compute_crossed_modalities_frequencies(
+    population: pd.DataFrame, modalities: dict
+) -> pd.DataFrame:
     """
     Compute the frequency of each crossed modality present in the population.
 
@@ -203,6 +212,7 @@ def compute_crossed_modalities_frequencies(population: pd.DataFrame, modalities:
 
 
 # check functions
+
 
 def compute_rq(model, nb_modalities, K):
     I = np.identity(nb_modalities)
