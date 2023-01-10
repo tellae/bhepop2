@@ -32,6 +32,7 @@ extensions = [
     "autoapi.extension",
     "sphinx.ext.todo",
     "sphinx.ext.mathjax",
+    "sphinxcontrib.mermaid",
 ]
 
 # autdoc config value

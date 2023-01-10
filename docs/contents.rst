@@ -1,5 +1,5 @@
-Documentation of Starling
-=========================
+Documentation of Bhepop2
+========================
 
 
 .. toctree::
@@ -7,6 +7,7 @@ Documentation of Starling
    :caption: Contents:
 
    index
+   algorithm
    inputs
    apiref
    about

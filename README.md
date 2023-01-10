@@ -6,7 +6,7 @@ In many cases, practitioners only have access to aggregate data for important so
 
 This package treats the problem to enrich an initial synthetic population with aggregate data given uner the form of a distribution like deciles or quartiles.
 
-This packaage is based on a methodology called Bhepop2 (Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization) and theoritically described, justified and discussed in 
+This package is based on a methodology called Bhepop2 (Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization) and theoritically described, justified and discussed in 
 
 * Boyam Fabrice Yaméogo, Pierre-Olivier Vandanjon, Pierre Hankach, Pascal Gastineau. Methodology for Adding a Variable to a Synthetic Population from Aggregate Data: Example of the Income Variable. 2021. ⟨hal-03282111⟩. Paper in review. 
  https://hal.archives-ouvertes.fr/hal-03282111
@@ -18,7 +18,6 @@ Vocabularies
 * Attributes refer to  information in the initial sample or in the aggregate data as : age, profession, sex, etc. 
 * Modalities are the partition of  one attribues : sex has in  our case study two modalities : female and male.
 * Cross Modalities are the intersection of two or more modalities as : female and above 65 years old.
-* 
 * Variable of interest are the degrees fo freedom of the opimization problem.
 * Variables refer to the usuel meaning of variables in a computer program.
 
