@@ -199,7 +199,8 @@ class MaxEntropyEnrichment:
         self.feature_values = functions.compute_feature_values(
             self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"]
         )
-        self.log("Number of feature values: {}".format(len(self.feature_values)))
+        self.nb_features = len(self.feature_values)
+        self.log("Number of feature values: {}".format(self.nb_features))
 
         # create and set the maxentropy model
         self.log("Creating optimization model", lg.INFO)
@@ -227,7 +228,7 @@ class MaxEntropyEnrichment:
         res = pd.DataFrame()
 
         # loop on features
-        for i in range(len(self.feature_values)):
+        for i in range(self.nb_features):
             # run optimization model on the current feature
             self.log("Running optimization model on feature " + str(i))
             self.run_model_on_feature(i)
@@ -441,8 +442,31 @@ class MaxEntropyEnrichment:
         for i in range(len(res)):
             last = res.iloc[i, -1]
             res.iloc[i, :] = res.iloc[i, :] / last
+        pd.set_option('display.max_rows', 500)
+        pd.set_option('display.max_columns', 500)
+        pd.set_option('display.width', 1000)
 
-        return res
+        cumulated_results = res.to_numpy()
+
+        matrix = []
+
+        for l in range(len(res)):
+            last = cumulated_results[l, 0]
+            row = [last]
+            for i in range(1, self.nb_features):
+                prob = cumulated_results[l, i] - last
+                if prob <= 0:
+                    row.append(np.nan)
+                else:
+                    row.append(prob)
+
+                last = cumulated_results[l, i]
+
+            matrix.append(row)
+
+        probs = pd.DataFrame(matrix, columns=res.columns)
+
+        return probs
 
     def assign_feature_value_to_pop(self):
         """
@@ -488,17 +512,16 @@ class MaxEntropyEnrichment:
         ].to_numpy()
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
-        probs2 = [probs[0]]
-        values2 = [interval_values[0]]
-        last = probs[0]
-        for i in range(1, len(probs)):
-            prob = probs[i] - last
-            if prob <= 0:
+        # get the non-null probs and values
+        probs2 = []
+        values2 = []
+        for i in range(len(probs)):
+            if pd.isna(probs[i]):
                 continue
-
-            probs2.append(prob)
+            probs2.append(probs[i])
             values2.append(interval_values[i])
-            last = probs[i]
+
+        # TODO : probs don't sum to 1, this isn't reassuring
 
         # draw a feature interval using the probs
         values = list(range(len(values2)))
