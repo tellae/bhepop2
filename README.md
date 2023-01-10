@@ -1,11 +1,44 @@
 # synthetic-pop-uge-tellae
 
+A common problem in generating a representative synthetic population is that not all attributes of interest are present in the sample.  The purpose is to enrich the synthetic population with additional attributes, after the synthetic population is generated from the original sample.
+
+In many cases, practitioners only have access to aggregate data for important socio-demographic attributes, such as income, education level. 
+
+This package treats the problem to enrich an initial synthetic population with aggregate data given uner the form of a distribution like deciles or quartiles.
+
+This packaage is based on a methodology called Bhepop2 (Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization) and theoritically described, justified and discussed in 
+
+* Boyam Fabrice Yaméogo, Pierre-Olivier Vandanjon, Pierre Hankach, Pascal Gastineau. Methodology for Adding a Variable to a Synthetic Population from Aggregate Data: Example of the Income Variable. 2021. ⟨hal-03282111⟩. Paper in review. 
+ https://hal.archives-ouvertes.fr/hal-03282111
+
+* Boyam Fabrice Yaméogo, Méthodologie de calibration d’un modèle multimodal des déplacements pour l’évaluation des externalités environnementales à partir de données ouvertes (open data) : le cas de l’aire urbaine de Nantes [Thèse], 2021
+https://www.theses.fr/2021NANT4085
+
+Vocabularies
+* Attributes refer to  information in the initial sample or in the aggregate data as : age, profession, sex, etc. 
+* Modalities are the partition of  one attribues : sex has in  our case study two modalities : female and male.
+* Cross Modalities are the intersection of two or more modalities as : female and above 65 years old.
+* 
+* Variable of interest are the degrees fo freedom of the opimization problem.
+* Variables refer to the usuel meaning of variables in a computer program.
+
+
 ## Project goal
+
+This package treats the problem to enrich an initial synthetic population with aggregate data given uner the form of a distribution like deciles or quartiles.  The sources of the algorithme are twofold :
+
+* a synthesis population of households with socio-conomic attibutes : age, sex, tenant or owner, profession, etc.
+* Aggregate data storing  the decile or quartiles for some modalities common with the synthesis population : the level of income is betweenn 1000 and 2000 euros for 10% of people under 30 years old, 
+
+
+
 
 TODO : Explain
 - project goal and contents
 - how distributions are used to link information to the population
 - distinction between variables and modalities
+
+
 
 ```mermaid
 flowchart LR
