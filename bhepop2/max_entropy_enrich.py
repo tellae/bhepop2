@@ -304,7 +304,7 @@ class MaxEntropyEnrichment:
         """
         For each modality of each attribute, compute the probability of belonging to each feature interval.
 
-        P(f in [Fi, Fi+1] | Modality) = P(f in [Fi, Fi+1] | Modality) * P(Modality) / P(f in F[i, Fi+1])
+        P(f < Fi | Modality) = P(f < Fi | Modality) * P(Modality) / P(f < Fi)
 
         :return:
         """
@@ -417,7 +417,7 @@ class MaxEntropyEnrichment:
 
         Invert the crossed modality probabilities using Bayes.
 
-        Compute P(F in [Fi, Fi+1] | Mk) = P(Mk | f in [Fi, Fi+1]) * P(Mk) / P(f in [Fi, Fi+1])
+        Compute P(f < Fi | Mk) = P(Mk | f < Fi) * P(f < Fi) / P(Mk)
 
         :return: DataFrame
         """
@@ -429,11 +429,10 @@ class MaxEntropyEnrichment:
         nb_columns = len(res.columns)
         for i in range(nb_columns):
             res[i] = res[i] * feature_probs["prob"][i]
-        res["sum"] = res.sum(axis=1)
-        for i in range(nb_columns):
-            res[i] = res[i] / res["sum"]
-        res["sum"] = res.sum(axis=1)
-        res.drop("sum", axis=1, inplace=True)
+
+        for i in range(len(res)):
+            last = res.iloc[i, -1]
+            res.iloc[i, :] = res.iloc[i, :] / last
 
         return res
 
@@ -458,16 +457,36 @@ class MaxEntropyEnrichment:
         return merge
 
     def draw_feature(self, res, index):
+        print(index)
 
         # get probs
         probs = res.loc[
             index,
         ].to_numpy()
+        print(probs)
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
-        values = list(range(len(self.feature_values)))
+        probs2 = [probs[0]]
+        values2 = [interval_values[0]]
+        last = probs[0]
+        for i in range(1, len(probs)):
 
-        feature_interval = random.choices(values, probs)[0]
+            print(i)
+            prob = probs[i] - last
+            print(prob)
+            if prob <= 0:
+                continue
+
+            probs2.append(prob)
+            values2.append(interval_values[i])
+            last = probs[i]
+
+
+        values = list(range(len(values2)))
+        print(values2)
+        print(probs2)
+        print(sum(probs2))
+        feature_interval = random.choices(values, probs2)[0]
 
         lower, upper = interval_values[feature_interval], interval_values[feature_interval + 1]
 
