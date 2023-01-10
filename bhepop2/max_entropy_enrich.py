@@ -15,7 +15,7 @@ class MaxEntropyEnrichment:
     Notations used in this class documentation:
 
     - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
-    - :math:`[F_{i}, F_{i+1}]` : interval of feature values
+    - :math:`F_{i}` : feature value i
     """
 
     #: json schema of the enrichment parameters
@@ -219,7 +219,7 @@ class MaxEntropyEnrichment:
         """
         Run optimization model on each feature value.
 
-        The resulting probabilities are the :math:`P(M_{k} \mid f \in [F_{i}, F_{i+1}])`.
+        The resulting probabilities are the :math:`P(M_{k} \mid f < F_{i})`.
 
         :return: DataFrame containing the result probabilities
         """
@@ -247,7 +247,7 @@ class MaxEntropyEnrichment:
         Nothing is returned, but the result can be obtained on the model,
         for instance with self.maxentropy_model.probdist().
 
-        The computed probs are the :math:`P(M_{k} \mid f \in [F_{i}, F_{i+1}])`
+        The computed probs are the :math:`P(M_{k} \mid f < F_{i})`
 
         :param i: index of optimized feature
         """
@@ -311,7 +311,7 @@ class MaxEntropyEnrichment:
         For each modality of each attribute, compute the probability of belonging to each feature interval.
 
         .. math::
-            P(Modality \mid f \in [F_{i}, F_{i+1}]) = P(f \in [F_{i}, F_{i+1}] \mid Modality) \\cdot \\frac{P(Modality)}{P(f \in [F_{i}, F_{i+1}])}
+            P(Modality \mid f < F_{i}) = P(f < F_{i} \mid Modality) \\cdot \\frac{P(Modality)}{P(f < F_{i})}
         """
 
         # compute constraints on each modality
@@ -425,7 +425,7 @@ class MaxEntropyEnrichment:
 
         .. math::
 
-            P(f \in [F_{i}, F_{i+1}] \mid M_{k}) = P(M_{k} \mid f \in [F_{i}, F_{i+1}]) \\cdot \\frac{P(M_{k})}{P(f \in [F_{i}, F_{i+1}])}
+            P(f < F_{i} \mid M_{k}) = P(M_{k} \mid f < F_{i}) \\cdot \\frac{P(f < F_{i})}{P(M_{k})}
 
         :return: DataFrame
         """
@@ -437,11 +437,10 @@ class MaxEntropyEnrichment:
         nb_columns = len(res.columns)
         for i in range(nb_columns):
             res[i] = res[i] * feature_probs["prob"][i]
-        res["sum"] = res.sum(axis=1)
-        for i in range(nb_columns):
-            res[i] = res[i] / res["sum"]
-        res["sum"] = res.sum(axis=1)
-        res.drop("sum", axis=1, inplace=True)
+
+        for i in range(len(res)):
+            last = res.iloc[i, -1]
+            res.iloc[i, :] = res.iloc[i, :] / last
 
         return res
 
@@ -489,9 +488,21 @@ class MaxEntropyEnrichment:
         ].to_numpy()
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
+        probs2 = [probs[0]]
+        values2 = [interval_values[0]]
+        last = probs[0]
+        for i in range(1, len(probs)):
+            prob = probs[i] - last
+            if prob <= 0:
+                continue
+
+            probs2.append(prob)
+            values2.append(interval_values[i])
+            last = probs[i]
+
         # draw a feature interval using the probs
-        values = list(range(len(self.feature_values)))
-        feature_interval = random.choices(values, probs)[0]
+        values = list(range(len(values2)))
+        feature_interval = random.choices(values, probs2)[0]
 
         # draw a feature value using a uniform distribution in the interval
         lower, upper = interval_values[feature_interval], interval_values[feature_interval + 1]
@@ -506,7 +517,7 @@ class MaxEntropyEnrichment:
 
         Use the global distribution of the features to interpolate the interval probabilities.
 
-        The resulting DataFrame contains :math:`P(f \in [F_{i}, F_{i+1}])` for i in N
+        The resulting DataFrame contains :math:`P(f < F_{i})` for i in N
 
         :return: DataFrame
         """
