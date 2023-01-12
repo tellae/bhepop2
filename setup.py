@@ -6,7 +6,7 @@ See license in LICENSE.txt.
 
 import setuptools
 import os
-from src import __version__
+from bhepop2 import __version__
 
 # short description of the project
 DESC = "TODO"
@@ -44,5 +44,5 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=CLASSIFIERS,
     python_requires=">=3.6",
-    install_requires=INSTALL_REQUIRES
+    install_requires=INSTALL_REQUIRES,
 )

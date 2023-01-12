@@ -1,10 +1,10 @@
-from src.tools import read_filosofi
+from bhepop2.tools import read_filosofi
 
 import pandas as pd
 
 SEED = 42
 
-PATH_INPUTS = "../data/inputs/"
+PATH_INPUTS = "data/inputs/"
 SYNTHETIC_POP = "nantes_synth_pop.csv"
 CODE_INSEE = "44109"
 MODALITIES = {
@@ -26,17 +26,19 @@ parameters = {
     "relative_maximum": 1.5,
     "maxentropy_algorithm": "Nelder-Mead",
     "maxentropy_verbose": 0,
-    "delta_min": 1000
+    "delta_min": 1000,
 }
+
 
 def get_synth_pop_nantes():
     synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
 
     return synth_pop
 
+
 def get_filosofi_distributions():
     df_income_attributes = read_filosofi(
-        "../data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls"
+        "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls"
     )
     filosofi = df_income_attributes.copy()
     filosofi.rename(

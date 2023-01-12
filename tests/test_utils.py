@@ -1,6 +1,7 @@
-from src.max_entropy_enrich import MaxEntropyEnrichment
-from src.utils import *
+from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
+from bhepop2.utils import *
 from tests.conftest import *
+
 
 def test_add_defaults_and_validate_against_schema():
     """
@@ -9,4 +10,3 @@ def test_add_defaults_and_validate_against_schema():
 
     instance = parameters
     add_defaults_and_validate_against_schema(instance, MaxEntropyEnrichment.parameters_schema)
-

@@ -12,12 +12,12 @@ sys.path.insert(0, os.path.abspath("../"))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'bhepop2'
-copyright = '2023, uge-tellae'
-author = 'uge-tellae'
+project = "bhepop2"
+copyright = "2023, uge-tellae"
+author = "uge-tellae"
 
 # Get the version from the __init__ module
-version_module = importlib.import_module("src.__init__")
+version_module = importlib.import_module("bhepop2.__init__")
 version = ".".join(version_module.__version__.split(".")[0:2])
 
 # The full version, including alpha/beta/rc tags
@@ -30,10 +30,9 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
     "autoapi.extension",
-    "sphinx.ext.doctest",
     "sphinx.ext.todo",
-    "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
+    "sphinxcontrib.mermaid",
 ]
 
 # autdoc config value
@@ -44,16 +43,20 @@ autodoc_default_options = {
     "show-inheritance": True,
 }
 
+# The master toctree document.
+master_doc = "contents"
+
 # package directory to document with autoapi
-autoapi_dirs = ["../src"]
+autoapi_dirs = ["../bhepop2"]
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
+
+todo_include_todos = True
