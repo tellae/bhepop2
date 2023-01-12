@@ -1,4 +1,4 @@
-# synthetic-pop-uge-tellae
+# The Bhepop2 package
 
 A common problem in generating a representative synthetic population is that not all attributes of interest are present in the sample.  The purpose is to enrich the synthetic population with additional attributes, after the synthetic population is generated from the original sample.
 
