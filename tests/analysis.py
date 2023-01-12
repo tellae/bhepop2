@@ -36,7 +36,7 @@ def plot_analysis(attribute, modality):
         barmode="group",
         title=f"{attribute} - {modality}",
     )
-    #fig.write_image(f"{PLOTDIR}/{attribute}_{modality}.png", format="png", width=1000, height=600)
+    # fig.write_image(f"{PLOTDIR}/{attribute}_{modality}.png", format="png", width=1000, height=600)
     fig.write_html(f"{PLOTDIR}/{attribute}_{modality}.html")
 
 

@@ -442,9 +442,9 @@ class MaxEntropyEnrichment:
         for i in range(len(res)):
             last = res.iloc[i, -1]
             res.iloc[i, :] = res.iloc[i, :] / last
-        pd.set_option('display.max_rows', 500)
-        pd.set_option('display.max_columns', 500)
-        pd.set_option('display.width', 1000)
+        pd.set_option("display.max_rows", 500)
+        pd.set_option("display.max_columns", 500)
+        pd.set_option("display.width", 1000)
 
         cumulated_results = res.to_numpy()
 
