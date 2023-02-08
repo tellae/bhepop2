@@ -6,11 +6,13 @@ import pandas as pd
 import logging as lg
 from jsonschema import validate, ValidationError
 
-#: logging level (see logging library)
+# log utils (see logging library)
+
+#: logging level
 logger_level = lg.DEBUG
 
-#: logger name (see logging library)
-logger_name = "hepop2_logger"
+#: logger name
+logger_name = "bhepop2_logger"
 
 
 def log(message, level):
@@ -50,6 +52,8 @@ def _get_logger():
     return logger
 
 
+# json schema utils
+
 def add_defaults_and_validate_against_schema(instance, schema):
     """
     Add default values then validate instance against the schema.
@@ -76,6 +80,8 @@ def add_defaults_and_validate_against_schema(instance, schema):
 
     return result
 
+
+# read filosofi utils
 
 def read_filosofi(
     path: str, sheet: str, code_insee: str, xls_file="FILO_DISP_COM.xls", skip_rows=5
