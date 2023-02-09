@@ -54,6 +54,7 @@ def _get_logger():
 
 # json schema utils
 
+
 def add_defaults_and_validate_against_schema(instance, schema):
     """
     Add default values then validate instance against the schema.
@@ -82,6 +83,7 @@ def add_defaults_and_validate_against_schema(instance, schema):
 
 
 # read filosofi utils
+
 
 def read_filosofi(
     path: str, sheet: str, code_insee: str, xls_file="FILO_DISP_COM.xls", skip_rows=5
