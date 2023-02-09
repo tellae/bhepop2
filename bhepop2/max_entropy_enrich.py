@@ -507,9 +507,7 @@ class MaxEntropyEnrichment:
         """
 
         # get probs
-        probs = res.loc[
-            index,
-        ].to_numpy()
+        probs = res.loc[index,].to_numpy()
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
         # get the non-null probs and values

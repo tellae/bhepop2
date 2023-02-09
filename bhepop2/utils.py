@@ -39,7 +39,6 @@ def _get_logger():
 
     # if a logger with this name is not already set up
     if not getattr(logger, "handler_set", None):
-
         logger.propagate = False
         formatter = lg.Formatter("%(message)s")
         stream_handler = lg.StreamHandler()
