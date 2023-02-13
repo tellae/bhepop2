@@ -13,7 +13,7 @@ def test_max_entropy_enrich():
         synth_pop, filosofi, list(MODALITIES.keys()), parameters=parameters, seed=SEED
     )
 
-    enrich_class.main()
+    enrich_class.optimise()
 
     pop = enrich_class.assign_feature_value_to_pop()
 

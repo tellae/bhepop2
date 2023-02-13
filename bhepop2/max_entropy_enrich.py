@@ -176,7 +176,7 @@ class MaxEntropyEnrichment:
 
         # TODO ? remove distributions unused by population
 
-    def main(self):
+    def optimise(self):
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
         self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(
