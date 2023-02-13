@@ -4,9 +4,40 @@
 Inputs
 ######
 
+The two main inputs of the enrichment algorithm are the population to be enriched and the aggregated data.
+
+They are linked by a set of **attributes** and their possible values (**modalities**). For instance:
+
+- ``Ownership``, with values in [``Owner``, ``Tenant``]
+- ``Age``, with values in [``0_29``, ..., ``60_74``, ``75_or_more``]
+
 **********
 Population
 **********
+
+This is the **synthetic population to be enriched** using Bhepop2.
+
+It is represented by a DataFrame containing one entry per population individual.
+Columns of the same name than the attributes are expected. Entries contain a value (modality) of each attribute.
+
+.. list-table:: Example of population table
+   :widths: 25 25 25
+   :header-rows: 1
+
+   * - ...
+     - ownership
+     - age
+   * - ...
+     - Owner
+     - 60_74
+   * - ...
+     - Tenant
+     - 0_29
+   * - ...
+     - Tenant
+     - 40_49
+
+Source data for the formatted population can be *Eqasim* population/households or any source of synthetic population.
 
 *************
 Distributions
@@ -53,4 +84,4 @@ They are represented by a DataFrame containing one entry per distribution. The e
     The values of the ``modality`` column define the possible values that can be taken by the corresponding attribute in
     the population data.
 
-Source data for the formatted distributions can be *INSEE* databases (*Filosofi*, ..) or other demographic data sources.
+Source data for the formatted distributions can be *INSEE* databases (*Filosofi*, ..) or other aggregated data sources.
