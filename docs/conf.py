@@ -39,7 +39,7 @@ extensions = [
 autodoc_default_options = {
     "member-order": "bysource",
     "undoc-members": True,
-    "private-members": True,
+    "private-members": False,
     "show-inheritance": True,
 }
 
