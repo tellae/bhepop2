@@ -69,7 +69,6 @@ class MaxEntropyEnrichment:
         self,
         population: pd.DataFrame,
         distributions: pd.DataFrame,
-        commune_id: str,
         attribute_selection: list = None,
         parameters=None,
         seed=None,
@@ -79,7 +78,6 @@ class MaxEntropyEnrichment:
 
         :param population: enriched population
         :param distributions: enriching data distributions
-        :param commune_id: spatial selection
         :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
         :param parameters: enrichment parameters
         :param seed: random seed
@@ -104,9 +102,6 @@ class MaxEntropyEnrichment:
         self.parameters = utils.add_defaults_and_validate_against_schema(
             parameters, self.parameters_schema
         )
-
-        # commune id
-        self.commune_id = commune_id
 
         # algorithm data
 
@@ -150,8 +145,6 @@ class MaxEntropyEnrichment:
 
         distributions = distributions.copy()
 
-        distributions = distributions.query(f"commune_id == '{self.commune_id}'")
-
         # filter distributions using the attribute selection
         if attribute_selection is not None:
             distributions = distributions[
@@ -176,8 +169,9 @@ class MaxEntropyEnrichment:
         :param population: input population DataFrame
         """
         self.log("Setup population data")
+
         functions.validate_population(population, self.modalities)
-        # population = population.query(f"commune_id == '{self.commune_id}'")
+
         self.population = population.copy()
 
         # TODO ? remove distributions unused by population

@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import linprog
 
-COMMUNE_ID = "commune_id"
-
 
 # generic functions
 
@@ -175,7 +173,6 @@ def validate_population(population: pd.DataFrame, modalities):
 
     attributes = get_attributes(modalities)
 
-    # { id } and commune_id mandatory ?
     assert {*attributes} <= set(population.columns)
 
     for attribute in attributes:

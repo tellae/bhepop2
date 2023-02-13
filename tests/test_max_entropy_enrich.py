@@ -7,9 +7,10 @@ def test_max_entropy_enrich():
     synth_pop = get_synth_pop_nantes()
 
     filosofi = get_filosofi_distributions()
+    filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
 
     enrich_class = MaxEntropyEnrichment(
-        synth_pop, filosofi, CODE_INSEE, list(MODALITIES.keys()), parameters=parameters, seed=SEED
+        synth_pop, filosofi, list(MODALITIES.keys()), parameters=parameters, seed=SEED
     )
 
     enrich_class.main()
