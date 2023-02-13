@@ -40,7 +40,7 @@ setuptools.setup(
     author="UGE & Tellae",
     author_email="contact@tellae.fr",
     description=DESC,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     long_description=LONG_DESC,
     url="https://github.com/tellae/bhepop2",
     packages=setuptools.find_packages(),
