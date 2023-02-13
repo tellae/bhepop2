@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.abspath("../"))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "bhepop2"
-copyright = "2023, uge-tellae"
-author = "uge-tellae"
+copyright = "2023, UGE & Tellae"
+author = "UGE & Tellae"
 
 # Get the version from the __init__ module
 version_module = importlib.import_module("bhepop2.__init__")
@@ -39,7 +39,7 @@ extensions = [
 autodoc_default_options = {
     "member-order": "bysource",
     "undoc-members": True,
-    "private-members": True,
+    "private-members": False,
     "show-inheritance": True,
 }
 

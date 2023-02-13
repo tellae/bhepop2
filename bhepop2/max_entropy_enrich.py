@@ -69,7 +69,6 @@ class MaxEntropyEnrichment:
         self,
         population: pd.DataFrame,
         distributions: pd.DataFrame,
-        commune_id: str,
         attribute_selection: list = None,
         parameters=None,
         seed=None,
@@ -79,7 +78,6 @@ class MaxEntropyEnrichment:
 
         :param population: enriched population
         :param distributions: enriching data distributions
-        :param commune_id: spatial selection
         :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
         :param parameters: enrichment parameters
         :param seed: random seed
@@ -104,9 +102,6 @@ class MaxEntropyEnrichment:
         self.parameters = utils.add_defaults_and_validate_against_schema(
             parameters, self.parameters_schema
         )
-
-        # commune id
-        self.commune_id = commune_id
 
         # algorithm data
 
@@ -150,8 +145,6 @@ class MaxEntropyEnrichment:
 
         distributions = distributions.copy()
 
-        distributions = distributions.query(f"commune_id == '{self.commune_id}'")
-
         # filter distributions using the attribute selection
         if attribute_selection is not None:
             distributions = distributions[
@@ -176,13 +169,14 @@ class MaxEntropyEnrichment:
         :param population: input population DataFrame
         """
         self.log("Setup population data")
+
         functions.validate_population(population, self.modalities)
-        # population = population.query(f"commune_id == '{self.commune_id}'")
+
         self.population = population.copy()
 
         # TODO ? remove distributions unused by population
 
-    def main(self):
+    def optimise(self):
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
         self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(
@@ -231,7 +225,7 @@ class MaxEntropyEnrichment:
         for i in range(self.nb_features):
             # run optimization model on the current feature
             self.log("Running optimization model on feature " + str(i))
-            self.run_model_on_feature(i)
+            self._run_model_on_feature(i)
 
             # store result in DataFrame
             res.loc[:, i] = self.maxentropy_model.probdist()
@@ -241,7 +235,7 @@ class MaxEntropyEnrichment:
 
         return res
 
-    def run_model_on_feature(self, i):
+    def _run_model_on_feature(self, i):
         """
         Run the optimization model on the feature of index i.
 
@@ -270,7 +264,7 @@ class MaxEntropyEnrichment:
             self.log("Error while running optimization model on feature " + str(i), lg.ERROR)
             raise e
 
-    def create_samplespace_and_features(self):
+    def _create_samplespace_and_features(self):
         """
         Create model samplespace and features from variables and their modalities.
 
@@ -330,7 +324,7 @@ class MaxEntropyEnrichment:
                 self.log("Computing constraints for modality: {} = {}".format(attribute, modality))
 
                 # compute probability of each feature interval when being in a modality
-                ech[attribute][modality] = self.compute_feature_prob(attribute, modality)
+                ech[attribute][modality] = self._compute_feature_prob(attribute, modality)
 
                 # multiply frequencies by each element of ech_compo
                 value = attribute_freq[attribute_freq[attribute].isin([modality])]
@@ -372,7 +366,7 @@ class MaxEntropyEnrichment:
             samplespace,
             model_features_functions,
             prior_log_pdf,
-        ) = self.create_samplespace_and_features()
+        ) = self._create_samplespace_and_features()
 
         # create and set MinDivergenceModel instance
         self.maxentropy_model = maxentropy.MinDivergenceModel(
@@ -384,7 +378,7 @@ class MaxEntropyEnrichment:
             algorithm=self.parameters["maxentropy_algorithm"],
         )
 
-    def compute_feature_prob(self, attribute, modality):
+    def _compute_feature_prob(self, attribute, modality):
         """
         Compute the probability of being in each feature interval with the given modality.
 
@@ -416,7 +410,7 @@ class MaxEntropyEnrichment:
 
         return prob_df
 
-    def get_feature_probs(self):
+    def _get_feature_probs(self):
         """
         For each crossed modality, compute the probability of belonging to a feature interval.
 
@@ -431,7 +425,7 @@ class MaxEntropyEnrichment:
         :return: DataFrame
         """
 
-        feature_probs = self.compute_feature_probabilities_from_distributions()
+        feature_probs = self._compute_feature_probabilities_from_distributions()
 
         res = self.optim_result
 
@@ -478,7 +472,7 @@ class MaxEntropyEnrichment:
         self.log("Drawing feature values for the population", lg.INFO)
 
         # compute the probability of being in each feature interval, for each crossed modality
-        res = self.get_feature_probs()
+        res = self._get_feature_probs()
 
         # associate each individual to a crossed modality
         self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
@@ -489,14 +483,14 @@ class MaxEntropyEnrichment:
         )
 
         # associate a feature value to the population individuals
-        merge["feature"] = merge["index"].apply(lambda x: self.draw_feature(res, x))
+        merge["feature"] = merge["index"].apply(lambda x: self._draw_feature(res, x))
 
         # remove irrelevant columns
         merge.drop(["index", "probability"], axis=1, inplace=True)
 
         return merge
 
-    def draw_feature(self, res, index):
+    def _draw_feature(self, res, index):
         """
         Draw a feature value using the given distribution.
 
@@ -532,7 +526,7 @@ class MaxEntropyEnrichment:
 
         return final
 
-    def compute_feature_probabilities_from_distributions(self):
+    def _compute_feature_probabilities_from_distributions(self):
         """
         Compute the probability of each feature interval.
 
