@@ -80,28 +80,3 @@ def add_defaults_and_validate_against_schema(instance, schema):
         raise ValueError(msg) from None
 
     return result
-
-
-# read filosofi utils
-
-
-def read_filosofi(
-    path: str, sheet: str, code_insee: str, xls_file="FILO_DISP_COM.xls", skip_rows=5
-):
-    """
-    Read Filosofi data from raw xls file
-
-    :param path: full path to directory containing xls file
-    :param sheet: sheet name where to get data
-    :param code_insee: insee code of selected municipality
-    :param xls_file: name of xls file
-    :param skip_rows: number of rows to skip in sheet
-    :return: data frame of data
-    """
-    data_frame = pd.read_excel(
-        path + xls_file,
-        sheet_name=sheet,
-        skiprows=skip_rows,
-    ).query("CODGEO=='" + code_insee + "'")
-
-    return data_frame
