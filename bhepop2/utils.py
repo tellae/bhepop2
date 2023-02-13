@@ -9,7 +9,7 @@ from jsonschema import validate, ValidationError
 # log utils (see logging library)
 
 #: logging level
-logger_level = lg.DEBUG
+logger_level = lg.WARNING
 
 #: logger name
 logger_name = "bhepop2_logger"
