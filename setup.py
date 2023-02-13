@@ -12,8 +12,13 @@ from bhepop2 import __version__
 DESC = "Synthetic population enrichment from aggregated data"
 
 # get long description from README.md
-with open("README.md", "r") as fh:
-    LONG_DESC = fh.read()
+LONG_DESC = """
+A common problem in **generating a representative synthetic population** is that not all attributes of interest are present in the sample.  The purpose is to enrich the synthetic population with additional attributes, after the synthetic population is generated from the original sample.
+In many cases, practitioners only have access to aggregated data for important socio-demographic attributes, such as income, education level. 
+This package treats the problem to **enrich an initial synthetic population from an aggregated data** provided in the form of a distribution like deciles or quartiles.
+
+Read the [docs](https://bhepop2.readthedocs.io/en/latest/) or see the code and examples on [GitHub](https://github.com/tellae/bhepop2).
+"""
 
 # list of classifiers from the PyPI classifiers trove
 CLASSIFIERS = [
