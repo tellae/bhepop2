@@ -1,8 +1,10 @@
 """
 Utility functions
 """
-
+import numpy as np
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 
 def read_filosofi(path2file: str) -> pd.DataFrame:
@@ -304,3 +306,46 @@ def add_attributes_households(population: pd.DataFrame, households: pd.DataFrame
     ]
 
     return df_households
+
+
+def compute_distribution(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute decile distribution
+
+    :param df
+
+    return dataframe of deciles
+    """
+    return pd.DataFrame(
+        {
+            "feature": np.percentile(
+                df["feature"],
+                np.arange(0, 100, 10),
+            )[1:],
+            "decile": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
+        }
+    )
+
+
+def plot_analysis(df: pd.DataFrame, attribute: str, modality: str, observed_name: str = "Filosofi"):
+    """
+    Comparison plot between reference data and simulation
+
+    :param df
+    :param attribute
+    :param modality
+    :param observed named
+
+    return plotly figure
+    """
+    df = df.copy()[(df["attribute"] == attribute) & (df["modality"] == modality)]
+    fig = px.line(x=df[observed_name], y=df[observed_name], color_discrete_sequence=["black"])
+    fig.add_trace(go.Scatter(x=df[observed_name], y=df["bhepop2"], mode="markers", name="bhepop2"))
+    fig.update_layout(
+        showlegend=False,
+        title=f"Modality {modality} from attribute {attribute}",
+        xaxis_title=f"Observation ({observed_name})",
+        yaxis_title="Simulation (bhepop2)",
+    )
+
+    return fig

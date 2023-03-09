@@ -1,5 +1,6 @@
 from tests.conftest import *
 from bhepop2.functions import *
+from bhepop2.tools import compute_distribution
 import numpy as np
 
 import pytest
@@ -82,3 +83,24 @@ def test_interpolate_feature_prob():
 
     assert isinstance(interpolation, float)
     assert 0.3 <= interpolation <= 0.4
+
+
+def test_compute_distribution():
+    """
+    Test that computed distribution is exactly the same as expected
+    """
+    expected = [
+        {"feature": 10330.0, "decile": "D1"},
+        {"feature": 12958.7, "decile": "D2"},
+        {"feature": 14799.0, "decile": "D3"},
+        {"feature": 16629.4, "decile": "D4"},
+        {"feature": 18402.3, "decile": "D5"},
+        {"feature": 21097.6, "decile": "D6"},
+        {"feature": 24057.4, "decile": "D7"},
+        {"feature": 28264.0, "decile": "D8"},
+        {"feature": 34245.5, "decile": "D9"},
+    ]
+
+    df = pd.read_csv("tests/nantes_enriched.csv")
+
+    assert compute_distribution(df).round(1).to_dict(orient="records") == expected
