@@ -133,3 +133,7 @@ dmypy.json
 
 # VScode settings
 .vscode/
+
+# Generated html notebooks
+*.html
+*_files/
