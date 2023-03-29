@@ -573,7 +573,9 @@ class MaxEntropyEnrichment:
         utils.log(message, level)
 
     log = staticmethod(log)
-    
+
+############  New class wich inherits from     MaxEntropyEnrichment POV ###############
+
 class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
     """
     A class for enriching population using entropy maximisation.
