@@ -615,7 +615,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         self,
         population: pd.DataFrame,
         distributions: pd.DataFrame,
-        attribute_selection: list = None,
+        modalities: dict = None,
         parameters=None,
         seed=None,
     ):
@@ -642,8 +642,11 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         self.distributions = None
 
         # attributes considered for the assignment, with their modalities
-        # { attribute: [modalities] }
+        # { attribute: [modalities] 
         self.modalities = None
+        if  modalities is not None:
+            self.modalities = modalities
+            self.attribute_selection = functions.get_attributes(modalities)
 
         # execution parameters
         self.parameters = utils.add_defaults_and_validate_against_schema(
@@ -672,7 +675,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
 
         self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
-        self._init_distributions(distributions, attribute_selection)
+        self._init_distributions(distributions, self.attribute_selection)
         self._init_population(population)
         
         
@@ -1072,7 +1075,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
 
         # draw a feature interval using the probs
         # values = list(range(len(values2))) POV 
-        final = random.choices(values, probs2)[0]
+        final = random.choices(values2, probs2)[0]
         #feature_interval = random.choices(values, probs2)[0]
 
         # draw a feature value using a uniform distribution in the interval POV

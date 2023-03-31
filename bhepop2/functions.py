@@ -199,7 +199,7 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
 # population functions
 
 
-def validate_population(population: pd.DataFrame, modalities):
+def validate_population(population: pd.DataFrame, modalities: dict):
     """
     Validate the format and contents of the given population.
 
@@ -209,8 +209,9 @@ def validate_population(population: pd.DataFrame, modalities):
     :param modalities:
     :raises: AssertionError
     """
-
+    
     attributes = get_attributes(modalities)
+    
 
     assert {*attributes} <= set(population.columns)
 
