@@ -29,7 +29,9 @@ def test_modality_feature():
     assert not feature({attribute: modality_1})
 
 
-def test_compute_crossed_modalities_frequencies(synthetic_population_nantes, test_modalities, test_attributes):
+def test_compute_crossed_modalities_frequencies(
+    synthetic_population_nantes, test_modalities, test_attributes
+):
     """
     Test the crossed modalities frequencies have the correct columns and sum to 1.
     """
@@ -53,12 +55,16 @@ def test_infer_modalities_from_distributions(filosofi_distributions_nantes):
         (1000, 41),
     ],
 )
-def test_compute_feature_values(delta_min, expected_length, filosofi_distributions_nantes, test_attributes):
+def test_compute_feature_values(
+    delta_min, expected_length, filosofi_distributions_nantes, test_attributes
+):
     """
     Test that the feature values list have the correct length and is sorted.
     """
 
-    filo = filosofi_distributions_nantes[filosofi_distributions_nantes["attribute"].isin(test_attributes)]
+    filo = filosofi_distributions_nantes[
+        filosofi_distributions_nantes["attribute"].isin(test_attributes)
+    ]
     feature_values = compute_feature_values(filo, 1.5, delta_min)
 
     assert len(feature_values) == expected_length

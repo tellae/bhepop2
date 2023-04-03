@@ -4,10 +4,19 @@ import numpy as np
 import pandas as pd
 
 
-def test_max_entropy_enrich(synthetic_population_nantes, filosofi_distributions_nantes, test_modalities, test_parameters, test_seed):
-
+def test_max_entropy_enrich(
+    synthetic_population_nantes,
+    filosofi_distributions_nantes,
+    test_modalities,
+    test_parameters,
+    test_seed,
+):
     enrich_class = MaxEntropyEnrichment(
-        synthetic_population_nantes, filosofi_distributions_nantes, list(test_modalities.keys()), parameters=test_parameters, seed=test_seed
+        synthetic_population_nantes,
+        filosofi_distributions_nantes,
+        list(test_modalities.keys()),
+        parameters=test_parameters,
+        seed=test_seed,
     )
 
     enrich_class.optimise()
