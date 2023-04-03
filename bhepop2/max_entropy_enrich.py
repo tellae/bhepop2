@@ -99,6 +99,8 @@ class MaxEntropyEnrichment:
         self.modalities = None
 
         # execution parameters
+        if parameters is None:
+            parameters = dict()
         self.parameters = utils.add_defaults_and_validate_against_schema(
             parameters, self.parameters_schema
         )
