@@ -1,5 +1,7 @@
 from bhepop2.tools import read_filosofi
+from bhepop2.functions import get_attributes
 
+import pytest
 import pandas as pd
 
 SEED = 42
@@ -30,17 +32,41 @@ parameters = {
 }
 
 
-def get_synth_pop_nantes():
-    synth_pop = pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
+@pytest.fixture(scope="session")
+def test_insee_code():
+    return CODE_INSEE
 
-    return synth_pop
+
+@pytest.fixture(scope="session")
+def test_modalities():
+    return MODALITIES
 
 
-def get_filosofi_distributions():
-    df_income_attributes = read_filosofi(
+@pytest.fixture(scope="session")
+def test_attributes(test_modalities):
+    return get_attributes(test_modalities)
+
+
+@pytest.fixture(scope="session")
+def test_parameters():
+    return parameters
+
+
+@pytest.fixture(scope="session")
+def test_seed():
+    return SEED
+
+
+@pytest.fixture(scope="session")
+def synthetic_population_nantes():
+    return pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
+
+
+@pytest.fixture(scope="session")
+def filosofi_distributions_nantes(test_insee_code):
+    filosofi = read_filosofi(
         "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls"
     )
-    filosofi = df_income_attributes.copy()
     filosofi.rename(
         columns={
             "q1": "D1",
@@ -55,5 +81,6 @@ def get_filosofi_distributions():
         },
         inplace=True,
     )
+    filosofi = filosofi.query(f"commune_id == '{test_insee_code}'")
 
     return filosofi
