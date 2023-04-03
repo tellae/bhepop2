@@ -1,16 +1,22 @@
 from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
-from tests.conftest import *
+
 import numpy as np
+import pandas as pd
 
 
-def test_max_entropy_enrich():
-    synth_pop = get_synth_pop_nantes()
-
-    filosofi = get_filosofi_distributions()
-    filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
-
+def test_max_entropy_enrich(
+    synthetic_population_nantes,
+    filosofi_distributions_nantes,
+    test_modalities,
+    test_parameters,
+    test_seed,
+):
     enrich_class = MaxEntropyEnrichment(
-        synth_pop, filosofi, list(MODALITIES.keys()), parameters=parameters, seed=SEED
+        synthetic_population_nantes,
+        filosofi_distributions_nantes,
+        list(test_modalities.keys()),
+        parameters=test_parameters,
+        seed=test_seed,
     )
 
     enrich_class.optimise()

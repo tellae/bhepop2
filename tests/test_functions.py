@@ -1,4 +1,3 @@
-from tests.conftest import *
 from bhepop2.functions import *
 from bhepop2.tools import compute_distribution
 import numpy as np
@@ -6,12 +5,12 @@ import numpy as np
 import pytest
 
 
-def test_get_attributes():
+def test_get_attributes(test_modalities):
     """
     Test that the returned attributes are correct.
     """
 
-    assert get_attributes(MODALITIES) == ["ownership", "age", "size", "family_comp"]
+    assert get_attributes(test_modalities) == ["ownership", "age", "size", "family_comp"]
 
 
 def test_modality_feature():
@@ -30,22 +29,20 @@ def test_modality_feature():
     assert not feature({attribute: modality_1})
 
 
-def test_compute_crossed_modalities_frequencies():
+def test_compute_crossed_modalities_frequencies(
+    synthetic_population_nantes, test_modalities, test_attributes
+):
     """
     Test the crossed modalities frequencies have the correct columns and sum to 1.
     """
-    synth_pop = get_synth_pop_nantes()
-    freq_df = compute_crossed_modalities_frequencies(synth_pop, MODALITIES)
+    freq_df = compute_crossed_modalities_frequencies(synthetic_population_nantes, test_modalities)
 
-    assert list(freq_df.columns) == get_attributes(MODALITIES) + ["probability"]
+    assert list(freq_df.columns) == test_attributes + ["probability"]
     assert np.isclose(freq_df["probability"].sum(), 1)
 
 
-def test_infer_modalities_from_distributions():
-    filosofi = get_filosofi_distributions()
-    filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
-
-    modalities = infer_modalities_from_distributions(filosofi)
+def test_infer_modalities_from_distributions(filosofi_distributions_nantes):
+    modalities = infer_modalities_from_distributions(filosofi_distributions_nantes)
 
     assert isinstance(modalities, dict)
     assert "all" not in modalities
@@ -58,15 +55,17 @@ def test_infer_modalities_from_distributions():
         (1000, 41),
     ],
 )
-def test_compute_feature_values(delta_min, expected_length):
+def test_compute_feature_values(
+    delta_min, expected_length, filosofi_distributions_nantes, test_attributes
+):
     """
     Test that the feature values list have the correct length and is sorted.
     """
 
-    filosofi = get_filosofi_distributions()
-    filosofi = filosofi.query(f"commune_id == '{CODE_INSEE}'")
-    filosofi = filosofi[filosofi["attribute"].isin(get_attributes(MODALITIES))]
-    feature_values = compute_feature_values(filosofi, 1.5, delta_min)
+    filo = filosofi_distributions_nantes[
+        filosofi_distributions_nantes["attribute"].isin(test_attributes)
+    ]
+    feature_values = compute_feature_values(filo, 1.5, delta_min)
 
     assert len(feature_values) == expected_length
     assert feature_values == sorted(feature_values)
