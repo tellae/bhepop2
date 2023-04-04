@@ -571,5 +571,3 @@ class MaxEntropyEnrichment:
         utils.log(message, level)
 
     log = staticmethod(log)
-    
-class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
