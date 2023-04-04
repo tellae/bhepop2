@@ -615,7 +615,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         self,
         population: pd.DataFrame,
         distributions: pd.DataFrame,
-        modalities: dict = None,
+        attribute_selection: list = None,
         parameters=None,
         seed=None,
     ):
@@ -644,9 +644,6 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         # attributes considered for the assignment, with their modalities
         # { attribute: [modalities] 
         self.modalities = None
-        if  modalities is not None:
-            self.modalities = modalities
-            self.attribute_selection = functions.get_attributes(modalities)
 
         # execution parameters
         self.parameters = utils.add_defaults_and_validate_against_schema(
@@ -675,9 +672,8 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
 
         self.log("Initialisation of enrichment algorithm data", lg.INFO)
 
-        self._init_distributions(distributions, self.attribute_selection)
-        self._init_population(population)
-        
+        self._init_distributions(distributions, attribute_selection)
+        self._init_population(population)        
         
     def _init_distributions(self, distributions, attribute_selection):
         """
@@ -964,7 +960,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         #]
 
         # prob_df = functions.compute_features_prob(self.feature_values, total_population_decile_tmp) POV Modification
-        
+
         return prob_df
 
     def _get_feature_probs(self):
