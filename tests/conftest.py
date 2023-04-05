@@ -64,7 +64,7 @@ def synthetic_population_nantes():
 
 @pytest.fixture(scope="session")
 def filosofi_distributions_nantes(test_insee_code):
-    filosofi = read_filosofi("data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls")
+    filosofi = read_filosofi("data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls", "15")
     filosofi.rename(
         columns={
             "q1": "D1",

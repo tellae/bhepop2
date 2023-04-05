@@ -7,10 +7,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-def read_filosofi(path2file: str) -> pd.DataFrame:
+def read_filosofi(path2file: str, year) -> pd.DataFrame:
     """
     Read Filosofi data
     :param path2file: path to raw xlsx file
+    :param year: data year
 
     :return dict of dataframe per attribute
     """
@@ -96,7 +97,7 @@ def read_filosofi(path2file: str) -> pd.DataFrame:
             data = excel_df[sheet][
                 ["CODGEO"]
                 + [
-                    "%sD%d15" % (col_pattern, q) if q != 5 else col_pattern + "Q215"
+                    "%sD%d" % (col_pattern, q) + year if q != 5 else col_pattern + "Q2" + year
                     for q in range(1, 10)
                 ]
             ]
