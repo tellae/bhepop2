@@ -1,6 +1,17 @@
 import numpy as np
 
+# TODO : refactor this function in a class similar to MaxEntropyEnrichment
 def uniform_enrich(population, distributions, abs_minimum, relative_maximum, seed):
+    """
+
+    :param population: synthetic population
+    :param distributions: decile distribution (modality 'all')
+    :param abs_minimum: see MaxEntropyEnrich parameters
+    :param relative_maximum: see MaxEntropyEnrichment parameters
+    :param seed: random seed
+
+    :return: enriched population
+    """
 
     rng = np.random.RandomState(seed)
 
