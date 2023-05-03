@@ -256,6 +256,7 @@ class MaxEntropyEnrichment_gradient:
         """
 
         res = pd.DataFrame()
+        lambda_=[]
 
         # loop on features
         for i in range(self.nb_features):
@@ -272,14 +273,22 @@ class MaxEntropyEnrichment_gradient:
             sparse_matrix=self.maxentropy_model.F.copy()
             dense_matrix=sparse_matrix.toarray()
             q=self.crossed_modalities_frequencies["probability"].values.copy()
+            dimension = len(q)  # Dimension du vecteur
+            value = 1 / dimension  # Valeur pour toutes les composantes
+            q = np.full(dimension, value)  # Création du vecteur
+
             eta=self.maxentropy_model.K.copy()
             #q=q.flatten()
             #q.shape=(q.shape[0],1)
             #eta=eta.flatten()
             #eta.shape=(eta.shape[0],1)
-            lambda_=np.zeros(nl-1)
             maxiter=[1000]
-            res.loc[:, i] = self.minxent_gradient(q=q,G=dense_matrix,eta=eta,lambda_=lambda_,maxiter=maxiter) # POV
+            if len(lambda_) == 0: # POV : utilisation du précédent lambda
+                lambda_=np.zeros(nl-1) # If no lambda have been computed, lambda is initialized in zero
+            else:
+                lambda_=np.array(lambda_) # else the previous lambda is usesed
+
+            res.loc[:, i], lambda_ = self.minxent_gradient(q=q,G=dense_matrix,eta=eta,lambda_=lambda_,maxiter=maxiter) # POV
             self.test=1
 
             # reset dual for next iterations
@@ -747,7 +756,7 @@ class MaxEntropyEnrichment_gradient:
         test_pierreolivier = G.dot(pk)-eta
         print(norm(test_pierreolivier)/norm(eta))
         print(np.sum(pk))
-        return pk.tolist() 
+        return pk.tolist(),lambda_.tolist()
     minxent_gradient = staticmethod(minxent_gradient)
 
     
@@ -822,7 +831,7 @@ PARAMETERS = {
     "relative_maximum": 1.2,
     "maxentropy_algorithm": "Nelder-Mead",
     "maxentropy_verbose": 0,
-    "delta_min": 1000,
+    "delta_min": 500,
 }
 
 # Optimisation preparation
