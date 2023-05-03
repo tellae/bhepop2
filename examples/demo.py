@@ -273,9 +273,10 @@ class MaxEntropyEnrichment_gradient:
             sparse_matrix=self.maxentropy_model.F.copy()
             dense_matrix=sparse_matrix.toarray()
             q=self.crossed_modalities_frequencies["probability"].values.copy()
-            dimension = len(q)  # Dimension du vecteur
-            value = 1 / dimension  # Valeur pour toutes les composantes
-            q = np.full(dimension, value)  # Création du vecteur
+            ######### Change to start a prior uniform  tested but it does not change a lot the results
+            #dimension = len(q)  # Dimension du vecteur
+            #value = 1 / dimension  # Valeur pour toutes les composantes
+            #q = np.full(dimension, value)  # Création du vecteur
 
             eta=self.maxentropy_model.K.copy()
             #q=q.flatten()
