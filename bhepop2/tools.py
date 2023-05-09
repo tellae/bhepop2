@@ -328,25 +328,33 @@ def compute_distribution(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def plot_analysis(df: pd.DataFrame, attribute: str, modality: str, observed_name: str = "Filosofi"):
+def plot_analysis_compare(
+    df: pd.DataFrame,
+    attribute: str,
+    modality: str,
+    observed_name: str = "Filosofi",
+    simulated_name: list = ["bhepop2"],
+):
     """
     Comparison plot between reference data and simulation
-
     :param df
     :param attribute
     :param modality
     :param observed named
-
     return plotly figure
     """
     df = df.copy()[(df["attribute"] == attribute) & (df["modality"] == modality)]
     fig = px.line(x=df[observed_name], y=df[observed_name], color_discrete_sequence=["black"])
-    fig.add_trace(go.Scatter(x=df[observed_name], y=df["bhepop2"], mode="markers", name="bhepop2"))
+    # add simulated names
+    for simulated in simulated_name:
+        fig.add_trace(
+            go.Scatter(x=df[observed_name], y=df[simulated], mode="markers", name=simulated)
+        )
+    # configure plot
     fig.update_layout(
-        showlegend=False,
         title=f"Modality {modality} from attribute {attribute}",
         xaxis_title=f"Observation ({observed_name})",
-        yaxis_title="Simulation (bhepop2)",
+        yaxis_title="Simulation",
     )
 
     return fig
