@@ -219,13 +219,13 @@ class MaxEntropyEnrichment_gradient:
             # value = 1 / dimension  # Valeur pour toutes les composantes
             # q = np.full(dimension, value)  # Création du vecteur
 
-            K = [1]
+            k = [1]
             for attribute in self.modalities:
                 for modality in self.modalities[attribute][:-1]:
-                    K.append(self.constraints[attribute][modality][i])
-            K = np.array([K])
+                    k.append(self.constraints[attribute][modality][i])
+            k = np.array([k])
 
-            res.loc[:, i], lambda_ = minxent_gradient(q=q, G=self.crossed_modalities_matrix, eta=K, lambda_=lambda_,
+            res.loc[:, i], lambda_ = minxent_gradient(q=q, matrix=self.crossed_modalities_matrix, eta=k, lambda_=lambda_,
                                                       maxiter=1000)
 
         return res
