@@ -6,23 +6,25 @@ import logging as lg
 
 
 def minxent_gradient(q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_: np.ndarray, maxiter: int):
-    q = q.astype(float)
-    matrix = matrix.astype(float)
-    eta = eta.astype(float)
-    lambda_ = lambda_.astype(float)
+    # remove first constraint
     matrix = matrix.copy()[1:, :]
     eta = eta.copy()[:, 1:]
+
+    # get array size
     ncons, nproba = matrix.shape
     q = q.reshape(nproba, 1)
     lambda_ = lambda_.reshape(ncons, 1)
     eta = eta.reshape(ncons, 1)
 
-    iter_general = 0
+    # remove ?
     Lagrangians = []
 
+    # move to const ?
     common_ratio_descending = 0.5
     common_ratio_ascending = 2.0
 
+    # loop until maximum iteration number or convergence
+    iter_general = 0
     dist = 1
     while iter_general <= maxiter and dist >= 1e-08:
         iter_general += 1
