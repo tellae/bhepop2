@@ -70,9 +70,6 @@ class MaxEntropyEnrichment_gradient:
         :param seed: random seed
         """
 
-        # POV
-        self.test = 0
-
         # random seed (maybe use a random generator instead)
         self.seed = seed
         if seed is not None:
@@ -103,6 +100,9 @@ class MaxEntropyEnrichment_gradient:
 
         # frequency of each crossed modality present in the population
         self.crossed_modalities_frequencies = None
+
+        # crossed modalities matrix
+        self.crossed_modalities_matrix = None
 
         # optimization constraints
         self.constraints = None
@@ -202,35 +202,16 @@ class MaxEntropyEnrichment_gradient:
         :return: DataFrame containing the result probabilities
         """
 
-        (
-            samplespace,
-            model_features_functions,
-            prior_log_pdf,
-        ) = self._create_samplespace_and_features()
-
-        nb_lines = len(model_features_functions)
-        nb_cols = len(samplespace)
-
-        self.log("Computing matrix defining constraints")
-        constraints_matrix = np.zeros((nb_lines, nb_cols))
-        for i, f_i in enumerate(model_features_functions):
-            for j in range(nb_cols):
-                f_i_x = f_i(samplespace[j])
-                if f_i_x != 0:
-                    constraints_matrix[i, j] = f_i_x
+        self.crossed_modalities_matrix = self._compute_crossed_modalities_matrix()
+        nb_lines, nb_cols = self.crossed_modalities_matrix.shape
 
         res = pd.DataFrame()
-        lambda_ = []
+        lambda_ = np.zeros(nb_lines - 1)
 
         # loop on features
         for i in range(self.nb_features):
-            # run optimization model on the current feature POV
-            # self.log("Running optimization model on feature " + str(i))
-            self.log("Running GRADIENT optimization model on feature " + str(i))
-
-            # store result in DataFrame
-            # POV
-            # res.loc[:, i] = self.maxentropy_model.probdist() POV mettre en place un autre monde :-)
+            # run optimization model on the current feature
+            self.log("Running optimization algorithm on feature " + str(i))
 
             q = self.crossed_modalities_frequencies["probability"].values.copy()
             ######### Change to start a prior uniform  tested but it does not change a lot the results
@@ -242,32 +223,25 @@ class MaxEntropyEnrichment_gradient:
             for attribute in self.modalities:
                 for modality in self.modalities[attribute][:-1]:
                     K.append(self.constraints[attribute][modality][i])
-            K = np.array(K).reshape(1, len(K))
+            K = np.array([K])
 
-            # q=q.flatten()
-            # q.shape=(q.shape[0],1)
-            # eta=eta.flatten()
-            # eta.shape=(eta.shape[0],1)
-            maxiter = [1000]
-            if len(lambda_) == 0:  # POV : utilisation du précédent lambda
-                lambda_ = np.zeros(nb_lines - 1)  # If no lambda have been computed, lambda is initialized in zero
-            else:
-                lambda_ = np.array(lambda_)  # else the previous lambda is usesed
-            res.loc[:, i], lambda_ = minxent_gradient(q=q, G=constraints_matrix, eta=K, lambda_=lambda_,
-                                                      maxiter=maxiter)  # POV
-            self.test = 1
+            res.loc[:, i], lambda_ = minxent_gradient(q=q, G=self.crossed_modalities_matrix, eta=K, lambda_=lambda_,
+                                                      maxiter=[1000])
+            lambda_ = np.array(lambda_)
 
         return res
 
-    def _create_samplespace_and_features(self):
+    def _compute_crossed_modalities_matrix(self):
         """
-        Create model samplespace and features from variables and their modalities.
+        Compute crossed modalities matrix for the present modalities.
 
-        features: list of feature functions
-        samplespace: model samplespace
-        prior_log_pdf: prior function
+        A reducted samplespace is evaluated from the crossed modalities present in the
+        population. Functions describing each modality are then applied to elements of
+        this samplespace.
 
-        :return: samplespace, features, prior function
+        For each modality m and sample c, M(m, c) is 1 if c has modality m, 0 otherwise.
+
+        :return: crossed_modalities_matrix describing crossed modalities
         """
 
         # samplespace is the set of all possible combinations
@@ -291,10 +265,22 @@ class MaxEntropyEnrichment_gradient:
             for modality in self.modalities[attribute][:-1]:
                 features.append(functions.modality_feature(attribute, modality))
 
+        nb_lines = len(features)
+        nb_cols = len(samplespace_reducted)
+
+        crossed_modalities_matrix = np.zeros((nb_lines, nb_cols))
+        for i, f_i in enumerate(features):
+            for j in range(nb_cols):
+                f_i_x = f_i(samplespace_reducted[j])
+                if f_i_x != 0:
+                    crossed_modalities_matrix[i, j] = f_i_x
+
+        return crossed_modalities_matrix
+
+    def get_prior_prob(self):
         def function_prior_prob(x_array):
             return self.crossed_modalities_frequencies["probability"].apply(math.log)
-
-        return samplespace_reducted, features, function_prior_prob
+        return function_prior_prob
 
     def _compute_constraints(self):
         """
