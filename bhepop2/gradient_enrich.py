@@ -226,8 +226,7 @@ class MaxEntropyEnrichment_gradient:
             K = np.array([K])
 
             res.loc[:, i], lambda_ = minxent_gradient(q=q, G=self.crossed_modalities_matrix, eta=K, lambda_=lambda_,
-                                                      maxiter=[1000])
-            lambda_ = np.array(lambda_)
+                                                      maxiter=1000)
 
         return res
 
