@@ -7,7 +7,7 @@ from bhepop2 import utils
 from bhepop2 import functions
 import math
 from .optim import minxent_gradient
-import maxentropy
+
 
 class MaxEntropyEnrichment_gradient:
     """
@@ -202,25 +202,22 @@ class MaxEntropyEnrichment_gradient:
         :return: DataFrame containing the result probabilities
         """
 
-        # (
-        #     samplespace,
-        #     model_features_functions,
-        #     prior_log_pdf,
-        # ) = self._create_samplespace_and_features()
-        #
-        # nb_lines = len(model_features_functions)
-        # nb_cols = len(samplespace)
-        #
-        # self.log("Computing matrix defining constraints")
-        # constraints_matrix = np.zeros((nb_lines, nb_cols))
-        # for i, f_i in enumerate(model_features_functions):
-        #     for j in range(nb_cols):
-        #         f_i_x = f_i(samplespace[j])
-        #         if f_i_x != 0:
-        #             constraints_matrix[i, j] = f_i_x
-        #
-        # print(constraints_matrix)
-        # print(constraints_matrix.shape)
+        (
+            samplespace,
+            model_features_functions,
+            prior_log_pdf,
+        ) = self._create_samplespace_and_features()
+
+        nb_lines = len(model_features_functions)
+        nb_cols = len(samplespace)
+
+        self.log("Computing matrix defining constraints")
+        constraints_matrix = np.zeros((nb_lines, nb_cols))
+        for i, f_i in enumerate(model_features_functions):
+            for j in range(nb_cols):
+                f_i_x = f_i(samplespace[j])
+                if f_i_x != 0:
+                    constraints_matrix[i, j] = f_i_x
 
         res = pd.DataFrame()
         lambda_ = []
@@ -234,13 +231,6 @@ class MaxEntropyEnrichment_gradient:
             # store result in DataFrame
             # POV
             # res.loc[:, i] = self.maxentropy_model.probdist() POV mettre en place un autre monde :-)
-
-            maxentropy_model = self._create_maxentropy_model()
-
-            size_constrains_matrix = maxentropy_model.F.shape
-            nl = size_constrains_matrix[0]  # numbrt of lines i.e. number of lagrangians
-            sparse_matrix = maxentropy_model.F.copy()
-            dense_matrix = sparse_matrix.toarray()
 
             q = self.crossed_modalities_frequencies["probability"].values.copy()
             ######### Change to start a prior uniform  tested but it does not change a lot the results
@@ -260,36 +250,14 @@ class MaxEntropyEnrichment_gradient:
             # eta.shape=(eta.shape[0],1)
             maxiter = [1000]
             if len(lambda_) == 0:  # POV : utilisation du précédent lambda
-                lambda_ = np.zeros(nl - 1)  # If no lambda have been computed, lambda is initialized in zero
+                lambda_ = np.zeros(nb_lines - 1)  # If no lambda have been computed, lambda is initialized in zero
             else:
                 lambda_ = np.array(lambda_)  # else the previous lambda is usesed
-            res.loc[:, i], lambda_ = minxent_gradient(q=q, G=dense_matrix, eta=K, lambda_=lambda_,
-                                                           maxiter=maxiter)  # POV
+            res.loc[:, i], lambda_ = minxent_gradient(q=q, G=constraints_matrix, eta=K, lambda_=lambda_,
+                                                      maxiter=maxiter)  # POV
             self.test = 1
 
         return res
-
-    def _create_maxentropy_model(self):
-        """
-        Create and set a MinDivergenceModel instance on the given parameters.
-        """
-
-        # create data structures describing the optimization problem
-        (
-            samplespace,
-            model_features_functions,
-            prior_log_pdf,
-        ) = self._create_samplespace_and_features()
-
-        # create and set MinDivergenceModel instance
-        return maxentropy.MinDivergenceModel(
-            model_features_functions,
-            samplespace,
-            vectorized=False,
-            verbose=0,
-            prior_log_pdf=prior_log_pdf,
-            algorithm=self.parameters["maxentropy_algorithm"],
-        )
 
     def _create_samplespace_and_features(self):
         """
