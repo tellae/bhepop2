@@ -308,7 +308,7 @@ def add_attributes_households(population: pd.DataFrame, households: pd.DataFrame
 
     return df_households
 
-def add_size_attribute(population: pd.DataFrame, values_map:callable=lambda x: str(x) + "_pers" if x < 5 else "5_pers_or_more", person_id:str="person_id", household_id:str="household_id", column_name:str="size"):
+def add_household_size_attribute(population: pd.DataFrame, values_map:callable=lambda x: str(x) + "_pers" if x < 5 else "5_pers_or_more", person_id:str= "person_id", household_id:str= "household_id", column_name:str= "size"):
     """
     Add a size attribute to the given synthetic population.
 
