@@ -82,3 +82,11 @@ def filosofi_distributions_nantes(test_insee_code):
     filosofi = filosofi.query(f"commune_id == '{test_insee_code}'")
 
     return filosofi
+
+@pytest.fixture(scope="session")
+def eqasim_population():
+    return pd.read_csv(PATH_INPUTS + "eqasim_population_0.001.csv", sep=";")
+
+@pytest.fixture(scope="session")
+def eqasim_households():
+    return pd.read_csv(PATH_INPUTS + "eqasim_households_0.001.csv", sep=";")

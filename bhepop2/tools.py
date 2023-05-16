@@ -308,6 +308,45 @@ def add_attributes_households(population: pd.DataFrame, households: pd.DataFrame
 
     return df_households
 
+def add_size_attribute(population: pd.DataFrame, values_map:callable=lambda x: str(x) + "_pers" if x < 5 else "5_pers_or_more", person_id:str="person_id", household_id:str="household_id", column_name:str="size"):
+    """
+    Add a size attribute to the given synthetic population.
+
+    Even though we add the attribute at a person's level,
+    its value is related to the household (we add household size).
+
+    :param population: synthetic population df
+    :param values_map: mapping function applied to household count
+    :param person_id: name of the column containing persons' ids
+    :param household_id: name of the column containing households' ids
+    :param column_name: name of the added column
+
+    :return: population with new 'column_name' column containing household size
+    """
+
+    # make copy of original population
+    population = population.copy()
+
+    # count number of persons by household
+    df_households_size = population.groupby([household_id], as_index=False)[
+        person_id
+    ].count()
+
+    # rename size column
+    df_households_size.rename(columns={person_id: column_name}, inplace=True)
+
+    # map size values if a mapper is provided
+    if values_map is not None:
+        df_households_size[column_name] = df_households_size[column_name].apply(
+            values_map
+        )
+
+    # add size column to population table
+    population = pd.merge(population, df_households_size, on="household_id")
+
+    return population
+
+
 
 def compute_distribution(df: pd.DataFrame) -> pd.DataFrame:
     """
