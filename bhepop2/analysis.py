@@ -17,17 +17,15 @@ def format_distributions_for_analysis(distributions):
     return distributions_formated
 
 
-def compute_distributions_by_attribute(pop: pd.DataFrame, modalities) -> pd.DataFrame:
-    # distribution of all households
-    pop = pop.copy().rename(columns={"household_income": "feature"})
-    df_analysis = compute_distribution(pop)
+def compute_distributions_by_attribute(pop: pd.DataFrame, modalities, feature_column_name: str = "feature") -> pd.DataFrame:
+    df_analysis = compute_distribution(pop, feature_column_name)
     df_analysis["attribute"] = "all"
     df_analysis["modality"] = "all"
 
     # distribution of each modality
     for attribute in modalities.keys():
         for modality in modalities[attribute]:
-            distribution = compute_distribution(pop[pop[attribute] == modality])
+            distribution = compute_distribution(pop[pop[attribute] == modality], feature_column_name)
             distribution["attribute"] = attribute
             distribution["modality"] = modality
 
@@ -36,7 +34,7 @@ def compute_distributions_by_attribute(pop: pd.DataFrame, modalities) -> pd.Data
     return df_analysis
 
 
-def analyse_enriched_populations(populations, distributions, modalities, output_folder, observation_name):
+def analyse_enriched_populations(populations, distributions, modalities, output_folder, observation_name, feature_column_name="feature"):
 
     if len(populations) == 0:
         raise ValueError("No population to analyse")
@@ -49,7 +47,7 @@ def analyse_enriched_populations(populations, distributions, modalities, output_
     # add population analysis dataframes
     analysis_list = [distributions_df]
     for name, population in populations.items():
-        population_df = compute_distributions_by_attribute(population, modalities)
+        population_df = compute_distributions_by_attribute(population, modalities, feature_column_name)
         population_df["source"] = name
         analysis_list.append(population_df)
 
@@ -75,7 +73,6 @@ def analyse_enriched_populations(populations, distributions, modalities, output_
             ).write_image(path.join(output_folder, f"analysis_{attribute}_{modality}.png"))
 
 
-
 def compute_distribution(df: pd.DataFrame, feature_column_name:str = "feature") -> pd.DataFrame:
     """
     Compute decile distribution on one the DataFrame's columns.
@@ -88,7 +85,7 @@ def compute_distribution(df: pd.DataFrame, feature_column_name:str = "feature") 
     return pd.DataFrame(
         {
             "feature": np.percentile(
-                df["feature"],
+                df[feature_column_name],
                 np.arange(0, 100, 10),
             )[1:],
             "decile": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
