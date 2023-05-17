@@ -137,3 +137,6 @@ dmypy.json
 # Generated html notebooks
 *.html
 *_files/
+
+# analysis plots
+/plots
