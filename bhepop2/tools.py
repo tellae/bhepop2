@@ -458,13 +458,14 @@ def add_household_type_attribute(population, person_id:str= "person_id", househo
 
     return population
 
-def compute_distribution(df: pd.DataFrame) -> pd.DataFrame:
+def compute_distribution(df: pd.DataFrame, feature_column_name:str = "feature") -> pd.DataFrame:
     """
-    Compute decile distribution
+    Compute decile distribution on one the DataFrame's columns.
 
-    :param df
+    :param df: analysed DataFrame
+    :param feature_column_name: name of the column to compute distributions on
 
-    return dataframe of deciles
+    :return: dataframe of deciles
     """
     return pd.DataFrame(
         {
