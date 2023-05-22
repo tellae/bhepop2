@@ -46,7 +46,7 @@ def analyse_enriched_populations(populations, distributions, observed_name, moda
     if plots:
         generate_analysis_plots(analysis_df, populations_names, observed_name, modalities, output_folder, title_format=plots_title_format)
     if error_table:
-        generate_analysis_error_table(analysis_df, populations_names, observed_name, modalities, populations["base"], output_folder)
+        generate_analysis_error_table(analysis_df, populations_names, observed_name, modalities, list(populations.values())[0], output_folder)
 
     return analysis_df
 
@@ -61,7 +61,7 @@ def generate_analysis_error_table(analysis_df, populations_names, observed_name,
     :param populations_names: name of the analysed populations
     :param observed_name: name of the distributions data (source)
     :param modalities: analysed modalities
-    :param pop:
+    :param pop: one of the enriched populations
     :param output_folder: folder where outputs are generated
     :param export_csv: boolean a csv export should be realised
 
