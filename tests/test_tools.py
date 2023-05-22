@@ -1,4 +1,8 @@
-from bhepop2.tools import add_household_size_attribute, add_household_type_attribute, add_attributes_households
+from bhepop2.tools import (
+    add_household_size_attribute,
+    add_household_type_attribute,
+    add_attributes_households,
+)
 
 
 def test_add_household_size_attribute(eqasim_population):
@@ -8,4 +12,11 @@ def test_add_household_size_attribute(eqasim_population):
 
 def test_add_household_type_attribute(eqasim_population):
     pop = add_household_type_attribute(eqasim_population)
-    assert set(pop["family_comp"].unique()) == {"Single_man", "Single_wom", "Couple_without_child", "Couple_with_child", "Single_parent", "complex_hh"}
+    assert set(pop["family_comp"].unique()) == {
+        "Single_man",
+        "Single_wom",
+        "Couple_without_child",
+        "Couple_with_child",
+        "Single_parent",
+        "complex_hh",
+    }

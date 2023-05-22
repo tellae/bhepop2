@@ -43,7 +43,6 @@ def tmp_dir():
 
 @pytest.fixture(scope="session", autouse=True)
 def tmp_dir_create_delete(tmp_dir):
-
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
 
@@ -84,7 +83,9 @@ def synthetic_population_nantes():
 
 @pytest.fixture(scope="session")
 def filosofi_distributions_nantes(test_insee_code):
-    filosofi = read_filosofi("data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls", "15")
+    filosofi = read_filosofi(
+        "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls", "15"
+    )
     filosofi.rename(
         columns={
             "q1": "D1",
@@ -103,9 +104,11 @@ def filosofi_distributions_nantes(test_insee_code):
 
     return filosofi
 
+
 @pytest.fixture(scope="session")
 def eqasim_population():
     return pd.read_csv(PATH_INPUTS + "eqasim_population_0.001.csv", sep=";")
+
 
 @pytest.fixture(scope="session")
 def eqasim_households():

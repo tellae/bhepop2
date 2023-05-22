@@ -7,7 +7,17 @@ from os import path
 default_plot_title_format = "Modality {modality} from attribute {attribute}"
 
 
-def analyse_enriched_populations(populations, distributions, observed_name, modalities, output_folder, feature_column_name="feature", plots=True, error_table=True, plots_title_format=None):
+def analyse_enriched_populations(
+    populations,
+    distributions,
+    observed_name,
+    modalities,
+    output_folder,
+    feature_column_name="feature",
+    plots=True,
+    error_table=True,
+    plots_title_format=None,
+):
     """
     Generate several analysis comparing given population(s) to the original distributions.
 
@@ -33,27 +43,50 @@ def analyse_enriched_populations(populations, distributions, observed_name, moda
     """
 
     # filter distributions with given modalities
-    all_modalities = [modality for attribute_modalities in modalities.values() for modality in attribute_modalities] + ["all"]
+    all_modalities = [
+        modality
+        for attribute_modalities in modalities.values()
+        for modality in attribute_modalities
+    ] + ["all"]
     distributions = distributions[distributions["modality"].isin(all_modalities)]
 
     # get populations names
     populations_names = list(populations.keys())
 
     # compute analysis table
-    analysis_df = get_analysis_table(populations, distributions, observed_name, modalities, feature_column_name)
+    analysis_df = get_analysis_table(
+        populations, distributions, observed_name, modalities, feature_column_name
+    )
 
     # generate analysis objects
     if plots:
-        generate_analysis_plots(analysis_df, populations_names, observed_name, modalities, output_folder, title_format=plots_title_format)
+        generate_analysis_plots(
+            analysis_df,
+            populations_names,
+            observed_name,
+            modalities,
+            output_folder,
+            title_format=plots_title_format,
+        )
     if error_table:
-        generate_analysis_error_table(analysis_df, populations_names, observed_name, modalities, list(populations.values())[0], output_folder)
+        generate_analysis_error_table(
+            analysis_df,
+            populations_names,
+            observed_name,
+            modalities,
+            list(populations.values())[0],
+            output_folder,
+        )
 
     return analysis_df
 
 
 # error table generation
 
-def generate_analysis_error_table(analysis_df, populations_names, observed_name, modalities, pop, output_folder, export_csv=True):
+
+def generate_analysis_error_table(
+    analysis_df, populations_names, observed_name, modalities, pop, output_folder, export_csv=True
+):
     """
     Generate a table describing how analysed populations deviate from the original distributions.
 
@@ -78,10 +111,15 @@ def generate_analysis_error_table(analysis_df, populations_names, observed_name,
     )
 
     # count number of occurrence of each modality and add it as a "number" column, sort descending
-    count = [pop.groupby([attribute])[attribute].count().rename("number") for attribute in modalities.keys()]
+    count = [
+        pop.groupby([attribute])[attribute].count().rename("number")
+        for attribute in modalities.keys()
+    ]
     count = pd.concat(count)
     count["all"] = len(pop)
-    error_analysis_df = error_analysis_df.merge(count, how="left", left_on="modality", right_index=True)
+    error_analysis_df = error_analysis_df.merge(
+        count, how="left", left_on="modality", right_index=True
+    )
     error_analysis_df.sort_values(["number"], ascending=False, inplace=True)
 
     # export to csv if asked
@@ -93,7 +131,10 @@ def generate_analysis_error_table(analysis_df, populations_names, observed_name,
 
 # analysis plots generation
 
-def generate_analysis_plots(analysis_df, populations_names, observed_name, modalities, output_folder, title_format=None):
+
+def generate_analysis_plots(
+    analysis_df, populations_names, observed_name, modalities, output_folder, title_format=None
+):
     """
     Graphs comparing the deciles of the population(s) to those of the distributions (one per modality).
 
@@ -106,16 +147,25 @@ def generate_analysis_plots(analysis_df, populations_names, observed_name, modal
     """
 
     # plot analysis for global distributions
-    plot_analysis_compare(analysis_df, "all", "all", observed_name=observed_name,
-                          populations_names=populations_names, title_format=title_format).write_image(
-        path.join(output_folder, "all-all.png")
-    )
+    plot_analysis_compare(
+        analysis_df,
+        "all",
+        "all",
+        observed_name=observed_name,
+        populations_names=populations_names,
+        title_format=title_format,
+    ).write_image(path.join(output_folder, "all-all.png"))
 
     # plot analysis by attribute
     for attribute in modalities.keys():
         for modality in modalities[attribute]:
             plot_analysis_compare(
-                analysis_df, attribute, modality, observed_name=observed_name, populations_names=populations_names, title_format=title_format
+                analysis_df,
+                attribute,
+                modality,
+                observed_name=observed_name,
+                populations_names=populations_names,
+                title_format=title_format,
             ).write_image(path.join(output_folder, f"{attribute}-{modality}.png"))
 
 
@@ -125,7 +175,7 @@ def plot_analysis_compare(
     modality: str,
     observed_name: str,
     populations_names: list,
-    title_format: str = None
+    title_format: str = None,
 ):
     """
     Comparison plot between reference data and simulation
@@ -142,11 +192,9 @@ def plot_analysis_compare(
 
     if title_format is None:
         title_format = default_plot_title_format
-    title = title_format.format(**{
-        "observed_name": observed_name,
-        "attribute": attribute,
-        "modality": modality
-    })
+    title = title_format.format(
+        **{"observed_name": observed_name, "attribute": attribute, "modality": modality}
+    )
 
     df = df.copy()[(df["attribute"] == attribute) & (df["modality"] == modality)]
     fig = px.line(x=df[observed_name], y=df[observed_name], color_discrete_sequence=["black"])
@@ -167,7 +215,10 @@ def plot_analysis_compare(
 
 # processing data (populations, distributions) for analysis
 
-def get_analysis_table(populations, distributions, observed_name, modalities, feature_column_name="feature"):
+
+def get_analysis_table(
+    populations, distributions, observed_name, modalities, feature_column_name="feature"
+):
     f"""
     Create a table comparing population deciles to distribution deciles, per modality.
 
@@ -178,12 +229,12 @@ def get_analysis_table(populations, distributions, observed_name, modalities, fe
         - one column with the observed_name value
         + one column for each population name
 
-    :param populations: dict containing populations, with population name as keys 
+    :param populations: dict containing populations, with population name as keys
     :param distributions: reference distributions
     :param observed_name: name of the distributions data (source)
     :param modalities: analysed modalities
     :param feature_column_name: name of the column containing the added feature
-    
+
     :return: analysis DataFrame
     """
     if len(populations) == 0:
@@ -197,7 +248,9 @@ def get_analysis_table(populations, distributions, observed_name, modalities, fe
     # add population analysis dataframes
     analysis_list = [distributions_df]
     for name, population in populations.items():
-        population_df = compute_distributions_by_attribute(population, modalities, feature_column_name)
+        population_df = compute_distributions_by_attribute(
+            population, modalities, feature_column_name
+        )
         population_df["source"] = name
         analysis_list.append(population_df)
 
@@ -214,7 +267,9 @@ def get_analysis_table(populations, distributions, observed_name, modalities, fe
 
 
 def format_distributions_for_analysis(distributions):
-    distributions = distributions[["attribute", "modality", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]]
+    distributions = distributions[
+        ["attribute", "modality", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]
+    ]
     distributions_formated = distributions.melt(
         id_vars=["attribute", "modality"],
         value_vars=["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
@@ -225,8 +280,9 @@ def format_distributions_for_analysis(distributions):
     return distributions_formated
 
 
-def compute_distributions_by_attribute(pop: pd.DataFrame, modalities,
-                                       feature_column_name: str = "feature") -> pd.DataFrame:
+def compute_distributions_by_attribute(
+    pop: pd.DataFrame, modalities, feature_column_name: str = "feature"
+) -> pd.DataFrame:
     df_analysis = compute_distribution(pop, feature_column_name)
     df_analysis["attribute"] = "all"
     df_analysis["modality"] = "all"
@@ -234,7 +290,9 @@ def compute_distributions_by_attribute(pop: pd.DataFrame, modalities,
     # distribution of each modality
     for attribute in modalities.keys():
         for modality in modalities[attribute]:
-            distribution = compute_distribution(pop[pop[attribute] == modality], feature_column_name)
+            distribution = compute_distribution(
+                pop[pop[attribute] == modality], feature_column_name
+            )
             distribution["attribute"] = attribute
             distribution["modality"] = modality
 

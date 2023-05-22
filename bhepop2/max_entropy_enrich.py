@@ -149,10 +149,14 @@ class MaxEntropyEnrichment:
         distributions = distributions.copy()
 
         # filter distributions and infer modalities
-        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(distributions, attribute_selection)
+        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
+            distributions, attribute_selection
+        )
 
         # check that there are modalities at the end
-        assert len(self.modalities.keys()) > 0, "No attributes found in distributions for enriching population"
+        assert (
+            len(self.modalities.keys()) > 0
+        ), "No attributes found in distributions for enriching population"
 
     def _init_population(self, population):
         """

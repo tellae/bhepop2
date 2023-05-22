@@ -308,7 +308,14 @@ def add_attributes_households(population: pd.DataFrame, households: pd.DataFrame
 
     return df_households
 
-def add_household_size_attribute(population: pd.DataFrame, values_map:callable=lambda x: str(x) + "_pers" if x < 5 else "5_pers_or_more", person_id:str= "person_id", household_id:str= "household_id", column_name:str= "size"):
+
+def add_household_size_attribute(
+    population: pd.DataFrame,
+    values_map: callable = lambda x: str(x) + "_pers" if x < 5 else "5_pers_or_more",
+    person_id: str = "person_id",
+    household_id: str = "household_id",
+    column_name: str = "size",
+):
     """
     Add a size attribute to the given synthetic population.
 
@@ -328,25 +335,27 @@ def add_household_size_attribute(population: pd.DataFrame, values_map:callable=l
     population = population.copy()
 
     # count number of persons by household
-    df_households_size = population.groupby([household_id], as_index=False)[
-        person_id
-    ].count()
+    df_households_size = population.groupby([household_id], as_index=False)[person_id].count()
 
     # rename size column
     df_households_size.rename(columns={person_id: column_name}, inplace=True)
 
     # map size values if a mapper is provided
     if values_map is not None:
-        df_households_size[column_name] = df_households_size[column_name].apply(
-            values_map
-        )
+        df_households_size[column_name] = df_households_size[column_name].apply(values_map)
 
     # add size column to population table
     population = pd.merge(population, df_households_size, on="household_id")
 
     return population
 
-def add_household_type_attribute(population, person_id:str= "person_id", household_id:str= "household_id", column_name="family_comp"):
+
+def add_household_type_attribute(
+    population,
+    person_id: str = "person_id",
+    household_id: str = "household_id",
+    column_name="family_comp",
+):
     """
     Add a type attribute to the given synthetic population.
 
@@ -421,9 +430,9 @@ def add_household_type_attribute(population, person_id:str= "person_id", househo
 
     # get single parent
     # 2 persons or more, no one in couple, oldest person = [25-60[, and others age < 25
-    df_households_no_couple = population.query(
-        "couple==False and household_size>=2"
-    ).sort_values([household_id, "age"], ascending=[True, False])
+    df_households_no_couple = population.query("couple==False and household_size>=2").sort_values(
+        [household_id, "age"], ascending=[True, False]
+    )
 
     df_households_no_couple_oldest = (
         df_households_no_couple.groupby([household_id], as_index=False)
@@ -449,11 +458,19 @@ def add_household_type_attribute(population, person_id:str= "person_id", househo
     df_households_single_parent[column_name] = "Single_parent"
 
     # combine type
-    combined = pd.concat([df_households_single_man, df_households_single_woman, df_households_couple_without_child, df_households_couple_with_child, df_households_single_parent])[[household_id, column_name]]
+    combined = pd.concat(
+        [
+            df_households_single_man,
+            df_households_single_woman,
+            df_households_couple_without_child,
+            df_households_couple_with_child,
+            df_households_single_parent,
+        ]
+    )[[household_id, column_name]]
 
     assert combined[household_id].is_unique
 
-    population = population.merge(combined,how="left", on=household_id)
+    population = population.merge(combined, how="left", on=household_id)
     population[column_name].fillna("complex_hh", inplace=True)
 
     return population

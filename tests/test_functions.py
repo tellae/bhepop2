@@ -81,6 +81,3 @@ def test_interpolate_feature_prob():
 
     assert isinstance(interpolation, float)
     assert 0.3 <= interpolation <= 0.4
-
-
-

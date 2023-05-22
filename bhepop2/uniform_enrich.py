@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # TODO : refactor this function in a class similar to MaxEntropyEnrichment
 def uniform_enrich(population, distributions, abs_minimum, relative_maximum, seed):
     """
@@ -15,8 +16,9 @@ def uniform_enrich(population, distributions, abs_minimum, relative_maximum, see
 
     rng = np.random.RandomState(seed)
 
-    centiles = list(distributions[
-                        ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]].iloc[0].values)
+    centiles = list(
+        distributions[["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]].iloc[0].values
+    )
 
     centiles = np.array([abs_minimum] + centiles + [np.max(centiles) * relative_maximum])
 
@@ -111,4 +113,3 @@ def uniform_enrich(population, distributions, abs_minimum, relative_maximum, see
 #         utils.log(message, level)
 #
 #     log = staticmethod(log)
-

@@ -54,7 +54,9 @@ def validate_distributions(distributions: pd.DataFrame, attribute_selection):
 
     if attribute_selection is not None:
         # check that the distributions contain the selected attributes
-        assert set(attribute_selection + ["all"]) <= set(distributions["attribute"]), "Distributions table does not include selected attributes"
+        assert set(attribute_selection + ["all"]) <= set(
+            distributions["attribute"]
+        ), "Distributions table does not include selected attributes"
 
 
 def filter_distributions_and_infer_modalities(distributions: pd.DataFrame, attribute_selection):
@@ -205,7 +207,9 @@ def validate_population(population: pd.DataFrame, modalities):
     assert {*attributes} <= set(population.columns)
 
     for attribute in attributes:
-        assert population[attribute].isin(modalities[attribute]).all(), "Population modality (attribute value) is not present in distributions"
+        assert (
+            population[attribute].isin(modalities[attribute]).all()
+        ), "Population modality (attribute value) is not present in distributions"
 
 
 def compute_crossed_modalities_frequencies(

@@ -6,12 +6,11 @@ def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalit
     pop = pd.read_csv("tests/nantes_enriched.csv")
     pop2 = pd.read_csv("tests/nantes_enriched_gradient2.csv")
 
-    populations = {
-        "base": pop,
-        "gradient": pop2
-    }
+    populations = {"base": pop, "gradient": pop2}
 
-    analyse_enriched_populations(populations, filosofi_distributions_nantes, "Filosofi", test_modalities, tmp_dir)
+    analyse_enriched_populations(
+        populations, filosofi_distributions_nantes, "Filosofi", test_modalities, tmp_dir
+    )
 
 
 def test_compute_distribution():
