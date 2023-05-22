@@ -3,6 +3,8 @@ from bhepop2.functions import get_attributes
 
 import pytest
 import pandas as pd
+import os
+import shutil
 
 SEED = 42
 
@@ -30,6 +32,24 @@ parameters = {
     "maxentropy_verbose": 0,
     "delta_min": 1000,
 }
+
+TMP_DIR = "tests/tmp/"
+
+
+@pytest.fixture(scope="session")
+def tmp_dir():
+    return TMP_DIR
+
+
+@pytest.fixture(scope="session", autouse=True)
+def tmp_dir_create_delete(tmp_dir):
+
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
+    yield
+
+    shutil.rmtree(tmp_dir)
 
 
 @pytest.fixture(scope="session")

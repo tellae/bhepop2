@@ -2,18 +2,7 @@ from bhepop2.analysis import *
 import pandas as pd
 
 
-def test_format_distributions_for_analysis(filosofi_distributions_nantes):
-    print(format_distributions_for_analysis(filosofi_distributions_nantes))
-
-
-def test_compute_distributions_by_attribute(synthetic_population_nantes, filosofi_distributions_nantes,test_parameters, test_modalities, test_seed):
-    pop = pd.read_csv("tests/nantes_enriched.csv")
-
-    res = compute_distributions_by_attribute(pop, test_modalities)
-    print(res)
-
-
-def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalities):
+def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalities, tmp_dir):
     pop = pd.read_csv("tests/nantes_enriched.csv")
     pop2 = pd.read_csv("tests/nantes_enriched_gradient2.csv")
 
@@ -22,7 +11,7 @@ def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalit
         "gradient": pop2
     }
 
-    analyse_enriched_populations(populations, filosofi_distributions_nantes, test_modalities, "plots/", "Filosofi")
+    analyse_enriched_populations(populations, filosofi_distributions_nantes, "Filosofi", test_modalities, "plots/")
 
 
 def test_compute_distribution():
