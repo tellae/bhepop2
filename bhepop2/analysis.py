@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from os import path
 
+default_plot_title_format = "Modality {modality} from attribute {attribute}"
+
 
 def analyse_enriched_populations(populations, distributions, observed_name, modalities, output_folder, feature_column_name="feature", plots=True, error_table=True, plots_title_format=None):
     """
@@ -139,7 +141,7 @@ def plot_analysis_compare(
     """
 
     if title_format is None:
-        title_format = "Modality {modality} from attribute {attribute}"
+        title_format = default_plot_title_format
     title = title_format.format(**{
         "observed_name": observed_name,
         "attribute": attribute,
