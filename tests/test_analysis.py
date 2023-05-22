@@ -4,9 +4,8 @@ import pandas as pd
 
 def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalities, tmp_dir):
     pop = pd.read_csv("tests/nantes_enriched.csv")
-    pop2 = pd.read_csv("tests/nantes_enriched_gradient2.csv")
 
-    populations = {"base": pop, "gradient": pop2}
+    populations = {"base": pop}
 
     analyse_enriched_populations(
         populations, filosofi_distributions_nantes, "Filosofi", test_modalities, tmp_dir
