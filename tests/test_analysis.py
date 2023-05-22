@@ -8,7 +8,7 @@ def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalit
     populations = {"base": pop}
 
     analyse_enriched_populations(
-        populations, filosofi_distributions_nantes, "Filosofi", test_modalities, tmp_dir
+        populations, filosofi_distributions_nantes, "Filosofi", test_modalities, tmp_dir, plots=False
     )
 
 
