@@ -8,6 +8,7 @@ import shutil
 
 SEED = 42
 
+TEST_DATA_FOLDER = "tests/data/"
 PATH_INPUTS = "data/inputs/"
 SYNTHETIC_POP = "nantes_synth_pop.csv"
 CODE_INSEE = "44109"
@@ -77,24 +78,31 @@ def test_seed():
 
 
 @pytest.fixture(scope="session")
-def synthetic_population_nantes():
-    return pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
-
-
-@pytest.fixture(scope="session")
 def filosofi_distributions_nantes(test_insee_code):
     filosofi = read_filosofi(
-        "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls", "15", filosofi_attributes, [test_insee_code]
+        TEST_DATA_FOLDER + "FILO_DISP_COM.xls", "15", filosofi_attributes, [test_insee_code]
     )
 
     return filosofi
 
 
 @pytest.fixture(scope="session")
+def synthetic_population_nantes():
+    return pd.read_csv(TEST_DATA_FOLDER + "nantes_synth_pop.csv", sep=";")
+
+
+@pytest.fixture(scope="session")
+def expected_enriched_population_nantes():
+    return pd.read_csv(TEST_DATA_FOLDER + "nantes_enriched.csv")
+
+
+@pytest.fixture(scope="session")
 def eqasim_population():
-    return pd.read_csv(PATH_INPUTS + "eqasim_population_0.001.csv", sep=";")
+    return pd.read_csv(TEST_DATA_FOLDER + "eqasim_population_0.001.csv", sep=";")
 
 
 @pytest.fixture(scope="session")
 def eqasim_households():
-    return pd.read_csv(PATH_INPUTS + "eqasim_households_0.001.csv", sep=";")
+    return pd.read_csv(TEST_DATA_FOLDER + "eqasim_households_0.001.csv", sep=";")
+
+
