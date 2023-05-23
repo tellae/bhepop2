@@ -86,6 +86,8 @@ class MaxEntropyEnrichment_gradient:
         self.modalities = None
 
         # execution parameters
+        if parameters is None:
+            parameters = dict()
         self.parameters = utils.add_defaults_and_validate_against_schema(
             parameters, self.parameters_schema
         )
@@ -128,24 +130,17 @@ class MaxEntropyEnrichment_gradient:
         self.log("Setup distributions data")
 
         # validate distributions format and contents
-        functions.validate_distributions(distributions)
+        functions.validate_distributions(distributions, attribute_selection)
 
         distributions = distributions.copy()
 
-        # filter distributions using the attribute selection
-        if attribute_selection is not None:
-            distributions = distributions[
-                distributions["attribute"].isin(attribute_selection + ["all"])
-            ]
-            assert set(distributions["attribute"]) == set(
-                attribute_selection + ["all"]
-            ), "Mismatch between distribution attributes and attribute selection"
+        # filter distributions and infer modalities
+        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(distributions, attribute_selection)
 
-        # set distributions
-        self.distributions = distributions
-
-        # infer attributes and their modalities from the filtered distribution
-        self.modalities = functions.infer_modalities_from_distributions(distributions)
+        # check that there are modalities at the end
+        assert (
+            len(self.modalities.keys()) > 0
+        ), "No attributes found in distributions for enriching population"
 
     def _init_population(self, population):
         """
