@@ -36,18 +36,49 @@ def modality_feature(attribute, modality) -> callable:
 # distribution functions
 
 
-def validate_distributions(distributions):
+def validate_distributions(distributions: pd.DataFrame, attribute_selection):
     """
     Validate the format and contents of the given distribution.
 
     :param distributions: distribution DataFrame
+    :param attribute_selection: list of attributes to keep in the distribution, or None
     :raises: AssertionError
     """
 
-    # we could validate the distributions (positive, monotony ?)
+    assert not distributions.empty, "Empty distributions table provided"
+
+    # we could validate the distributions columns (positive, monotony ?)
     assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(
         distributions.columns
-    )
+    ), "Distributions table lacks the required columns"
+
+    if attribute_selection is not None:
+        # check that the distributions contain the selected attributes
+        assert set(attribute_selection + ["all"]) <= set(
+            distributions["attribute"]
+        ), "Distributions table does not include selected attributes"
+
+
+def filter_distributions_and_infer_modalities(distributions: pd.DataFrame, attribute_selection):
+    """
+    Filter distributions table with attribute selection and infer modalities.
+
+    :param distributions: distribution DataFrame
+    :param attribute_selection: list of attributes to keep in the distribution, or None
+
+    :return: distribution Dataframe, { attribute: [modalities] } dict
+    """
+
+    if attribute_selection is not None:
+        # filter distributions attributes
+        distributions = distributions[
+            distributions["attribute"].isin(attribute_selection + ["all"])
+        ]
+
+    # infer attributes and their modalities from the filtered distribution
+    modalities = infer_modalities_from_distributions(distributions)
+
+    return distributions, modalities
 
 
 def infer_modalities_from_distributions(distributions: pd.DataFrame):
@@ -176,7 +207,9 @@ def validate_population(population: pd.DataFrame, modalities):
     assert {*attributes} <= set(population.columns)
 
     for attribute in attributes:
-        assert population[attribute].isin(modalities[attribute]).all()
+        assert (
+            population[attribute].isin(modalities[attribute]).all()
+        ), "Population modality (attribute value) is not present in distributions"
 
 
 def compute_crossed_modalities_frequencies(

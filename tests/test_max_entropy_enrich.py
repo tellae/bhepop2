@@ -1,7 +1,6 @@
 from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
 
 import numpy as np
-import pandas as pd
 
 
 def test_max_entropy_enrich(
@@ -10,6 +9,7 @@ def test_max_entropy_enrich(
     test_modalities,
     test_parameters,
     test_seed,
+    expected_enriched_population_nantes,
 ):
     enrich_class = MaxEntropyEnrichment(
         synthetic_population_nantes,
@@ -23,6 +23,4 @@ def test_max_entropy_enrich(
 
     pop = enrich_class.assign_feature_value_to_pop()
 
-    expected_enriched_pop = pd.read_csv("tests/nantes_enriched.csv")
-
-    assert np.all((pop == expected_enriched_pop).to_numpy())
+    assert np.all((pop == expected_enriched_population_nantes).to_numpy())

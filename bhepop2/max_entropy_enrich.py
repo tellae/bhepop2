@@ -6,6 +6,7 @@ from bhepop2 import utils
 from bhepop2 import functions
 import maxentropy
 import math
+import warnings
 
 
 class MaxEntropyEnrichment:
@@ -99,6 +100,8 @@ class MaxEntropyEnrichment:
         self.modalities = None
 
         # execution parameters
+        if parameters is None:
+            parameters = dict()
         self.parameters = utils.add_defaults_and_validate_against_schema(
             parameters, self.parameters_schema
         )
@@ -141,24 +144,19 @@ class MaxEntropyEnrichment:
         self.log("Setup distributions data")
 
         # validate distributions format and contents
-        functions.validate_distributions(distributions)
+        functions.validate_distributions(distributions, attribute_selection)
 
         distributions = distributions.copy()
 
-        # filter distributions using the attribute selection
-        if attribute_selection is not None:
-            distributions = distributions[
-                distributions["attribute"].isin(attribute_selection + ["all"])
-            ]
-            assert set(distributions["attribute"]) == set(
-                attribute_selection + ["all"]
-            ), "Mismatch between distribution attributes and attribute selection"
+        # filter distributions and infer modalities
+        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
+            distributions, attribute_selection
+        )
 
-        # set distributions
-        self.distributions = distributions
-
-        # infer attributes and their modalities from the filtered distribution
-        self.modalities = functions.infer_modalities_from_distributions(distributions)
+        # check that there are modalities at the end
+        assert (
+            len(self.modalities.keys()) > 0
+        ), "No attributes found in distributions for enriching population"
 
     def _init_population(self, population):
         """
@@ -257,11 +255,12 @@ class MaxEntropyEnrichment:
             K = np.array(K).reshape(1, len(K))
 
             # res = compute_rq(model_with_apriori, np.shape(K)[1], K)
-
-            self.maxentropy_model.fit(K)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self.maxentropy_model.fit(K)
 
         except (Exception, maxentropy.utils.DivergenceError) as e:
-            self.log("Error while running optimization model on feature " + str(i), lg.ERROR)
+            # self.log("Error while running optimization model on feature " + str(i), lg.ERROR)
             raise e
 
     def _create_samplespace_and_features(self):

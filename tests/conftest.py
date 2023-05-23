@@ -1,13 +1,13 @@
-from bhepop2.tools import read_filosofi
+from bhepop2.tools import read_filosofi, filosofi_attributes
 from bhepop2.functions import get_attributes
 
 import pytest
 import pandas as pd
+import os
+import shutil
 
 SEED = 42
 
-PATH_INPUTS = "data/inputs/"
-SYNTHETIC_POP = "nantes_synth_pop.csv"
 CODE_INSEE = "44109"
 MODALITIES = {
     "ownership": ["Owner", "Tenant"],
@@ -30,6 +30,24 @@ parameters = {
     "maxentropy_verbose": 0,
     "delta_min": 1000,
 }
+
+TEST_DATA_FOLDER = "tests/data/"
+TMP_DIR = "tests/tmp/"
+
+
+@pytest.fixture(scope="session")
+def tmp_dir():
+    return TMP_DIR
+
+
+@pytest.fixture(scope="session", autouse=True)
+def tmp_dir_create_delete(tmp_dir):
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
+    yield
+
+    shutil.rmtree(tmp_dir)
 
 
 @pytest.fixture(scope="session")
@@ -58,27 +76,29 @@ def test_seed():
 
 
 @pytest.fixture(scope="session")
-def synthetic_population_nantes():
-    return pd.read_csv(PATH_INPUTS + SYNTHETIC_POP, sep=";")
+def filosofi_distributions_nantes(test_insee_code):
+    filosofi = read_filosofi(
+        TEST_DATA_FOLDER + "FILO_DISP_COM.xls", "15", filosofi_attributes, [test_insee_code]
+    )
+
+    return filosofi
 
 
 @pytest.fixture(scope="session")
-def filosofi_distributions_nantes(test_insee_code):
-    filosofi = read_filosofi("data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls")
-    filosofi.rename(
-        columns={
-            "q1": "D1",
-            "q2": "D2",
-            "q3": "D3",
-            "q4": "D4",
-            "q5": "D5",
-            "q6": "D6",
-            "q7": "D7",
-            "q8": "D8",
-            "q9": "D9",
-        },
-        inplace=True,
-    )
-    filosofi = filosofi.query(f"commune_id == '{test_insee_code}'")
+def synthetic_population_nantes():
+    return pd.read_csv(TEST_DATA_FOLDER + "nantes_synth_pop.csv", sep=";")
 
-    return filosofi
+
+@pytest.fixture(scope="session")
+def expected_enriched_population_nantes():
+    return pd.read_csv(TEST_DATA_FOLDER + "nantes_enriched.csv")
+
+
+@pytest.fixture(scope="session")
+def eqasim_population():
+    return pd.read_csv(TEST_DATA_FOLDER + "eqasim_population_0.001.csv", sep=";")
+
+
+@pytest.fixture(scope="session")
+def eqasim_households():
+    return pd.read_csv(TEST_DATA_FOLDER + "eqasim_households_0.001.csv", sep=";")
