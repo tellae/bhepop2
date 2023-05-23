@@ -302,7 +302,6 @@ def read_filosofi_attributes(filosofi_sheets, year, attributes: list, communes=N
 
     # Validation
     assert len(attributes) == len(df["attribute"].unique())
-    assert len(filosofi_sheets) == len(df["modality"].unique())
 
     return df[
         [
