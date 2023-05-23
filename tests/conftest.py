@@ -8,9 +8,6 @@ import shutil
 
 SEED = 42
 
-TEST_DATA_FOLDER = "tests/data/"
-PATH_INPUTS = "data/inputs/"
-SYNTHETIC_POP = "nantes_synth_pop.csv"
 CODE_INSEE = "44109"
 MODALITIES = {
     "ownership": ["Owner", "Tenant"],
@@ -34,6 +31,7 @@ parameters = {
     "delta_min": 1000,
 }
 
+TEST_DATA_FOLDER = "tests/data/"
 TMP_DIR = "tests/tmp/"
 
 
