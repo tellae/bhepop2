@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 
 ## functions for processing synthetic populations
 
+
 def add_household_size_attribute(
     population: pd.DataFrame,
     values_map: callable = lambda x: str(x) + "_pers" if x < 5 else "5_pers_or_more",
@@ -179,63 +180,64 @@ def add_household_type_attribute(
 ## functions for reading Filosofi data
 
 filosofi_attributes = [
-        {
-            "name": "all",
-            "modalities": [
-                {"name": "all", "sheet": "ENSEMBLE", "col_pattern": ""},
-            ],
-        },
-        {
-            "name": "size",
-            "modalities": [
-                {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
-                {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
-                {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
-                {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
-                {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
-            ],
-        },
-        {
-            "name": "family_comp",
-            "modalities": [
-                {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
-                {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
-                {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
-                {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
-                {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
-                {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
-            ],
-        },
-        {
-            "name": "age",
-            "modalities": [
-                {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
-                {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
-                {"name": "40_49", "sheet": "TRAGERF_3", "col_pattern": "AGE3"},
-                {"name": "50_59", "sheet": "TRAGERF_4", "col_pattern": "AGE4"},
-                {"name": "60_74", "sheet": "TRAGERF_5", "col_pattern": "AGE5"},
-                {"name": "75_or_more", "sheet": "TRAGERF_6", "col_pattern": "AGE6"},
-            ],
-        },
-        {
-            "name": "ownership",
-            "modalities": [
-                {"name": "Owner", "sheet": "OCCTYPR_1", "col_pattern": "TOL1"},
-                {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
-            ],
-        },
-        {
-            "name": "income_source",
-            "modalities": [
-                {"name": "Salary", "sheet": "OPRDEC_1", "col_pattern": "OPR1"},
-                {"name": "Unemployment", "sheet": "OPRDEC_2", "col_pattern": "OPR2"},
-                {"name": "Independent", "sheet": "OPRDEC_3", "col_pattern": "OPR3"},
-                {"name": "Pension", "sheet": "OPRDEC_4", "col_pattern": "OPR4"},
-                {"name": "Property", "sheet": "OPRDEC_5", "col_pattern": "OPR5"},
-                {"name": "None", "sheet": "OPRDEC_6", "col_pattern": "OPR6"},
-            ],
-        },
-    ]
+    {
+        "name": "all",
+        "modalities": [
+            {"name": "all", "sheet": "ENSEMBLE", "col_pattern": ""},
+        ],
+    },
+    {
+        "name": "size",
+        "modalities": [
+            {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1"},
+            {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2"},
+            {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3"},
+            {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4"},
+            {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5"},
+        ],
+    },
+    {
+        "name": "family_comp",
+        "modalities": [
+            {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1"},
+            {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2"},
+            {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3"},
+            {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4"},
+            {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5"},
+            {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6"},
+        ],
+    },
+    {
+        "name": "age",
+        "modalities": [
+            {"name": "0_29", "sheet": "TRAGERF_1", "col_pattern": "AGE1"},
+            {"name": "30_39", "sheet": "TRAGERF_2", "col_pattern": "AGE2"},
+            {"name": "40_49", "sheet": "TRAGERF_3", "col_pattern": "AGE3"},
+            {"name": "50_59", "sheet": "TRAGERF_4", "col_pattern": "AGE4"},
+            {"name": "60_74", "sheet": "TRAGERF_5", "col_pattern": "AGE5"},
+            {"name": "75_or_more", "sheet": "TRAGERF_6", "col_pattern": "AGE6"},
+        ],
+    },
+    {
+        "name": "ownership",
+        "modalities": [
+            {"name": "Owner", "sheet": "OCCTYPR_1", "col_pattern": "TOL1"},
+            {"name": "Tenant", "sheet": "OCCTYPR_2", "col_pattern": "TOL2"},
+        ],
+    },
+    {
+        "name": "income_source",
+        "modalities": [
+            {"name": "Salary", "sheet": "OPRDEC_1", "col_pattern": "OPR1"},
+            {"name": "Unemployment", "sheet": "OPRDEC_2", "col_pattern": "OPR2"},
+            {"name": "Independent", "sheet": "OPRDEC_3", "col_pattern": "OPR3"},
+            {"name": "Pension", "sheet": "OPRDEC_4", "col_pattern": "OPR4"},
+            {"name": "Property", "sheet": "OPRDEC_5", "col_pattern": "OPR5"},
+            {"name": "None", "sheet": "OPRDEC_6", "col_pattern": "OPR6"},
+        ],
+    },
+]
+
 
 def read_filosofi(filepath: str, year: str, attributes: list, communes=None):
     """
@@ -293,8 +295,15 @@ def read_filosofi_attributes(filosofi_sheets, year, attributes: list, communes=N
     for attribute in attributes:
         for modality in attribute["modalities"]:
             # read distributions from filosofi data
-            data = read_distributions_from_filosofi(filosofi_sheets, year, modality["sheet"], modality["col_pattern"],
-                                                    attribute["name"], modality["name"], communes)
+            data = read_distributions_from_filosofi(
+                filosofi_sheets,
+                year,
+                modality["sheet"],
+                modality["col_pattern"],
+                attribute["name"],
+                modality["name"],
+                communes,
+            )
 
             concat_list.append(data)
 
@@ -322,7 +331,15 @@ def read_filosofi_attributes(filosofi_sheets, year, attributes: list, communes=N
     ]
 
 
-def read_distributions_from_filosofi(filosofi_sheets, year: str, sheet: str, col_pattern: str, attribute: str, modality: str, communes=None):
+def read_distributions_from_filosofi(
+    filosofi_sheets,
+    year: str,
+    sheet: str,
+    col_pattern: str,
+    attribute: str,
+    modality: str,
+    communes=None,
+):
     """
 
 
@@ -344,7 +361,7 @@ def read_distributions_from_filosofi(filosofi_sheets, year: str, sheet: str, col
             "%sD%d" % (col_pattern, q) + year if q != 5 else col_pattern + "Q2" + year
             for q in range(1, 10)
         ]
-        ]
+    ]
     data.columns = ["commune_id", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]
     data["reference_median"] = data["D5"]
     data["modality"] = modality

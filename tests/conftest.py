@@ -102,5 +102,3 @@ def eqasim_population():
 @pytest.fixture(scope="session")
 def eqasim_households():
     return pd.read_csv(TEST_DATA_FOLDER + "eqasim_households_0.001.csv", sep=";")
-
-

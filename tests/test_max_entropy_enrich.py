@@ -9,7 +9,7 @@ def test_max_entropy_enrich(
     test_modalities,
     test_parameters,
     test_seed,
-    expected_enriched_population_nantes
+    expected_enriched_population_nantes,
 ):
     enrich_class = MaxEntropyEnrichment(
         synthetic_population_nantes,
