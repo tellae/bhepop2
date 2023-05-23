@@ -1,7 +1,9 @@
 from bhepop2.analysis import *
 
 
-def test_analyse_enriched_population(filosofi_distributions_nantes, expected_enriched_population_nantes, test_modalities, tmp_dir):
+def test_analyse_enriched_population(
+    filosofi_distributions_nantes, expected_enriched_population_nantes, test_modalities, tmp_dir
+):
     populations = {"enriched": expected_enriched_population_nantes}
 
     analyse_enriched_populations(
@@ -30,4 +32,7 @@ def test_compute_distribution(expected_enriched_population_nantes):
         {"feature": 34245.5, "decile": "D9"},
     ]
 
-    assert compute_distribution(expected_enriched_population_nantes).round(1).to_dict(orient="records") == expected
+    assert (
+        compute_distribution(expected_enriched_population_nantes).round(1).to_dict(orient="records")
+        == expected
+    )
