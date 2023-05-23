@@ -1,11 +1,8 @@
 from bhepop2.analysis import *
-import pandas as pd
 
 
-def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalities, tmp_dir):
-    pop = pd.read_csv("tests/nantes_enriched.csv")
-
-    populations = {"base": pop}
+def test_analyse_enriched_population(filosofi_distributions_nantes, expected_enriched_population_nantes, test_modalities, tmp_dir):
+    populations = {"enriched": expected_enriched_population_nantes}
 
     analyse_enriched_populations(
         populations,
@@ -17,7 +14,7 @@ def test_analyse_enriched_population(filosofi_distributions_nantes, test_modalit
     )
 
 
-def test_compute_distribution():
+def test_compute_distribution(expected_enriched_population_nantes):
     """
     Test that computed distribution is exactly the same as expected
     """
@@ -33,6 +30,4 @@ def test_compute_distribution():
         {"feature": 34245.5, "decile": "D9"},
     ]
 
-    df = pd.read_csv("tests/nantes_enriched.csv")
-
-    assert compute_distribution(df).round(1).to_dict(orient="records") == expected
+    assert compute_distribution(expected_enriched_population_nantes).round(1).to_dict(orient="records") == expected
