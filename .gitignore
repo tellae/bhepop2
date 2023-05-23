@@ -140,3 +140,6 @@ dmypy.json
 
 # analysis plots
 /plots
+
+# test tmp folder
+tests/tmp/
