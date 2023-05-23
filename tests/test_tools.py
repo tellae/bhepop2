@@ -1,7 +1,6 @@
 from bhepop2.tools import (
     add_household_size_attribute,
     add_household_type_attribute,
-    add_attributes_households,
 )
 
 

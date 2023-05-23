@@ -1,4 +1,4 @@
-from bhepop2.tools import read_filosofi
+from bhepop2.tools import read_filosofi, filosofi_attributes
 from bhepop2.functions import get_attributes
 
 import pytest
@@ -84,23 +84,8 @@ def synthetic_population_nantes():
 @pytest.fixture(scope="session")
 def filosofi_distributions_nantes(test_insee_code):
     filosofi = read_filosofi(
-        "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls", "15"
+        "data/raw/indic-struct-distrib-revenu-2015-COMMUNES/FILO_DISP_COM.xls", "15", filosofi_attributes, [test_insee_code]
     )
-    filosofi.rename(
-        columns={
-            "q1": "D1",
-            "q2": "D2",
-            "q3": "D3",
-            "q4": "D4",
-            "q5": "D5",
-            "q6": "D6",
-            "q7": "D7",
-            "q8": "D8",
-            "q9": "D9",
-        },
-        inplace=True,
-    )
-    filosofi = filosofi.query(f"commune_id == '{test_insee_code}'")
 
     return filosofi
 
