@@ -411,7 +411,7 @@ class MaxEntropyEnrichment_gradient:
                 else:
                     row.append(prob)
 
-                last = cumulated_results[l, i]
+                    last = cumulated_results[l, i]
 
             matrix.append(row)
 
@@ -464,21 +464,22 @@ class MaxEntropyEnrichment_gradient:
 
         # get the non-null probs and values
         probs2 = []
-        values2 = []
+        values2 = [self.parameters["abs_minimum"]]
         for i in range(len(probs)):
             if pd.isna(probs[i]):
                 continue
             probs2.append(probs[i])
-            values2.append(interval_values[i])
-
+            values2.append(interval_values[i+1])
         # TODO : probs don't sum to 1, this isn't reassuring
 
         # draw a feature interval using the probs
-        values = list(range(len(values2)))
+        values = list(range(len(probs2)))
         feature_interval = random.choices(values, probs2)[0]
+        assert len(probs2) == len(values2) - 1
 
         # draw a feature value using a uniform distribution in the interval
-        lower, upper = interval_values[feature_interval], interval_values[feature_interval + 1]
+        lower, upper = values2[feature_interval], values2[feature_interval + 1]
+
         draw = random.random()
 
         final = round(lower + (upper - lower) * draw)  # POV : pourquoi on arrondit ? Cela n'explique pas les problèmes
