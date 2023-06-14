@@ -28,7 +28,6 @@ def minxent_gradient(q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_
     dist = 1
     while iter_general <= maxiter and dist >= 1e-08:
         iter_general += 1
-        log("Minxent gradient iteration : " + str(iter_general), lg.DEBUG)
 
         # lambda0 = np.log(np.sum(q * np.exp(-lambda_old.dot(G[1:, :])))) Exp_neg_Gt_lambdaPOV
         Exp_neg_Gt_lambda = np.exp(-matrix.T.dot(lambda_))  # POV exp(-Gt.lambda)
@@ -64,12 +63,13 @@ def minxent_gradient(q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_
                 did_ascent = True
 
             # fail to converge
-            if alpha < 1e-06 or alpha > 1e2:
-                log("Leaving gradient descent due to high alpha value", lg.DEBUG)
+            if alpha < 1e-06 or alpha > 1e6:
+                log("Leaving gradient descent due to extreme alpha value : {}".format(alpha), lg.DEBUG)
                 break
 
         dist = norm(lambda_ - lambda_old)
 
+    # log("Leaving mixent after {} iterations".format(str(iter_general)), lg.DEBUG)
     Exp_neg_Gt_lambda = np.exp(-matrix.T.dot(lambda_))  # POV exp(-Gt.lambda)
     lambda0 = np.log(q.T.dot(Exp_neg_Gt_lambda))
     pk = (q * Exp_neg_Gt_lambda) / (q.T.dot(Exp_neg_Gt_lambda))
@@ -78,5 +78,5 @@ def minxent_gradient(q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_
     # pi_solve = q * np.exp(-lambda0) * np.exp(-lambda_.dot(G[1:, :]))
     Lagrangians.append([lambda0, lambda_.tolist()])
     test_pierreolivier = matrix.dot(pk) - eta
-
+    # log("test PO : " + str(test_pierreolivier/eta), 10)
     return pk.tolist(), lambda_
