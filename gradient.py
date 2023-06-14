@@ -1,6 +1,7 @@
 
 
 from bhepop2.gradient_enrich import MaxEntropyEnrichment_gradient
+from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
 from bhepop2.tools import read_filosofi, filosofi_attributes
 from bhepop2.analysis import analyse_enriched_populations
 import bhepop2.utils as utils
@@ -8,7 +9,7 @@ import bhepop2.utils as utils
 import pandas as pd
 import os
 
-ANALYSIS_OUTPUT_FOLDER = "plots/test_gradient_0/"
+ANALYSIS_OUTPUT_FOLDER = "plots/test_gradient0/"
 if not os.path.exists(ANALYSIS_OUTPUT_FOLDER):
     os.mkdir(ANALYSIS_OUTPUT_FOLDER)
 
@@ -28,11 +29,11 @@ MODALITIES = {
 
 PARAMETERS = {
     "abs_minimum": 0,
-    "relative_maximum": 1.5,
+    "relative_maximum": 1.2,
     "delta_min": 1000,
 }
 
-utils.logger_level = 20  # set logger level to INFO
+utils.logger_level = 10  # set logger level to INFO
 
 # evaluate gradient enriched population
 
@@ -56,7 +57,18 @@ gradient_enriched = enrich_class.assign_feature_value_to_pop()
 utils.log("End of gradient enrichment", 20)
 
 # get reference enriched population (with previous enrich class MaxEntropyEnrichment)
-reference_enriched = pd.read_csv("tests/data/nantes_enriched.csv")
+# reference_enriched = pd.read_csv("tests/data/nantes_enriched.csv")
+
+enrich_maxentropy = MaxEntropyEnrichment(
+    synth_pop,
+    filosofi,
+    list(MODALITIES.keys()),
+    parameters=PARAMETERS,
+    seed=42
+)
+enrich_maxentropy.optimise()
+
+reference_enriched = enrich_maxentropy.assign_feature_value_to_pop()
 
 # compare enriched populations using plots and error table
 
