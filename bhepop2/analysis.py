@@ -261,7 +261,9 @@ def get_analysis_table(
     analysis_df = analysis_df.pivot(
         columns="source", index=["attribute", "modality", "decile"]
     ).reset_index()
-    analysis_df.columns = ["attribute", "modality", "decile", observed_name] + populations_names
+    columns = list(analysis_df.columns.get_level_values(1))
+    columns[0], columns[1], columns[2] = "attribute", "modality", "decile"
+    analysis_df.columns = columns
 
     return analysis_df
 
