@@ -1,4 +1,4 @@
-from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
+# from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
 
 import numpy as np
 import pandas as pd
