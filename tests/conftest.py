@@ -26,8 +26,6 @@ MODALITIES = {
 parameters = {
     "abs_minimum": 0,
     "relative_maximum": 1.5,
-    "maxentropy_algorithm": "Nelder-Mead",
-    "maxentropy_verbose": 0,
     "delta_min": 1000,
 }
 

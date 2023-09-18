@@ -1,4 +1,4 @@
-from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
+from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
 from bhepop2.utils import *
 
 
@@ -8,5 +8,5 @@ def test_add_defaults_and_validate_against_schema(test_parameters):
     """
 
     add_defaults_and_validate_against_schema(
-        test_parameters, MaxEntropyEnrichment.parameters_schema
+        test_parameters, Bhepop2Enrichment.parameters_schema
     )
