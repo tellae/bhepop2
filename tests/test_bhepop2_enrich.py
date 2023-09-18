@@ -23,6 +23,6 @@ def test_bhepop2_enrich(
 
     pop = enrich_class.assign_feature_value_to_pop()
 
-    # pop.to_csv("tests/nantes_enriched_gradient.csv", index=False)
+    # pop.to_csv("tests/data/nantes_enriched.csv", index=False)
 
     assert np.all((pop == expected_enriched_population_nantes).to_numpy())
