@@ -31,6 +31,7 @@ def test_bhepop2_enrich(
     assert np.shape(expected_enriched_population_nantes) == shape
     for i in range(shape[0]):
         for j in range(shape[1]):
+            print(i, j)
             assert pop[i, j] == expected_enriched_population_nantes[i, j]
 
     # assert np.all((pop == expected_enriched_population_nantes).to_numpy())
