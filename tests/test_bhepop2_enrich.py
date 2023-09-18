@@ -1,7 +1,6 @@
-from bhepop2.gradient_enrich import MaxEntropyEnrichment_gradient
+from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
 
 import numpy as np
-import pandas as pd
 
 
 def test_bhepop2_enrich(
@@ -10,8 +9,9 @@ def test_bhepop2_enrich(
     test_modalities,
     test_parameters,
     test_seed,
+    expected_enriched_population_nantes
 ):
-    enrich_class = MaxEntropyEnrichment_gradient(
+    enrich_class = Bhepop2Enrichment(
         synthetic_population_nantes,
         filosofi_distributions_nantes,
         list(test_modalities.keys()),
@@ -25,6 +25,4 @@ def test_bhepop2_enrich(
 
     # pop.to_csv("tests/nantes_enriched_gradient.csv", index=False)
 
-    expected_enriched_pop = pd.read_csv("tests/nantes_enriched_gradient.csv")
-
-    assert np.all((pop == expected_enriched_pop).to_numpy())
+    assert np.all((pop == expected_enriched_population_nantes).to_numpy())
