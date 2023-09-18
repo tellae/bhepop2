@@ -33,12 +33,12 @@ TEST_DATA_FOLDER = "tests/data/"
 TMP_DIR = "tests/tmp/"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def tmp_dir():
     return TMP_DIR
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def tmp_dir_create_delete(tmp_dir):
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
@@ -48,32 +48,32 @@ def tmp_dir_create_delete(tmp_dir):
     shutil.rmtree(tmp_dir)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_insee_code():
     return CODE_INSEE
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_modalities():
     return MODALITIES
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_attributes(test_modalities):
     return get_attributes(test_modalities)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_parameters():
     return parameters
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_seed():
     return SEED
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def filosofi_distributions_nantes(test_insee_code):
     filosofi = read_filosofi(
         TEST_DATA_FOLDER + "FILO_DISP_COM.xls", "15", filosofi_attributes, [test_insee_code]
@@ -82,21 +82,21 @@ def filosofi_distributions_nantes(test_insee_code):
     return filosofi
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def synthetic_population_nantes():
     return pd.read_csv(TEST_DATA_FOLDER + "nantes_synth_pop.csv", sep=";")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def expected_enriched_population_nantes():
     return pd.read_csv(TEST_DATA_FOLDER + "nantes_enriched.csv")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def eqasim_population():
     return pd.read_csv(TEST_DATA_FOLDER + "eqasim_population_0.001.csv", sep=";")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def eqasim_households():
     return pd.read_csv(TEST_DATA_FOLDER + "eqasim_households_0.001.csv", sep=";")
