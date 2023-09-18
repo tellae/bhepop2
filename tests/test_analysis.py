@@ -21,15 +21,15 @@ def test_compute_distribution(expected_enriched_population_nantes):
     Test that computed distribution is exactly the same as expected
     """
     expected = [
-        {"feature": 10330.0, "decile": "D1"},
-        {"feature": 12958.7, "decile": "D2"},
-        {"feature": 14799.0, "decile": "D3"},
-        {"feature": 16629.4, "decile": "D4"},
-        {"feature": 18402.3, "decile": "D5"},
-        {"feature": 21097.6, "decile": "D6"},
-        {"feature": 24057.4, "decile": "D7"},
-        {"feature": 28264.0, "decile": "D8"},
-        {"feature": 34245.5, "decile": "D9"},
+        {"feature": 9799.0, "decile": "D1"},
+        {"feature": 12811.0, "decile": "D2"},
+        {"feature": 15368.0, "decile": "D3"},
+        {"feature": 17877.0, "decile": "D4"},
+        {"feature": 20276.0, "decile": "D5"},
+        {"feature": 23217.0, "decile": "D6"},
+        {"feature": 26824.0, "decile": "D7"},
+        {"feature": 31915.8, "decile": "D8"},
+        {"feature": 42027.4, "decile": "D9"},
     ]
 
     assert (

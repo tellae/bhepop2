@@ -23,6 +23,6 @@ def test_max_entropy_enrich(
 
     pop = enrich_class.assign_feature_value_to_pop()
 
-    expected_enriched_pop = pd.read_csv("tests/nantes_enriched_maxentropy.csv")
+    expected_enriched_pop = pd.read_csv("tests/data/nantes_enriched_maxentropy.csv")
 
     assert np.all((pop == expected_enriched_pop).to_numpy())
