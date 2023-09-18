@@ -71,9 +71,7 @@ class Bhepop2Enrichment:
 
         # random seed (maybe use a random generator instead)
         self.seed = seed
-        print("seed", seed)
         if seed is not None:
-            print("seed", seed)
             random.seed(seed)
 
         # original population to be enriched
