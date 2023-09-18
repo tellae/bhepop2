@@ -1,4 +1,3 @@
-
 import logging as lg
 import numpy as np
 import random
@@ -48,17 +47,17 @@ class Bhepop2Enrichment:
                 "type": ["null", "number"],
                 "default": None,
                 "minimum": 0,
-            }
+            },
         },
     }
 
     def __init__(
-            self,
-            population: pd.DataFrame,
-            distributions: pd.DataFrame,
-            attribute_selection: list = None,
-            parameters=None,
-            seed=None,
+        self,
+        population: pd.DataFrame,
+        distributions: pd.DataFrame,
+        attribute_selection: list = None,
+        parameters=None,
+        seed=None,
     ):
         """
         Synthetic population enrichment class.
@@ -135,7 +134,9 @@ class Bhepop2Enrichment:
         distributions = distributions.copy()
 
         # filter distributions and infer modalities
-        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(distributions, attribute_selection)
+        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
+            distributions, attribute_selection
+        )
 
         # check that there are modalities at the end
         assert (
@@ -220,8 +221,9 @@ class Bhepop2Enrichment:
                     k.append(self.constraints[attribute][modality][i])
             k = np.array([k])
 
-            res.loc[:, i], lambda_ = minxent_gradient(q=q, matrix=self.crossed_modalities_matrix, eta=k, lambda_=lambda_,
-                                                      maxiter=1000)
+            res.loc[:, i], lambda_ = minxent_gradient(
+                q=q, matrix=self.crossed_modalities_matrix, eta=k, lambda_=lambda_, maxiter=1000
+            )
 
         return res
 
@@ -274,6 +276,7 @@ class Bhepop2Enrichment:
     def get_prior_prob(self):
         def function_prior_prob(x_array):
             return self.crossed_modalities_frequencies["probability"].apply(math.log)
+
         return function_prior_prob
 
     def _compute_constraints(self):
@@ -344,7 +347,7 @@ class Bhepop2Enrichment:
         decile_tmp = self.distributions[
             self.distributions["modality"].isin([modality])
             & self.distributions["attribute"].isin([attribute])
-            ]
+        ]
 
         total_population_decile_tmp = [
             float(decile_tmp["D1"]),
@@ -459,7 +462,7 @@ class Bhepop2Enrichment:
         """
 
         # get probs
-        probs = res.loc[index, ].to_numpy()
+        probs = res.loc[index,].to_numpy()
         interval_values = [self.parameters["abs_minimum"]] + self.feature_values
 
         # get the non-null probs and values
@@ -469,7 +472,7 @@ class Bhepop2Enrichment:
             if pd.isna(probs[i]):
                 continue
             probs2.append(probs[i])
-            values2.append(interval_values[i+1])
+            values2.append(interval_values[i + 1])
         # TODO : probs don't sum to 1, this isn't reassuring
 
         # draw a feature interval using the probs
@@ -482,7 +485,9 @@ class Bhepop2Enrichment:
 
         draw = random.random()
 
-        final = round(lower + (upper - lower) * draw)  # POV : pourquoi on arrondit ? Cela n'explique pas les problèmes
+        final = round(
+            lower + (upper - lower) * draw
+        )  # POV : pourquoi on arrondit ? Cela n'explique pas les problèmes
 
         return final
 

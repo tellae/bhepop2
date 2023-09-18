@@ -1,11 +1,12 @@
-
 import numpy as np
 from numpy.linalg import norm
 from .utils import log
 import logging as lg
 
 
-def minxent_gradient(q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_: np.ndarray, maxiter: int):
+def minxent_gradient(
+    q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_: np.ndarray, maxiter: int
+):
     # remove first constraint
     matrix = matrix.copy()[1:, :]
     eta = eta.copy()[:, 1:]
@@ -64,7 +65,10 @@ def minxent_gradient(q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_
 
             # fail to converge
             if alpha < 1e-06 or alpha > 1e6:
-                log("Leaving gradient descent due to extreme alpha value : {}".format(alpha), lg.DEBUG)
+                log(
+                    "Leaving gradient descent due to extreme alpha value : {}".format(alpha),
+                    lg.DEBUG,
+                )
                 break
 
         dist = norm(lambda_ - lambda_old)

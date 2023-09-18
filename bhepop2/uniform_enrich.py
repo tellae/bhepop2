@@ -1,7 +1,7 @@
 import numpy as np
 
 
-# TODO : refactor this function in a class similar to Bhepop2Enrichment
+# TODO : refactor this function in a class similar to Bhepop2Enrichment (started below)
 def uniform_enrich(population, distributions, abs_minimum, relative_maximum, seed):
     """
 

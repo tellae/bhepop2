@@ -1,5 +1,3 @@
-
-
 from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
 from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
 from bhepop2.tools import read_filosofi, filosofi_attributes
@@ -45,12 +43,12 @@ filosofi = read_filosofi("data/FILO_DISP_COM.xls", "15", filosofi_attributes, ["
 
 # create enrich class and generate enriched population
 enrich_class = Bhepop2Enrichment(
-        synth_pop,
-        filosofi,
-        list(MODALITIES.keys()),
-        parameters=PARAMETERS,
-        seed=42,
-    )
+    synth_pop,
+    filosofi,
+    list(MODALITIES.keys()),
+    parameters=PARAMETERS,
+    seed=42,
+)
 enrich_class.optimise()
 
 gradient_enriched = enrich_class.assign_feature_value_to_pop()
@@ -60,11 +58,7 @@ utils.log("End of gradient enrichment", 20)
 # reference_enriched = pd.read_csv("tests/data/nantes_enriched.csv")
 
 enrich_maxentropy = MaxEntropyEnrichment(
-    synth_pop,
-    filosofi,
-    list(MODALITIES.keys()),
-    parameters=PARAMETERS,
-    seed=42
+    synth_pop, filosofi, list(MODALITIES.keys()), parameters=PARAMETERS, seed=42
 )
 enrich_maxentropy.optimise()
 
@@ -74,10 +68,7 @@ reference_enriched = enrich_maxentropy.assign_feature_value_to_pop()
 
 utils.log("Generating compared analysis between reference and gradient enrichment", 20)
 
-populations = {
-    "reference": reference_enriched,
-    "gradient": gradient_enriched
-}
+populations = {"reference": reference_enriched, "gradient": gradient_enriched}
 
 analyse_enriched_populations(
     populations,
