@@ -2,12 +2,13 @@ import logging as lg
 import random
 import pandas as pd
 from bhepop2 import functions
-from bhepop2.max_entropy_enrich import MaxEntropyEnrichment
+from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
 
 
-############  New class wich inherits from     MaxEntropyEnrichment POV ###############
+############  New class wich inherits from Bhepop2Enrichment POV ###############
 
-class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
+
+class QualitativeEnrichment(Bhepop2Enrichment):
     """
     A class for enriching population using entropy maximisation.
 
@@ -19,26 +20,10 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
 
     #: json schema of the enrichment parameters Modified by POV
     parameters_schema = {
-        "title": "MaxEntropyEnrichment parameters",
+        "title": "QualitativeEnrichment parameters",
         "description": "Parameters of a population enrichment run",
         "type": "object",
-        "required": [
-            "maxentropy_algorithm",
-            "maxentropy_verbose",
-        ],
         "properties": {
-            "maxentropy_algorithm": {
-                "title": "maxentropy algorithm parameter",
-                "description": "Algorithm used for maxentropy optimization. See maxentropy BaseModel class for more information.",
-                "type": "string",
-                "default": "Nelder-Mead",
-            },
-            "maxentropy_verbose": {
-                "title": "maxentropy verbose parameter",
-                "description": "Verbosity of maxentropy library. Set to 1 for detailed output.",
-                "enum": [0, 1],
-                "default": 0,
-            },
         },
     }     
         
@@ -56,8 +41,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
 
         # validate distributions format and contents
         # functions.validate_distributions(distributions) POV  Pas de validation pour le moment
-      
-       
+
         distributions = distributions.copy()
 
         # filter distributions using the attribute selection
@@ -75,7 +59,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         # infer attributes and their modalities from the filtered distribution
         self.modalities = functions.infer_modalities_from_distributions(distributions)
 
-        # MODIFIED BY POV 
+    # MODIFIED BY POV
     def optimise(self):
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
@@ -90,14 +74,10 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
 
         # compute vector of feature values
         self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = ["0voit", "1voit", "2voit", "3voit"] # Modification léo
-        #self.feature_values = functions.compute_feature_values(self.distributions) # Modification POV
+        self.feature_values = ["0voit", "1voit", "2voit", "3voit"]  # Modification léo
+        # self.feature_values = functions.compute_feature_values(self.distributions) # Modification POV
         self.nb_features = len(self.feature_values)
         self.log("Number of feature values: {}".format(self.nb_features))
-
-        # create and set the maxentropy model
-        self.log("Creating optimization model", lg.INFO)
-        self._create_maxentropy_model()
 
         # compute matrix of constraints
         self.log("Computing optimization constraints", lg.INFO)
@@ -121,7 +101,7 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         :return: DataFrame
         """
 
-        prob_df= self.distributions[
+        prob_df = self.distributions[
             self.distributions["modality"].isin([modality])
             & self.distributions["attribute"].isin([attribute])
         ]
@@ -131,7 +111,6 @@ class MaxEntropyEnrichment_qualitative(MaxEntropyEnrichment):
         res["prob"] = res["feature"].apply(lambda x: prob_df[x])
 
         return res
-
 
     def assign_feature_value_to_pop(self):
         """
