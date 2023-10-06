@@ -3,7 +3,7 @@ import random
 import pandas as pd
 from bhepop2 import functions
 from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
-
+import numpy as np
 
 ############  New class wich inherits from Bhepop2Enrichment POV ###############
 
@@ -140,6 +140,43 @@ class QualitativeEnrichment(Bhepop2Enrichment):
 
         return merge
 
+    def _get_feature_probs(self):
+        """
+        For each crossed modality, compute the probability of belonging to a feature interval.
+
+        Invert the crossed modality probabilities using Bayes.
+
+        Compute
+
+        .. math::
+
+            P(f < F_{i} \mid M_{k}) = P(M_{k} \mid f < F_{i}) \\cdot \\frac{P(f < F_{i})}{P(M_{k})}
+
+        :return: DataFrame
+        """
+
+        feature_probs = self._compute_feature_probabilities_from_distributions()
+
+        res = self.optim_result
+
+        nb_columns = len(res.columns)
+
+        for c in res.columns:
+            res[c] = res[c].map(lambda x: x[0])  # POV sur conseils de Valentin
+
+        for i in range(nb_columns):
+            res[i] = res[i] * feature_probs["prob"][i]
+
+        for i in range(len(res)):
+            total = res.iloc[i, :].sum()
+            res.iloc[i, :] = res.iloc[i, :] / total
+
+        pd.set_option("display.max_rows", 500)
+        pd.set_option("display.max_columns", 500)
+        pd.set_option("display.width", 1000)
+
+        return res
+
     def _draw_feature(self, res, index):
         """
         Draw a feature value using the given distribution.
@@ -151,7 +188,7 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         """
 
         # get probs
-        probs = res.loc[index,].to_numpy()
+        probs = res.loc[index, ].to_numpy()
         #interval_values = [self.parameters["abs_minimum"]] + self.feature_values POV
 
         # get the non-null probs and values
