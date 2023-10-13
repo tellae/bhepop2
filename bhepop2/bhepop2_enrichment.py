@@ -394,33 +394,33 @@ class Bhepop2Enrichment:
             res[i] = res[i] * feature_probs["prob"][i]
 
         for i in range(len(res)):
-            last = res.iloc[i, -1]
-            res.iloc[i, :] = res.iloc[i, :] / last
+            total = res.iloc[i, :].sum()
+            res.iloc[i, :] = res.iloc[i, :] / total
         pd.set_option("display.max_rows", 500)
         pd.set_option("display.max_columns", 500)
         pd.set_option("display.width", 1000)
 
-        cumulated_results = res.to_numpy()
+        # cumulated_results = res.to_numpy()
 
-        matrix = []
+        # matrix = []
+        #
+        # for l in range(len(res)):
+        #     last = cumulated_results[l, 0]
+        #     row = [last]
+        #     for i in range(1, self.nb_features):
+        #         prob = cumulated_results[l, i] - last
+        #         if prob <= 0:
+        #             row.append(np.nan)
+        #         else:
+        #             row.append(prob)
+        #
+        #             last = cumulated_results[l, i]
+        #
+        #     matrix.append(row)
+        #
+        # probs = pd.DataFrame(matrix, columns=res.columns)
 
-        for l in range(len(res)):
-            last = cumulated_results[l, 0]
-            row = [last]
-            for i in range(1, self.nb_features):
-                prob = cumulated_results[l, i] - last
-                if prob <= 0:
-                    row.append(np.nan)
-                else:
-                    row.append(prob)
-
-                    last = cumulated_results[l, i]
-
-            matrix.append(row)
-
-        probs = pd.DataFrame(matrix, columns=res.columns)
-
-        return probs
+        return res
 
     def assign_feature_value_to_pop(self):
         """
