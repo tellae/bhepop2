@@ -361,7 +361,7 @@ class Bhepop2Enrichment:
             float(decile_tmp["D7"]),
             float(decile_tmp["D8"]),
             float(decile_tmp["D9"]),
-            self.feature_values[-1]
+            self.feature_values[-1],
         ]
 
         prob_df = functions.compute_features_prob(self.feature_values, total_population_decile_tmp)
