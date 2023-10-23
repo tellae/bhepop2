@@ -8,6 +8,7 @@ def minxent_gradient(
     q: np.ndarray, matrix: np.ndarray, eta: np.ndarray, lambda_: np.ndarray, maxiter: int
 ):
     # remove first constraint
+    # TODO : check that first constraint is density constraint instead of discarding it
     matrix = matrix.copy()[1:, :]
     eta = eta.copy()[:, 1:]
 

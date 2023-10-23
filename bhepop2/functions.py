@@ -155,10 +155,15 @@ def compute_features_prob(feature_values: list, distribution: list):
     probs_df = pd.DataFrame({"feature": feature_values})
 
     # compute prob of being in each feature interval
-    probs_df["prob"] = probs_df.apply(
+    probs_df["cumulative"] = probs_df.apply(
         lambda x: interpolate_feature_prob(x["feature"], distribution),
         axis=1,
     )
+
+    probs_df["tmp"] = probs_df["cumulative"].shift(1)
+    probs_df = probs_df.fillna(0)
+    probs_df["prob"] = probs_df["cumulative"] - probs_df["tmp"]
+    probs_df.drop(columns=["cumulative", "tmp"], inplace=True)
 
     return probs_df
 

@@ -4,7 +4,6 @@ import random
 import pandas as pd
 from bhepop2 import utils
 from bhepop2 import functions
-import math
 from .optim import minxent_gradient
 
 
@@ -15,7 +14,11 @@ class Bhepop2Enrichment:
     Notations used in this class documentation:
 
     - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
-    - :math:`F_{i}` : feature value i
+
+    - :math:`F_{i}` : feature class i
+
+        - For quantitative features, corresponds to a numeric interval.
+        - For qualitative features, corresponds to one of the feature values.
     """
 
     #: json schema of the enrichment parameters
@@ -93,7 +96,7 @@ class Bhepop2Enrichment:
 
         # algorithm data
 
-        # vector of feature values defining the intervals
+        # vector of values defining the feature classes
         self.feature_values = None
 
         # total number of features
@@ -160,6 +163,11 @@ class Bhepop2Enrichment:
         # TODO ? remove distributions unused by population
 
     def optimise(self):
+        """
+        Run the optimisation algorithm to find the probability distributions that maximise entropy.
+
+        When done, set the *optim_result* attribute.
+        """
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
         self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(
@@ -193,7 +201,7 @@ class Bhepop2Enrichment:
         """
         Run optimization model on each feature value.
 
-        The resulting probabilities are the :math:`P(M_{k} \mid f < F_{i})`.
+        The resulting probabilities are the :math:`P(M_{k} \mid f \in F_{i})`.
 
         :return: DataFrame containing the result probabilities
         """
@@ -273,18 +281,12 @@ class Bhepop2Enrichment:
 
         return crossed_modalities_matrix
 
-    def get_prior_prob(self):
-        def function_prior_prob(x_array):
-            return self.crossed_modalities_frequencies["probability"].apply(math.log)
-
-        return function_prior_prob
-
     def _compute_constraints(self):
         """
         For each modality of each attribute, compute the probability of belonging to each feature interval.
 
         .. math::
-            P(Modality \mid f < F_{i}) = P(f < F_{i} \mid Modality) \\cdot \\frac{P(Modality)}{P(f < F_{i})}
+            P(Modality \mid f \in F_{i}) = P(f \in F_{i} \mid Modality) \\cdot \\frac{P(Modality)}{P(f \in F_{i})}
         """
 
         # compute constraints on each modality
@@ -359,7 +361,7 @@ class Bhepop2Enrichment:
             float(decile_tmp["D7"]),
             float(decile_tmp["D8"]),
             float(decile_tmp["D9"]),
-            float(decile_tmp["D9"]) * self.parameters["relative_maximum"],
+            self.feature_values[-1],
         ]
 
         prob_df = functions.compute_features_prob(self.feature_values, total_population_decile_tmp)
@@ -376,7 +378,7 @@ class Bhepop2Enrichment:
 
         .. math::
 
-            P(f < F_{i} \mid M_{k}) = P(M_{k} \mid f < F_{i}) \\cdot \\frac{P(f < F_{i})}{P(M_{k})}
+            P(f \in F_{i} \mid M_{k}) = P(M_{k} \mid f \in F_{i}) \\cdot \\frac{P(f \in F_{i})}{P(M_{k})}
 
         :return: DataFrame
         """
@@ -394,33 +396,33 @@ class Bhepop2Enrichment:
             res[i] = res[i] * feature_probs["prob"][i]
 
         for i in range(len(res)):
-            last = res.iloc[i, -1]
-            res.iloc[i, :] = res.iloc[i, :] / last
+            total = res.iloc[i, :].sum()
+            res.iloc[i, :] = res.iloc[i, :] / total
         pd.set_option("display.max_rows", 500)
         pd.set_option("display.max_columns", 500)
         pd.set_option("display.width", 1000)
 
-        cumulated_results = res.to_numpy()
+        # cumulated_results = res.to_numpy()
 
-        matrix = []
+        # matrix = []
+        #
+        # for l in range(len(res)):
+        #     last = cumulated_results[l, 0]
+        #     row = [last]
+        #     for i in range(1, self.nb_features):
+        #         prob = cumulated_results[l, i] - last
+        #         if prob <= 0:
+        #             row.append(np.nan)
+        #         else:
+        #             row.append(prob)
+        #
+        #             last = cumulated_results[l, i]
+        #
+        #     matrix.append(row)
+        #
+        # probs = pd.DataFrame(matrix, columns=res.columns)
 
-        for l in range(len(res)):
-            last = cumulated_results[l, 0]
-            row = [last]
-            for i in range(1, self.nb_features):
-                prob = cumulated_results[l, i] - last
-                if prob <= 0:
-                    row.append(np.nan)
-                else:
-                    row.append(prob)
-
-                    last = cumulated_results[l, i]
-
-            matrix.append(row)
-
-        probs = pd.DataFrame(matrix, columns=res.columns)
-
-        return probs
+        return res
 
     def assign_feature_value_to_pop(self):
         """
@@ -497,7 +499,7 @@ class Bhepop2Enrichment:
 
         Use the global distribution of the features to interpolate the interval probabilities.
 
-        The resulting DataFrame contains :math:`P(f < F_{i})` for i in N
+        The resulting DataFrame contains :math:`P(f \in F_{i})` for i in N
 
         :return: DataFrame
         """
