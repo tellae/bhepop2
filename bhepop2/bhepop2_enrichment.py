@@ -4,7 +4,6 @@ import random
 import pandas as pd
 from bhepop2 import utils
 from bhepop2 import functions
-import math
 from .optim import minxent_gradient
 
 

@@ -87,6 +87,12 @@ Run tests from the root of the project using pytest. Use the -v option for verbo
 pytest [-v]
 ```
 
+Code coverage can be obtained with the pytest-cov plugin, using the following command
+
+```bash
+pytest --cov=bhepop2 --cov-report html
+```
+
 ### Auto-run on PRs
 
 Tests are automatically run when making a PR on gitHub
