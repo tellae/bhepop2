@@ -3,7 +3,7 @@ This is the main bhepop2 package.
 """
 
 #: bhepop2 version
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 # from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
 #
