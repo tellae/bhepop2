@@ -34,12 +34,12 @@ submitting bug reports and feature requests or writing code which can be incorpo
 
 ## Coding style and commit messages
     
-#### Coding style
+### Coding style
 
 The coding style imposed on Bhepop2 includes:
 
   - respect [PEP8 style guide](https://peps.python.org/pep-0008/) as much as possible
-  - [black](https://black.readthedocs.io/en/stable/) code style with max line length of 100
+  - [black](https://black.readthedocs.io/en/stable/) code style with max line length of 100 (see below)
   - write code in english
   - use [Python typing](https://docs.python.org/3/library/typing.html) when possible
   - reST docstring style (for [Sphinx](https://www.sphinx-doc.org/en/master/index.html) documentation). Example: 
@@ -57,8 +57,61 @@ def function(param1: str, param2: int):
     return param1, param2
 ```
 
+#### Black formatting
 
-#### Commit message convention
+Black formatting is done by installing and running Black at the project root. 
+The only option to provide is the maximum line length.
+
+```bash
+black -l 100 .
+
+# black will list every file modified during the process
+```
+
+
+Black style formatting is automatically checked when making a PR on GitHub.
+
+
+### Commit message convention
 
 Commits on branch `main` must use the [conventional commit convention](https://www.conventionalcommits.org/en/v1.0.0/)
 in order to generate a [changelog from the commits](https://github.com/conventional-changelog/standard-version)
+
+## Testing
+
+### Run tests locally
+
+Run tests from the root of the project using pytest. Use the -v option for verbose output.
+
+```bash
+pytest [-v]
+```
+
+### Auto-run on PRs
+
+Tests are automatically run when making a PR on gitHub
+
+## Documentation
+
+### Local generation
+
+Documentation is generated using Sphinx. Pages are generated from the .rst files
+in the *docs/* folder and from the code docstrings.
+
+To render documentation locally, run the following command
+
+```bash
+sphinx-build -M html ./docs/ ./docs/_build/
+```
+
+You can then read the generated html files using any browser. For instance
+```bash
+firefox docs/_build/html/index.html
+```
+
+### Online hosting
+
+The Sphinx documentation is hosted freely by ReadtheDocs for open source projects.
+You can find the documentation of Bhepop2 [here](https://bhepop2.readthedocs.io/en/latest/).
+
+A new version of the documentation is automatically deployed when running the *release* GitHub action.
