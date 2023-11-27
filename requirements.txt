@@ -1,7 +1,5 @@
 numpy
 pandas
-tqdm
-xlrd
 jsonschema
 scipy
 scikit-learn
