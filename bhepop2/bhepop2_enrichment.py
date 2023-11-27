@@ -352,15 +352,15 @@ class Bhepop2Enrichment:
         ]
 
         total_population_decile_tmp = [
-            float(decile_tmp["D1"]),
-            float(decile_tmp["D2"]),
-            float(decile_tmp["D3"]),
-            float(decile_tmp["D4"]),
-            float(decile_tmp["D5"]),
-            float(decile_tmp["D6"]),
-            float(decile_tmp["D7"]),
-            float(decile_tmp["D8"]),
-            float(decile_tmp["D9"]),
+            float(decile_tmp["D1"].iloc[0]),
+            float(decile_tmp["D2"].iloc[0]),
+            float(decile_tmp["D3"].iloc[0]),
+            float(decile_tmp["D4"].iloc[0]),
+            float(decile_tmp["D5"].iloc[0]),
+            float(decile_tmp["D6"].iloc[0]),
+            float(decile_tmp["D7"].iloc[0]),
+            float(decile_tmp["D8"].iloc[0]),
+            float(decile_tmp["D9"].iloc[0]),
             self.feature_values[-1],
         ]
 
