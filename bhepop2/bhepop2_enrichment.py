@@ -201,7 +201,7 @@ class Bhepop2Enrichment:
         """
         Run optimization model on each feature value.
 
-        The resulting probabilities are the :math:`P(M_{k} \mid f \in F_{i})`.
+        The resulting probabilities are the :math:`P(M_{k} \\mid f \\in F_{i})`.
 
         :return: DataFrame containing the result probabilities
         """
@@ -286,7 +286,7 @@ class Bhepop2Enrichment:
         For each modality of each attribute, compute the probability of belonging to each feature interval.
 
         .. math::
-            P(Modality \mid f \in F_{i}) = P(f \in F_{i} \mid Modality) \\cdot \\frac{P(Modality)}{P(f \in F_{i})}
+            P(Modality \\mid f \\in F_{i}) = P(f \\in F_{i} \\mid Modality) \\cdot \\frac{P(Modality)}{P(f \\in F_{i})}
         """
 
         # compute constraints on each modality
@@ -378,7 +378,7 @@ class Bhepop2Enrichment:
 
         .. math::
 
-            P(f \in F_{i} \mid M_{k}) = P(M_{k} \mid f \in F_{i}) \\cdot \\frac{P(f \in F_{i})}{P(M_{k})}
+            P(f \\in F_{i} \\mid M_{k}) = P(M_{k} \\mid f \\in F_{i}) \\cdot \\frac{P(f \\in F_{i})}{P(M_{k})}
 
         :return: DataFrame
         """
@@ -499,7 +499,7 @@ class Bhepop2Enrichment:
 
         Use the global distribution of the features to interpolate the interval probabilities.
 
-        The resulting DataFrame contains :math:`P(f \in F_{i})` for i in N
+        The resulting DataFrame contains :math:`P(f \\in F_{i})` for i in N
 
         :return: DataFrame
         """
