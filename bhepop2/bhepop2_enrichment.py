@@ -309,7 +309,7 @@ class Bhepop2Enrichment:
                 # multiply frequencies by each element of ech_compo
                 value = attribute_freq[attribute_freq[attribute].isin([modality])]
                 if len(value) > 0:
-                    probability = value["probability"]
+                    probability = value["probability"].iloc[0]
                 else:
                     probability = 0
                 df = ech[attribute][modality]
