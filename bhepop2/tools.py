@@ -361,11 +361,11 @@ def read_distributions_from_filosofi(
             "%sD%d" % (col_pattern, q) + year if q != 5 else col_pattern + "Q2" + year
             for q in range(1, 10)
         ]
-    ]
+    ].copy()
     data.columns = ["commune_id", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]
-    data["reference_median"] = data["D5"]
-    data["modality"] = modality
-    data["attribute"] = attribute
+    data.loc[:, "reference_median"] = data["D5"]
+    data.loc[:, "modality"] = modality
+    data.loc[:, "attribute"] = attribute
 
     if communes is not None:
         data = data[data["commune_id"].isin(communes)]

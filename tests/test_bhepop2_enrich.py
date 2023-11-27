@@ -1,10 +1,8 @@
 from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
 
 import numpy as np
-import pytest
 
 
-@pytest.mark.skip  # runs locally but not on gh actions
 def test_bhepop2_enrich(
     synthetic_population_nantes,
     filosofi_distributions_nantes,
