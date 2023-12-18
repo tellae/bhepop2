@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from scipy.optimize import linprog
-import pdb
 
 
 # generic functions
@@ -243,7 +242,7 @@ def validate_population(population: pd.DataFrame, modalities: dict):
     :param modalities:
     :raises: AssertionError
     """
-    # pdb.set_trace()
+
     attributes = get_attributes(modalities)
 
     assert {*attributes} <= set(population.columns)
