@@ -75,7 +75,7 @@ class QualitativeEnrichment(Bhepop2Enrichment):
 
         # compute vector of feature values
         self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = ["0voit", "1voit", "2voit", "3voit"]  # Modification léo
+        self.feature_values = functions.get_feature_from_qualitative_distribution(self.distributions)
         # self.feature_values = functions.compute_feature_values(self.distributions) # Modification POV
         self.nb_features = len(self.feature_values)
         self.log("Number of feature values: {}".format(self.nb_features))
