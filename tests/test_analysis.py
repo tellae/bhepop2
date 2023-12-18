@@ -2,7 +2,7 @@ import pandas as pd
 
 from bhepop2.analysis import *
 import pyarrow.feather as feather
-from bhepop2.functions import infer_modalities_from_distributions, infer_feature_modalities_from_distributions
+from bhepop2.functions import infer_modalities_from_distributions, get_feature_from_qualitative_distribution
 
 def test_analyse_enriched_population(
     filosofi_distributions_nantes, expected_enriched_population_nantes, test_modalities, tmp_dir
@@ -165,7 +165,7 @@ def compute_distribution(df: pd.DataFrame, feature_column_name: str = "feature")
 
 
 def format_distributions_for_analysis(distributions):
-    feature_values = infer_feature_modalities_from_distributions(distributions)
+    feature_values = get_feature_from_qualitative_distribution(distributions)
     distributions = distributions[
         ["attribute", "modality"] + feature_values
     ]

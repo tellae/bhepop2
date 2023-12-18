@@ -100,23 +100,7 @@ def infer_modalities_from_distributions(distributions: pd.DataFrame):
     return modalities
 
 
-# POV
-def infer_feature_modalities_from_distributions(distributions: pd.DataFrame):
-    """
-    Infer feature modalities from the given distributions.
-
-    :param distributions: distributions DataFrame
-
-    :return: list of modalities , { attribute: [modalities] }
-    """
-
-    modalities = list(distributions.columns)
-    modalities.remove("attribute")
-    modalities.remove("modality")
-
-    return modalities
-
-
+# TODO : rename with reference to quantitative nature of distribution. Or move to quantitative class
 def compute_feature_values(
         distribution: pd.DataFrame, relative_maximum: float, delta_min=None
 ) -> list:
@@ -157,6 +141,24 @@ def compute_feature_values(
         vec_all = filtered_vec
 
     return vec_all
+
+
+def get_feature_from_qualitative_distribution(distribution: pd.DataFrame):
+    """
+    Get feature values from the given distributions.
+
+    :param distribution: distribution DataFrame
+
+    :return: list of possible values for the qualitative feature
+    """
+
+    features = list(distribution.columns)
+    features.remove("attribute")
+    features.remove("modality")
+
+    assert (distribution[features].apply(lambda row: row.sum(), axis=1) == 1).all()
+
+    return features
 
 
 def compute_features_prob_qualitative(feature_values: list, distribution: list):
