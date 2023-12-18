@@ -11,6 +11,8 @@ def test_bhepop2_enrich(
     test_seed,
     expected_enriched_population_nantes,
 ):
+    synthetic_population_nantes.drop("sex", axis=1, inplace=True)
+
     enrich_class = Bhepop2Enrichment(
         synthetic_population_nantes,
         filosofi_distributions_nantes,
