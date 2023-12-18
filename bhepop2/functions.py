@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.optimize import linprog
+import pdb
 
 
 # generic functions
@@ -100,8 +101,25 @@ def infer_modalities_from_distributions(distributions: pd.DataFrame):
     return modalities
 
 
+# POV
+def infer_feature_modalities_from_distributions(distributions: pd.DataFrame):
+    """
+    Infer feature modalities from the given distributions.
+
+    :param distributions: distributions DataFrame
+
+    :return: list of modalities , { attribute: [modalities] }
+    """
+
+    modalities = list(distributions.columns)
+    modalities.remove("attribute")
+    modalities.remove("modality")
+
+    return modalities
+
+
 def compute_feature_values(
-    distribution: pd.DataFrame, relative_maximum: float, delta_min=None
+        distribution: pd.DataFrame, relative_maximum: float, delta_min=None
 ) -> list:
     """
     Compute the list of feature values that will define the assignment intervals.
@@ -140,6 +158,25 @@ def compute_feature_values(
         vec_all = filtered_vec
 
     return vec_all
+
+
+def compute_features_prob_qualitative(feature_values: list, distribution: list):
+    """
+    Create a DataFrame containing probabilities for the given feature values.
+
+    :param feature_values: list of feature values
+    :param distribution: list of distribution values
+
+    :return: DataFrame of feature probabilities
+    """
+    # set features column
+    probs_df = pd.DataFrame({"feature": feature_values})
+
+    # compute prob of being in each feature interval
+    probs_df["prob"] = probs_df.apply(
+        lambda x: interpolate_feature_prob(x["feature"], distribution),
+        axis=1,
+    )
 
 
 def compute_features_prob(feature_values: list, distribution: list):
@@ -187,7 +224,7 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
         decile_top += 1
 
     interpolation = (feature_value - distribution[decile_top - 1]) * (
-        decile_top * 0.1 - (decile_top - 1) * 0.1
+            decile_top * 0.1 - (decile_top - 1) * 0.1
     ) / (distribution[decile_top] - distribution[decile_top - 1]) + (decile_top - 1) * 0.1
 
     return interpolation
@@ -196,7 +233,7 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
 # population functions
 
 
-def validate_population(population: pd.DataFrame, modalities):
+def validate_population(population: pd.DataFrame, modalities: dict):
     """
     Validate the format and contents of the given population.
 
@@ -206,7 +243,7 @@ def validate_population(population: pd.DataFrame, modalities):
     :param modalities:
     :raises: AssertionError
     """
-
+    # pdb.set_trace()
     attributes = get_attributes(modalities)
 
     assert {*attributes} <= set(population.columns)
@@ -218,7 +255,7 @@ def validate_population(population: pd.DataFrame, modalities):
 
 
 def compute_crossed_modalities_frequencies(
-    population: pd.DataFrame, modalities: dict
+        population: pd.DataFrame, modalities: dict
 ) -> pd.DataFrame:
     """
     Compute the frequency of each crossed modality present in the population.
