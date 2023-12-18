@@ -1,10 +1,6 @@
 from bhepop2.max_entropy_enrich_qualitative import QualitativeEnrichment
 
-import numpy as np
-import pyarrow.feather as feather
 import pytest
-import pandas as pd
-import itertools
 from bhepop2.functions import *
 
 
@@ -41,9 +37,7 @@ def build_cross_table(pop: pd.DataFrame, names_attribute: list):
 
 @pytest.fixture(scope="session")
 def pop_synt_men_nantes():
-    synt_pop = feather.read_feather("tests/data/pop_synt_men_nantes.feather")
-    synt_pop = synt_pop.drop(['VOIT'], axis=1)
-    synt_pop = synt_pop.dropna()
+    synt_pop = pd.read_csv("tests/data/pop_synth_men_nantes.csv")
     return synt_pop
 
 

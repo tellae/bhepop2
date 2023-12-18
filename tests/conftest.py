@@ -88,6 +88,12 @@ def synthetic_population_nantes():
 
 
 @pytest.fixture(scope="session")
+def pop_synt_men_nantes():
+    synt_pop = pd.read_csv("tests/data/pop_synth_men_nantes.csv")
+    return synt_pop
+
+
+@pytest.fixture(scope="session")
 def expected_enriched_population_nantes():
     return pd.read_csv(TEST_DATA_FOLDER + "nantes_enriched.csv")
 

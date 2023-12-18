@@ -1,8 +1,7 @@
-import pandas as pd
 
 from bhepop2.analysis import *
-import pyarrow.feather as feather
 from bhepop2.functions import infer_modalities_from_distributions, get_feature_from_qualitative_distribution
+
 
 def test_analyse_enriched_population(
     filosofi_distributions_nantes, expected_enriched_population_nantes, test_modalities, tmp_dir
@@ -226,11 +225,9 @@ def plot_analysis_compare(
     return fig
 
 
-def test_qualitative_analysis():
+def test_qualitative_analysis(pop_synt_men_nantes):
     # synth pop
-    pop = feather.read_feather("data/inputs/pop_synt_men_nantes.feather")
-    pop = pop.drop(['VOIT'], axis=1)  # this attribute is redundant with the attribute 'Voit_rec'
-    pop = pop.dropna()  # POV  some values are set to None : it was detected thanks to the functions.validatee_population
+    pop = pop_synt_men_nantes.copy()
 
     # distributions
     attributes = list(pop.columns[:-1])
