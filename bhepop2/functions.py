@@ -156,7 +156,7 @@ def get_feature_from_qualitative_distribution(distribution: pd.DataFrame):
     features.remove("attribute")
     features.remove("modality")
 
-    assert (distribution[features].apply(lambda row: row.sum(), axis=1) == 1).all()
+    assert (distribution[features].apply(lambda row: np.isclose(row.sum(), 1), axis=1)).all()
 
     return features
 
