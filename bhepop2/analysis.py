@@ -412,7 +412,7 @@ class QualitativeAnalysis(PopulationAnalysis):
         return distributions_formated
 
     def _compute_distribution(self, population: pd.DataFrame) -> pd.DataFrame:
-        population["key"] = 1
+        population.loc[:, "key"] = 1
 
         res = population.groupby(self.feature_column)["key"].agg("count")
 
