@@ -103,7 +103,9 @@ class PopulationAnalysis:
 
         :raises: AssertionError
         """
-        assert self._output_folder is not None, "No output folder is set, use set_output_folder method."
+        assert (
+            self._output_folder is not None
+        ), "No output folder is set, use set_output_folder method."
 
     def _evaluate_analysis_table(self):
         """
