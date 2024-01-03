@@ -41,8 +41,8 @@ class PopulationAnalysis:
         feature_column: str,
         distributions: pd.DataFrame,
         distributions_name: str = "reference",
-        output_folder: str = DEFAULT_OUTPUT_FOLDER,
         plot_title_format: str = DEFAULT_PLOT_TITLE_FORMAT,
+        output_folder: str = None,
     ):
         """
         Create an analysis instance containing the analysed populations and the reference distributions.
@@ -52,8 +52,8 @@ class PopulationAnalysis:
         :param feature_column: name of the column containing the
         :param distributions:
         :param distributions_name:
-        :param output_folder:
         :param plot_title_format:
+        :param output_folder:
         """
         # analysed data
 
@@ -78,13 +78,32 @@ class PopulationAnalysis:
         self.feature_column = feature_column
 
         # output fields
-        if not path.isdir(output_folder):
-            raise ValueError(f"{output_folder} is not a folder")
-        self.output_folder = output_folder
+        self._output_folder = None
+        if output_folder:  # pragma: no cover
+            self.set_output_folder(output_folder)
+
         self.plot_title_format = plot_title_format
 
         # analysis table
         self.analysis_table = self._evaluate_analysis_table()
+
+    def set_output_folder(self, output_folder):
+        """
+        Set a new output folder for this analysis instance.
+
+        :param output_folder: valid output folder path
+        """
+        if not path.isdir(output_folder):
+            raise ValueError(f"{output_folder} is not a folder")
+        self._output_folder = output_folder
+
+    def assert_output_folder(self):
+        """
+        Check that the output folder is set.
+
+        :raises: AssertionError
+        """
+        assert self._output_folder is not None, "No output folder is set, use set_output_folder method."
 
     def _evaluate_analysis_table(self):
         """
@@ -178,16 +197,18 @@ class PopulationAnalysis:
         Plots are exported to PNG images in the output folder.
         """
 
+        self.assert_output_folder()
+
         # plot analysis for global distributions
         self.plot_analysis_compare("all", "all").write_image(
-            path.join(self.output_folder, "all-all.png")
+            path.join(self._output_folder, "all-all.png")
         )
 
         # plot analysis by attribute
         for attribute in self.modalities.keys():
             for modality in self.modalities[attribute]:
                 self.plot_analysis_compare(attribute, modality).write_image(
-                    path.join(self.output_folder, f"{attribute}-{modality}.png")
+                    path.join(self._output_folder, f"{attribute}-{modality}.png")
                 )
 
     def plot_analysis_compare(self, attribute: str, modality: str):
@@ -277,6 +298,8 @@ class QuantitativeAnalysis(PopulationAnalysis):
 
         :return: error table DataFrame
         """
+        self.assert_output_folder()
+
         analysis_df = self.analysis_table
         # evaluate distance to distributions
         for population_name in self.populations.keys():
@@ -304,7 +327,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
         # export to csv if asked
         if export_csv:
             error_analysis_df.to_csv(
-                f"{self.output_folder}/analysis_error.csv", sep=";", index=False
+                f"{self._output_folder}/analysis_error.csv", sep=";", index=False
             )
 
         return error_analysis_df
