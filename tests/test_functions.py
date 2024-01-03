@@ -73,14 +73,16 @@ def test_compute_feature_values(
 
 
 def test_get_feature_from_qualitative_distribution():
-    distribution = pd.DataFrame({
-        "attribute": "age",
-        "modality": ["10_17", "18_35"],
-        "0voit": [0.99, 0.35],
-        "1voit": [0.01, 0.5],
-        "2voit": [0, 0.1],
-        "3voit": [0, 0.05],
-    })
+    distribution = pd.DataFrame(
+        {
+            "attribute": "age",
+            "modality": ["10_17", "18_35"],
+            "0voit": [0.99, 0.35],
+            "1voit": [0.01, 0.5],
+            "2voit": [0, 0.1],
+            "3voit": [0, 0.05],
+        }
+    )
 
     features = get_feature_from_qualitative_distribution(distribution)
 

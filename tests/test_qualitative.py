@@ -25,12 +25,14 @@ def build_cross_table(pop: pd.DataFrame, names_attribute: list):
     name_attribute1 = names_attribute[0]
     name_attribute2 = names_attribute[1]
     table_numbers = pd.crosstab(pop[name_attribute2], pop[name_attribute1])
-    table_percentage_attribute2 = table_numbers.transpose().sum() / table_numbers.transpose().sum().sum()
+    table_percentage_attribute2 = (
+        table_numbers.transpose().sum() / table_numbers.transpose().sum().sum()
+    )
     table_percentage = table_numbers / table_numbers.sum()
-    table_percentage['all'] = table_percentage_attribute2
+    table_percentage["all"] = table_percentage_attribute2
     table_percentage = table_percentage.transpose()
-    table_percentage['modality'] = table_percentage.index
-    table_percentage['attribute'] = name_attribute1
+    table_percentage["modality"] = table_percentage.index
+    table_percentage["attribute"] = name_attribute1
 
     return table_percentage
 
@@ -43,28 +45,24 @@ def pop_synt_men_nantes():
 
 @pytest.fixture(scope="session")
 def synth_pop_defected(pop_synt_men_nantes):
-    return pop_synt_men_nantes.drop(['Voit_rec'], axis=1)
+    return pop_synt_men_nantes.drop(["Voit_rec"], axis=1)
 
 
 @pytest.fixture(scope="session")
 def distributions(pop_synt_men_nantes):
     attributes = list(pop_synt_men_nantes.columns[:-1])
-    marginal_distribution = pd.concat(list(map(lambda a: build_cross_table(pop_synt_men_nantes, [a, 'Voit_rec']), attributes)))
-    marginal_distribution = marginal_distribution.loc[~marginal_distribution.index.duplicated(keep='first')]
+    marginal_distribution = pd.concat(
+        list(map(lambda a: build_cross_table(pop_synt_men_nantes, [a, "Voit_rec"]), attributes))
+    )
+    marginal_distribution = marginal_distribution.loc[
+        ~marginal_distribution.index.duplicated(keep="first")
+    ]
     marginal_distribution.loc["all", "attribute"] = "all"
     return marginal_distribution
 
 
-def test_qualitative(
-    synth_pop_defected,
-    distributions,
-    test_seed
-
-):
-
-    enrich_class = QualitativeEnrichment(
-        synth_pop_defected, distributions, seed=test_seed
-    )
+def test_qualitative(synth_pop_defected, distributions, test_seed):
+    enrich_class = QualitativeEnrichment(synth_pop_defected, distributions, seed=test_seed)
     # Run optimisation
     enrich_class.optimise()
     pop = enrich_class.assign_feature_value_to_pop()

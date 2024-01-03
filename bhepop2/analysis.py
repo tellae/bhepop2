@@ -72,7 +72,9 @@ class PopulationAnalysis:
         # check feature column is in populations
         for name, population in populations.items():
             if feature_column not in population.columns:
-                raise KeyError(f"Feature column '{feature_column}' not found in '{name}' population")
+                raise KeyError(
+                    f"Feature column '{feature_column}' not found in '{name}' population"
+                )
         self.feature_column = feature_column
 
         # output fields
@@ -187,9 +189,9 @@ class PopulationAnalysis:
         # plot analysis by attribute
         for attribute in self.modalities.keys():
             for modality in self.modalities[attribute]:
-                self.plot_analysis_compare(
-                    attribute, modality
-                ).write_image(path.join(self.output_folder, f"{attribute}-{modality}.png"))
+                self.plot_analysis_compare(attribute, modality).write_image(
+                    path.join(self.output_folder, f"{attribute}-{modality}.png")
+                )
 
     def plot_analysis_compare(self, attribute: str, modality: str):
         """
@@ -228,7 +230,6 @@ class PopulationAnalysis:
 
 
 class QuantitativeAnalysis(PopulationAnalysis):
-
     CLASS_COLUMN = "decile"
 
     def plot_analysis_compare(self, attribute: str, modality: str):
@@ -271,9 +272,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
 
         return fig
 
-    def generate_analysis_error_table(
-            self, export_csv=True
-    ):
+    def generate_analysis_error_table(self, export_csv=True):
         """
         Generate a table describing how analysed populations deviate from the original distributions.
 
@@ -285,7 +284,8 @@ class QuantitativeAnalysis(PopulationAnalysis):
         # evaluate distance to distributions
         for population_name in self.populations.keys():
             analysis_df[f"{population_name}_perc_error"] = abs(
-                (analysis_df[population_name] - analysis_df[self.distributions_name]) / analysis_df[self.distributions_name]
+                (analysis_df[population_name] - analysis_df[self.distributions_name])
+                / analysis_df[self.distributions_name]
             )
         error_analysis_df = analysis_df.groupby(["attribute", "modality"], as_index=False).agg(
             {f"{population_name}_perc_error": "mean" for population_name in self.populations.keys()}
@@ -306,7 +306,9 @@ class QuantitativeAnalysis(PopulationAnalysis):
 
         # export to csv if asked
         if export_csv:
-            error_analysis_df.to_csv(f"{self.output_folder}/analysis_error.csv", sep=";", index=False)
+            error_analysis_df.to_csv(
+                f"{self.output_folder}/analysis_error.csv", sep=";", index=False
+            )
 
         return error_analysis_df
 
@@ -342,7 +344,6 @@ class QuantitativeAnalysis(PopulationAnalysis):
 
 
 class QualitativeAnalysis(PopulationAnalysis):
-
     CLASS_COLUMN = "feature"
 
     def plot_analysis_compare(self, attribute: str, modality: str):

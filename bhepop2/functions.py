@@ -102,7 +102,7 @@ def infer_modalities_from_distributions(distributions: pd.DataFrame):
 
 # TODO : rename with reference to quantitative nature of distribution. Or move to quantitative class
 def compute_feature_values(
-        distribution: pd.DataFrame, relative_maximum: float, delta_min=None
+    distribution: pd.DataFrame, relative_maximum: float, delta_min=None
 ) -> list:
     """
     Compute the list of feature values that will define the assignment intervals.
@@ -225,7 +225,7 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
         decile_top += 1
 
     interpolation = (feature_value - distribution[decile_top - 1]) * (
-            decile_top * 0.1 - (decile_top - 1) * 0.1
+        decile_top * 0.1 - (decile_top - 1) * 0.1
     ) / (distribution[decile_top] - distribution[decile_top - 1]) + (decile_top - 1) * 0.1
 
     return interpolation
@@ -256,7 +256,7 @@ def validate_population(population: pd.DataFrame, modalities: dict):
 
 
 def compute_crossed_modalities_frequencies(
-        population: pd.DataFrame, modalities: dict
+    population: pd.DataFrame, modalities: dict
 ) -> pd.DataFrame:
     """
     Compute the frequency of each crossed modality present in the population.

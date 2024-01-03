@@ -24,8 +24,7 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         "title": "QualitativeEnrichment parameters",
         "description": "Parameters of a population enrichment run",
         "type": "object",
-        "properties": {
-        },
+        "properties": {},
     }
 
     def _init_distributions(self, distributions, attribute_selection):
@@ -75,7 +74,9 @@ class QualitativeEnrichment(Bhepop2Enrichment):
 
         # compute vector of feature values
         self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = functions.get_feature_from_qualitative_distribution(self.distributions)
+        self.feature_values = functions.get_feature_from_qualitative_distribution(
+            self.distributions
+        )
         # self.feature_values = functions.compute_feature_values(self.distributions) # Modification POV
         self.nb_features = len(self.feature_values)
         self.log("Number of feature values: {}".format(self.nb_features))
@@ -105,7 +106,7 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         prob_df = self.distributions[
             self.distributions["modality"].isin([modality])
             & self.distributions["attribute"].isin([attribute])
-            ]
+        ]
 
         # modif Léo
         res = pd.DataFrame({"feature": self.feature_values})
@@ -234,4 +235,3 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         res["prob"] = res["feature"].apply(lambda x: distrib_all_df[x])
 
         return res
-
