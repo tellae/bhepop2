@@ -114,9 +114,6 @@ class PopulationAnalysis:
         # create an analysis dataframe containing all deciles
         analysis_df = pd.concat(analysis_list)
 
-        print()
-        print(analysis_df)
-
         # pivot data to get final dataframe
         analysis_df = analysis_df.pivot(
             columns="source", index=["attribute", "modality", self.CLASS_COLUMN]
@@ -124,7 +121,7 @@ class PopulationAnalysis:
         columns = list(analysis_df.columns.get_level_values(1))
         columns[0], columns[1], columns[2] = "attribute", "modality", self.CLASS_COLUMN
         analysis_df.columns = columns
-        print(analysis_df)
+
         return analysis_df
 
     def _format_distributions_for_analysis(self):
