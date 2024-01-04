@@ -3,10 +3,6 @@ import random
 import pandas as pd
 from bhepop2 import functions
 from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
-import numpy as np
-
-
-############  New class wich inherits from Bhepop2Enrichment POV ###############
 
 
 class QualitativeEnrichment(Bhepop2Enrichment):
@@ -59,7 +55,6 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         # infer attributes and their modalities from the filtered distribution
         self.modalities = functions.infer_modalities_from_distributions(distributions)
 
-    # MODIFIED BY POV
     def optimise(self):
         # compute crossed modalities frequencies
         self.log("Computing frequencies of crossed modalities", lg.INFO)
@@ -77,7 +72,6 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         self.feature_values = functions.get_feature_from_qualitative_distribution(
             self.distributions
         )
-        # self.feature_values = functions.compute_feature_values(self.distributions) # Modification POV
         self.nb_features = len(self.feature_values)
         self.log("Number of feature values: {}".format(self.nb_features))
 
@@ -108,7 +102,6 @@ class QualitativeEnrichment(Bhepop2Enrichment):
             & self.distributions["attribute"].isin([attribute])
         ]
 
-        # modif Léo
         res = pd.DataFrame({"feature": self.feature_values})
         res["prob"] = res["feature"].apply(lambda x: prob_df[x])
 
@@ -230,7 +223,7 @@ class QualitativeEnrichment(Bhepop2Enrichment):
         distrib_all_df = self.distributions[self.distributions["attribute"] == "all"]
 
         assert len(distrib_all_df) == 1
-        # modif Léo
+
         res = pd.DataFrame({"feature": self.feature_values})
         res["prob"] = res["feature"].apply(lambda x: distrib_all_df[x])
 
