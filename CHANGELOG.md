@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.2.1 (2024-01-04)
+
+
+### Bug Fixes
+
+* typo in PiPy classifier ([a18fbc3](https://github.com/tellae/bhepop2/commit/a18fbc332211439558e0e6303ea11372f16f1c45))
+
 ## 0.2.0 (2024-01-04)
 
 
