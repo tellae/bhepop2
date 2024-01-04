@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 0.2.0 (2024-01-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* qualitative enrichment (#39)
+
+### Features
+
+* qualitative enrichment ([#39](https://github.com/tellae/bhepop2/issues/39)) ([adfdbfe](https://github.com/tellae/bhepop2/commit/adfdbfe4b6d227ca14bd54fb95202292b8071887))
+
 ### 0.1.4 (2023-11-27)
 
 ### 0.1.3 (2023-10-23)
