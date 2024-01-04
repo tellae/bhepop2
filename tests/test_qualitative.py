@@ -1,4 +1,4 @@
-from bhepop2.max_entropy_enrich_qualitative import QualitativeEnrichment
+from bhepop2.qualitative_enrichment import QualitativeEnrichment
 
 import pytest
 from bhepop2.functions import *

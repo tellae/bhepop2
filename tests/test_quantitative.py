@@ -1,4 +1,4 @@
-from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
+from bhepop2.quantitative_enrichment import QuantitativeEnrichment
 
 import numpy as np
 
@@ -13,7 +13,7 @@ def test_bhepop2_enrich(
 ):
     synthetic_population_nantes.drop("sex", axis=1, inplace=True)
 
-    enrich_class = Bhepop2Enrichment(
+    enrich_class = QuantitativeEnrichment(
         synthetic_population_nantes,
         filosofi_distributions_nantes,
         list(test_modalities.keys()),

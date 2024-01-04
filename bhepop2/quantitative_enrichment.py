@@ -7,7 +7,7 @@ from bhepop2 import functions
 from .optim import minxent_gradient
 
 
-class Bhepop2Enrichment:
+class QuantitativeEnrichment:
     """
     A class for enriching population using entropy maximisation.
 

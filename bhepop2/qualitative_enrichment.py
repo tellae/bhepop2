@@ -2,10 +2,10 @@ import logging as lg
 import random
 import pandas as pd
 from bhepop2 import functions
-from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
+from bhepop2.quantitative_enrichment import QuantitativeEnrichment
 
 
-class QualitativeEnrichment(Bhepop2Enrichment):
+class QualitativeEnrichment(QuantitativeEnrichment):
     """
     A class for enriching population using entropy maximisation.
 
