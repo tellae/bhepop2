@@ -21,6 +21,8 @@ class QuantitativeEnrichment:
         - For qualitative features, corresponds to one of the feature values.
     """
 
+    mode = "quantitative"
+
     #: json schema of the enrichment parameters
     parameters_schema = {
         "title": "Enrichment parameters",
@@ -132,9 +134,7 @@ class QuantitativeEnrichment:
         self.log("Setup distributions data")
 
         # validate distributions format and contents
-        functions.validate_distributions(distributions, attribute_selection)
-
-        distributions = distributions.copy()
+        functions.validate_distributions(distributions, attribute_selection, self.mode)
 
         # filter distributions and infer modalities
         self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(

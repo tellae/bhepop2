@@ -15,6 +15,8 @@ class QualitativeEnrichment(QuantitativeEnrichment):
     - :math:`F_{i}` : feature value i
     """
 
+    mode = "qualitative"
+
     #: json schema of the enrichment parameters Modified by POV
     parameters_schema = {
         "title": "QualitativeEnrichment parameters",
@@ -22,38 +24,6 @@ class QualitativeEnrichment(QuantitativeEnrichment):
         "type": "object",
         "properties": {},
     }
-
-    def _init_distributions(self, distributions, attribute_selection):
-        """
-        Validate and filter the input distributions.
-
-        When done, set the *distributions* field.
-
-        :param distributions: input distributions DataFrame
-        :param attribute_selection: distribution attributes selection
-        """
-
-        self.log("Setup distributions data")
-
-        # validate distributions format and contents
-        # functions.validate_distributions(distributions) POV  Pas de validation pour le moment
-
-        distributions = distributions.copy()
-
-        # filter distributions using the attribute selection
-        if attribute_selection is not None:
-            distributions = distributions[
-                distributions["attribute"].isin(attribute_selection + ["all"])
-            ]
-            assert set(distributions["attribute"]) == set(
-                attribute_selection + ["all"]
-            ), "Mismatch between distribution attributes and attribute selection"
-
-        # set distributions
-        self.distributions = distributions
-
-        # infer attributes and their modalities from the filtered distribution
-        self.modalities = functions.infer_modalities_from_distributions(distributions)
 
     def optimise(self):
         # compute crossed modalities frequencies
