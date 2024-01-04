@@ -258,10 +258,10 @@ def validate_population(population: pd.DataFrame, modalities: dict):
     assert {*attributes} <= set(population.columns)
 
     for attribute in attributes:
-        assert (
-            population[attribute].isin(modalities[attribute]).all()
-        ), (f"Population validation: one of the modality values was not "
-            f"found in distributions for the attribute '{attribute}'")
+        assert population[attribute].isin(modalities[attribute]).all(), (
+            f"Population validation: one of the modality values was not "
+            f"found in distributions for the attribute '{attribute}'"
+        )
 
 
 def compute_crossed_modalities_frequencies(

@@ -7,4 +7,6 @@ def test_add_defaults_and_validate_against_schema(test_parameters):
     Test the json schema validation.
     """
 
-    add_defaults_and_validate_against_schema(test_parameters, QuantitativeEnrichment.parameters_schema)
+    add_defaults_and_validate_against_schema(
+        test_parameters, QuantitativeEnrichment.parameters_schema
+    )
