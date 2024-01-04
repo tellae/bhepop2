@@ -1,3 +1,5 @@
+import pandas as pd
+
 from bhepop2.functions import *
 import numpy as np
 
@@ -68,6 +70,28 @@ def test_compute_feature_values(
 
     assert len(feature_values) == expected_length
     assert feature_values == sorted(feature_values)
+
+
+def test_get_feature_from_qualitative_distribution():
+    distribution = pd.DataFrame(
+        {
+            "attribute": "age",
+            "modality": ["10_17", "18_35"],
+            "0voit": [0.99, 0.35],
+            "1voit": [0.01, 0.5],
+            "2voit": [0, 0.1],
+            "3voit": [0, 0.05],
+        }
+    )
+
+    features = get_feature_from_qualitative_distribution(distribution)
+
+    assert features == ["0voit", "1voit", "2voit", "3voit"]
+
+    distribution.loc[0, "2voit"] = 0.5
+
+    with pytest.raises(AssertionError):
+        get_feature_from_qualitative_distribution(distribution)
 
 
 def test_interpolate_feature_prob():

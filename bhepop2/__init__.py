@@ -5,7 +5,7 @@ This is the main bhepop2 package.
 #: bhepop2 version
 __version__ = "0.1.4"
 
-# from bhepop2.bhepop2_enrichment import Bhepop2Enrichment
+# from bhepop2.bhepop2_enrichment import QuantitativeEnrichment
 #
 #
 # # enrichment functions (avoids direct use of classes)
@@ -23,7 +23,7 @@ __version__ = "0.1.4"
 #     :return: enriched population
 #     """
 #     # create enrichment class instance
-#     enrich_class = Bhepop2Enrichment(
+#     enrich_class = QuantitativeEnrichment(
 #         population,
 #         distributions,
 #         attribute_selection=attribute_selection,

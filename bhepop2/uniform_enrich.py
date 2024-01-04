@@ -1,14 +1,14 @@
 import numpy as np
 
 
-# TODO : refactor this function in a class similar to Bhepop2Enrichment (started below)
+# TODO : refactor this function in a class similar to QuantitativeEnrichment (started below)
 def uniform_enrich(population, distributions, abs_minimum, relative_maximum, seed):
     """
 
     :param population: synthetic population
     :param distributions: decile distribution (modality 'all')
-    :param abs_minimum: see Bhepop2Enrichment parameters
-    :param relative_maximum: see Bhepop2Enrichment parameters
+    :param abs_minimum: see QuantitativeEnrichment parameters
+    :param relative_maximum: see QuantitativeEnrichment parameters
     :param seed: random seed
 
     :return: enriched population

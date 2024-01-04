@@ -32,7 +32,7 @@ pip install bhepop2
 
 ## Example
 
-See this example [Notebook](examples/demo.ipynb).
+See example notebooks [here](examples).
 
 ## Documentation
 

@@ -1,38 +1,77 @@
-from bhepop2.analysis import *
+from bhepop2.functions import infer_modalities_from_distributions
+from bhepop2.analysis import QualitativeAnalysis, QuantitativeAnalysis
+
+import pandas as pd
 
 
-def test_analyse_enriched_population(
+def build_cross_table(pop: pd.DataFrame, names_attribute: list):
+    """
+
+
+    Parameters
+    ----------
+    pop : DataFrame synthesis population
+    names_attribute: list of two strings
+           name of attribute1 and name of attribute 2
+
+    Returns
+    -------
+    table_percentage : DataFrame
+          proportion of modalities of attribute 2 given attribute 1
+
+
+    """
+
+    name_attribute1 = names_attribute[0]
+    name_attribute2 = names_attribute[1]
+    table_numbers = pd.crosstab(pop[name_attribute2], pop[name_attribute1])
+    table_percentage_attribute2 = (
+        table_numbers.transpose().sum() / table_numbers.transpose().sum().sum()
+    )
+    table_percentage = table_numbers / table_numbers.sum()
+    table_percentage["all"] = table_percentage_attribute2
+    table_percentage = table_percentage.transpose()
+    table_percentage["modality"] = table_percentage.index
+    table_percentage["attribute"] = name_attribute1
+
+    return table_percentage
+
+
+def test_quantitative_analysis(
     filosofi_distributions_nantes, expected_enriched_population_nantes, test_modalities, tmp_dir
 ):
-    populations = {"enriched": expected_enriched_population_nantes}
-
-    analyse_enriched_populations(
-        populations,
-        filosofi_distributions_nantes,
-        "Filosofi",
+    analysis = QuantitativeAnalysis(
+        {"qualitative": expected_enriched_population_nantes},
         test_modalities,
-        tmp_dir,
-        plots=False,
+        "feature",
+        filosofi_distributions_nantes,
+        output_folder=tmp_dir,
     )
 
+    analysis.generate_analysis_plots()
+    analysis.generate_analysis_error_table()
 
-def test_compute_distribution(expected_enriched_population_nantes):
-    """
-    Test that computed distribution is exactly the same as expected
-    """
-    expected = [
-        {"feature": 9890.6, "decile": "D1"},
-        {"feature": 13190.0, "decile": "D2"},
-        {"feature": 15779.0, "decile": "D3"},
-        {"feature": 18314.0, "decile": "D4"},
-        {"feature": 20865.0, "decile": "D5"},
-        {"feature": 23738.0, "decile": "D6"},
-        {"feature": 27290.0, "decile": "D7"},
-        {"feature": 32093.8, "decile": "D8"},
-        {"feature": 41201.4, "decile": "D9"},
+
+def test_qualitative_analysis(pop_synt_men_nantes, tmp_dir):
+    # synth pop
+    pop = pop_synt_men_nantes.copy()
+
+    # distributions
+    attributes = list(pop.columns[:-1])
+    marginal_distribution = pd.concat(
+        list(map(lambda a: build_cross_table(pop, [a, "Voit_rec"]), attributes))
+    )
+    # removing multiple 'all'
+    marginal_distribution = marginal_distribution.loc[
+        ~marginal_distribution.index.duplicated(keep="first")
     ]
+    marginal_distribution.loc["all", "attribute"] = "all"
+    marginal_distribution = marginal_distribution.reset_index(drop=True)
 
-    assert (
-        compute_distribution(expected_enriched_population_nantes).round(1).to_dict(orient="records")
-        == expected
+    modalities = infer_modalities_from_distributions(marginal_distribution)
+
+    analysis = QualitativeAnalysis(
+        {"qualitative": pop}, modalities, "Voit_rec", marginal_distribution, output_folder=tmp_dir
     )
+
+    analysis.generate_analysis_plots()

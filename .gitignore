@@ -138,8 +138,8 @@ dmypy.json
 *.html
 *_files/
 
-# analysis plots
-/plots
+# analysis outputs
+/outputs
 
 # test tmp folder
 tests/tmp/
