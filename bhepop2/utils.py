@@ -55,28 +55,29 @@ def _get_logger():
 # json schema utils
 
 
-def add_defaults_and_validate_against_schema(instance, schema):
-    """
-    Add default values then validate instance against the schema.
-
-    :param instance: data instance
-    :param schema: json schema
-
-    :return: result data (copy of instance)
-    """
-
-    result = instance.copy()
-
-    # superficial default values set
-    for key in schema["properties"]:
-        if "default" in schema["properties"][key] and not key in result:
-            result[key] = schema["properties"][key]["default"]
-
-    # validate instance against schema
-    try:
-        validate(result, schema)
-    except ValidationError as e:
-        msg = e.message
-        raise ValueError(msg) from None
-
-    return result
+# deprecated
+# def add_defaults_and_validate_against_schema(instance, schema):
+#     """
+#     Add default values then validate instance against the schema.
+#
+#     :param instance: data instance
+#     :param schema: json schema
+#
+#     :return: result data (copy of instance)
+#     """
+#
+#     result = instance.copy()
+#
+#     # superficial default values set
+#     for key in schema["properties"]:
+#         if "default" in schema["properties"][key] and not key in result:
+#             result[key] = schema["properties"][key]["default"]
+#
+#     # validate instance against schema
+#     try:
+#         validate(result, schema)
+#     except ValidationError as e:
+#         msg = e.message
+#         raise ValueError(msg) from None
+#
+#     return result
