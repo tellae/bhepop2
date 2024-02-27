@@ -1,4 +1,4 @@
-from bhepop2.uniform_enrich import uniform_enrich
+from bhepop2.enrichment import QuantitativeUniform
 
 
 def test_uniform_enrich(synthetic_population_nantes, filosofi_distributions_nantes, test_seed):
@@ -6,6 +6,6 @@ def test_uniform_enrich(synthetic_population_nantes, filosofi_distributions_nant
         filosofi_distributions_nantes["modality"] == "all"
     ]
 
-    pop = uniform_enrich(
-        synthetic_population_nantes, filosofi_distributions_nantes, 0, 1.2, test_seed
-    )
+    enrich_class = QuantitativeUniform(synthetic_population_nantes, filosofi_distributions_nantes, abs_minimum=0, relative_maximum=1.2)
+
+    pop = enrich_class.assign_features()
