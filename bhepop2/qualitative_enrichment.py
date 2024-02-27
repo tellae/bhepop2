@@ -1,8 +1,6 @@
-import logging as lg
 import random
 import pandas as pd
 from bhepop2 import functions
-from bhepop2.quantitative_enrichment import QuantitativeEnrichment
 from bhepop2.enrichment import Bhepop2Enrichment
 
 
@@ -18,18 +16,8 @@ class QualitativeEnrichment(Bhepop2Enrichment):
 
     mode = "qualitative"
 
-    #: json schema of the enrichment parameters Modified by POV
-    parameters_schema = {
-        "title": "QualitativeEnrichment parameters",
-        "description": "Parameters of a population enrichment run",
-        "type": "object",
-        "properties": {},
-    }
-
     def _evaluate_feature_values(self):
-        return functions.get_feature_from_qualitative_distribution(
-            self.distributions
-        )
+        return functions.get_feature_from_qualitative_distribution(self.distributions)
 
     def _init_distributions(self):
         """

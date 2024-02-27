@@ -122,14 +122,11 @@ class SyntheticPopulationEnrichment(ABC):
 
 class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
-    parameters_schema = {}
-
     def __init__(
         self,
         population: pd.DataFrame,
         distributions: pd.DataFrame,
         attribute_selection: list = None,
-        parameters=None,
         feature_name="feature",
         seed=None,
     ):
@@ -139,7 +136,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         :param population: enriched population
         :param distributions: enriching data distributions
         :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
-        :param parameters: enrichment parameters
         :param seed: random seed
         """
 
@@ -152,13 +148,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         # attributes considered for the assignment, with their modalities
         # { attribute: [modalities] }
         self.modalities = None
-
-        # execution parameters
-        if parameters is None:
-            parameters = dict()
-        self.parameters = add_defaults_and_validate_against_schema(
-            parameters, self.parameters_schema
-        )
 
         # algorithm data
 
@@ -431,7 +420,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
     def _draw_feature(self, res, index):
         raise NotImplementedError
-
 
     def _compute_feature_prob(self, attribute, modality):
         raise NotImplementedError

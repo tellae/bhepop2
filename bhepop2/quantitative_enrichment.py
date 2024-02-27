@@ -1,10 +1,6 @@
-import logging as lg
-import numpy as np
 import random
 import pandas as pd
-from bhepop2 import utils
 from bhepop2 import functions
-from .optim import minxent_gradient
 from bhepop2.enrichment import Bhepop2Enrichment
 
 
@@ -24,42 +20,49 @@ class QuantitativeEnrichment(Bhepop2Enrichment):
 
     mode = "quantitative"
 
-    #: json schema of the enrichment parameters
-    parameters_schema = {
-        "title": "Enrichment parameters",
-        "description": "Parameters of a population enrichment run",
-        "type": "object",
-        "required": [
-            "abs_minimum",
-            "relative_maximum",
-        ],
-        "properties": {
-            "abs_minimum": {
-                "title": "Distributions absolute minimum",
-                "description": "Minimum value of the feature distributions. This value is absolute, and thus equal for all distributions.",
-                "type": "number",
-                "default": 0,
-            },
-            "relative_maximum": {
-                "title": "Distributions relative maximum",
-                "description": "Maximum value of the feature distributions. This value is relative and will be multiplied to the last value of each distribution.",
-                "type": "number",
-                "default": 1.5,
-                "minimum": 1,
-            },
-            "delta_min": {
-                "title": "Minimum feature value delta",
-                "description": "Minimum size of the feature intervals",
-                "type": ["null", "number"],
-                "default": None,
-                "minimum": 0,
-            },
-        },
-    }
+    def __init__(
+        self,
+        population,
+        distributions,
+        attribute_selection=None,
+        feature_name="feature",
+        seed=None,
+        abs_minimum: int = 0,
+        relative_maximum: float = 1.5,
+        delta_min=None,
+    ):
+        """
+
+        :param population:
+        :param distributions:
+        :param attribute_selection:
+        :param feature_name:
+        :param seed:
+        :param abs_minimum: Minimum value of the feature distributions.
+            This value is absolute, and thus equal for all distributions
+        :param relative_maximum: Maximum value of the feature distributions.
+            This value is relative and will be multiplied to the last value of each distribution
+        :param delta_min: Minimum size of the feature intervals
+        """
+
+        # store quantitative parameters
+        self._abs_minimum = abs_minimum
+        assert relative_maximum >= 1
+        self._relative_maximum = relative_maximum
+        assert delta_min is None or delta_min >= 0
+        self._delta_min = delta_min
+
+        super().__init__(
+            population,
+            distributions,
+            attribute_selection=attribute_selection,
+            feature_name=feature_name,
+            seed=seed,
+        )
 
     def _evaluate_feature_values(self):
         return functions.compute_feature_values(
-            self.distributions, self.parameters["relative_maximum"], self.parameters["delta_min"]
+            self.distributions, self._relative_maximum, self._delta_min
         )
 
     def _init_distributions(self):
@@ -128,11 +131,11 @@ class QuantitativeEnrichment(Bhepop2Enrichment):
 
         # get probs
         probs = res.loc[index,].to_numpy()
-        interval_values = [self.parameters["abs_minimum"]] + self.feature_values
+        interval_values = [self._abs_minimum] + self.feature_values
 
         # get the non-null probs and values
         probs2 = []
-        values2 = [self.parameters["abs_minimum"]]
+        values2 = [self._abs_minimum]
         for i in range(len(probs)):
             if pd.isna(probs[i]):
                 continue
@@ -186,4 +189,3 @@ class QuantitativeEnrichment(Bhepop2Enrichment):
         prob_df = functions.compute_features_prob(self.feature_values, total_population_decile)
 
         return prob_df
-
