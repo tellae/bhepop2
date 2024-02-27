@@ -4,7 +4,7 @@ import random
 import logging as lg
 from abc import ABC
 
-from .base import SyntheticPopulationEnrichment
+from .base import SyntheticPopulationEnrichment, QuantitativeAttributes
 from bhepop2 import functions
 from bhepop2.optim import minxent_gradient
 
@@ -434,7 +434,7 @@ class QualitativeBhepop2(Bhepop2Enrichment):
         return res
 
 
-class QuantitativeBhepop2(Bhepop2Enrichment):
+class QuantitativeBhepop2(Bhepop2Enrichment, QuantitativeAttributes):
     """
     A class for enriching population using entropy maximisation.
 
@@ -475,14 +475,15 @@ class QuantitativeBhepop2(Bhepop2Enrichment):
         :param delta_min: Minimum size of the feature intervals
         """
 
-        # store quantitative parameters
-        self._abs_minimum = abs_minimum
-        assert relative_maximum >= 1
-        self._relative_maximum = relative_maximum
-        assert delta_min is None or delta_min >= 0
-        self._delta_min = delta_min
+        QuantitativeAttributes.__init__(
+            self,
+            abs_minimum,
+            relative_maximum,
+            delta_min,
+        )
 
-        super().__init__(
+        Bhepop2Enrichment.__init__(
+            self,
             population,
             distributions,
             attribute_selection=attribute_selection,
