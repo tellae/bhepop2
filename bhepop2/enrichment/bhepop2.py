@@ -77,7 +77,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
         )
 
         # associate a feature value to the population individuals
-        merge["feature"] = merge["index"].apply(lambda x: self._draw_feature(res, x))
+        merge[self.feature_name] = merge["index"].apply(lambda x: self._draw_feature(res, x))
 
         # remove irrelevant columns
         merge.drop(["index", "probability"], axis=1, inplace=True)
