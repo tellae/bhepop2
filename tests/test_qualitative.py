@@ -1,4 +1,4 @@
-from bhepop2.qualitative_enrichment import QualitativeEnrichment
+from bhepop2.enrichment.bhepop2 import QualitativeBhepop2
 
 import pytest
 from bhepop2.functions import *
@@ -62,7 +62,7 @@ def distributions(pop_synt_men_nantes):
 
 
 def test_qualitative(synth_pop_defected, distributions, test_seed):
-    enrich_class = QualitativeEnrichment(synth_pop_defected, distributions, seed=test_seed)
+    enrich_class = QualitativeBhepop2(synth_pop_defected, distributions, seed=test_seed)
     # Run optimisation
 
     pop = enrich_class.assign_features()
