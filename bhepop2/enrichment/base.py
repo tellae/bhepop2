@@ -95,14 +95,13 @@ class SyntheticPopulationEnrichment(ABC):
 
     # analysis
 
-    @abstractmethod
     def analyze_features(self):
         """
         Return or generate an analysis of the added features.
 
         :return:
         """
-        pass
+        raise NotImplementedError
 
     # utils
 
