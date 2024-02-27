@@ -3,9 +3,10 @@ import random
 import pandas as pd
 from bhepop2 import functions
 from bhepop2.quantitative_enrichment import QuantitativeEnrichment
+from bhepop2.enrichment import Bhepop2Enrichment
 
 
-class QualitativeEnrichment(QuantitativeEnrichment):
+class QualitativeEnrichment(Bhepop2Enrichment):
     """
     A class for enriching population using entropy maximisation.
 
@@ -25,35 +26,32 @@ class QualitativeEnrichment(QuantitativeEnrichment):
         "properties": {},
     }
 
-    def optimise(self):
-        # compute crossed modalities frequencies
-        self.log("Computing frequencies of crossed modalities", lg.INFO)
-        self.crossed_modalities_frequencies = functions.compute_crossed_modalities_frequencies(
-            self.population, self.modalities
-        )
-        self.log(
-            "Number of crossed modalities present in the population: {}".format(
-                len(self.crossed_modalities_frequencies)
-            )
-        )
-
-        # compute vector of feature values
-        self.log("Computing vector of all feature values", lg.INFO)
-        self.feature_values = functions.get_feature_from_qualitative_distribution(
+    def _evaluate_feature_values(self):
+        return functions.get_feature_from_qualitative_distribution(
             self.distributions
         )
-        self.nb_features = len(self.feature_values)
-        self.log("Number of feature values: {}".format(self.nb_features))
 
-        # compute matrix of constraints
-        self.log("Computing optimization constraints", lg.INFO)
-        self._compute_constraints()
+    def _init_distributions(self):
+        """
+        Validate and filter the input distributions.
 
-        # run resolution
-        self.log("Starting optimization by entropy maximisation", lg.INFO)
-        self.optim_result = self._run_optimization()
+        When done, set the *distributions* field.
+        """
 
-        return self.optim_result
+        self.log("Setup distributions data")
+
+        # validate distributions format and contents
+        functions.validate_distributions(self.distributions, self.attribute_selection, self.mode)
+
+        # filter distributions and infer modalities
+        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
+            self.distributions, self.attribute_selection
+        )
+
+        # check that there are modalities at the end
+        assert (
+            len(self.modalities.keys()) > 0
+        ), "No attributes found in distributions for enriching population"
 
     # Modification by POV
 
@@ -74,71 +72,6 @@ class QualitativeEnrichment(QuantitativeEnrichment):
 
         res = pd.DataFrame({"feature": self.feature_values})
         res["prob"] = res["feature"].apply(lambda x: prob_df[x])
-
-        return res
-
-    def assign_feature_value_to_pop(self):
-        """
-        Assign feature values to the population individuals using the algorithm results.
-
-        :return: enriched population DataFrame
-        """
-
-        self.log("Drawing feature values for the population", lg.INFO)
-
-        # compute the probability of being in each feature interval, for each crossed modality
-        res = self._get_feature_probs()
-
-        # associate each individual to a crossed modality
-        self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
-        merge = self.population.merge(
-            self.crossed_modalities_frequencies,
-            how="left",
-            on=functions.get_attributes(self.modalities),
-        )
-
-        # associate a feature value to the population individuals
-        merge["feature"] = merge["index"].apply(lambda x: self._draw_feature(res, x))
-
-        # remove irrelevant columns
-        merge.drop(["index", "probability"], axis=1, inplace=True)
-
-        return merge
-
-    def _get_feature_probs(self):
-        """
-        For each crossed modality, compute the probability of belonging to a feature interval.
-
-        Invert the crossed modality probabilities using Bayes.
-
-        Compute
-
-        .. math::
-
-            P(f < F_{i} \mid M_{k}) = P(M_{k} \mid f < F_{i}) \\cdot \\frac{P(f < F_{i})}{P(M_{k})}
-
-        :return: DataFrame
-        """
-
-        feature_probs = self._compute_feature_probabilities_from_distributions()
-
-        res = self.optim_result
-
-        nb_columns = len(res.columns)
-
-        for c in res.columns:
-            res[c] = res[c].map(lambda x: x[0])  # POV sur conseils de Valentin
-
-        for i in range(nb_columns):
-            res[i] = res[i] * feature_probs["prob"][i]
-
-        for i in range(len(res)):
-            total = res.iloc[i, :].sum()
-            res.iloc[i, :] = res.iloc[i, :] / total
-
-        pd.set_option("display.max_rows", 500)
-        pd.set_option("display.max_columns", 500)
-        pd.set_option("display.width", 1000)
 
         return res
 

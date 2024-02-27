@@ -21,10 +21,8 @@ def test_bhepop2_enrich(
         seed=test_seed,
     )
 
-    enrich_class.optimise()
-
-    pop = enrich_class.assign_feature_value_to_pop()
-
+    pop = enrich_class.assign_features()
+    print(pop)
     # pop.to_csv("tests/data/nantes_enriched.csv", index=False)
 
     assert np.all((pop == expected_enriched_population_nantes).to_numpy())
