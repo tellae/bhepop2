@@ -85,11 +85,9 @@ class SyntheticPopulationEnrichment(ABC):
 
     # validation and read
 
+    @abstractmethod
     def _validate_and_process_inputs(self):
-        """
-
-        :return:
-        """
+        pass
 
     @abstractmethod
     def _evaluate_feature_values(self):
