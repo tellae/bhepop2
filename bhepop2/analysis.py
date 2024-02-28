@@ -400,7 +400,7 @@ class QualitativeAnalysis(PopulationAnalysis):
         # configure plot
         fig.update_layout(
             title=self.get_plot_title(attribute=attribute, modality=modality),
-            xaxis_title="Values",
+            xaxis_title=self.feature_column,
             yaxis_title="Distribution (%)",
         )
 
