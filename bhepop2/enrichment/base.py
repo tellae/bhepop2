@@ -95,12 +95,21 @@ class SyntheticPopulationEnrichment(ABC):
 
     # analysis
 
-    def analyze_features(self):
+    def get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
         """
-        Return or generate an analysis of the added features.
+        Create a PopulationAnalysis instance for the enriched population.
 
-        :return:
+        :param enriched_population_name: display name of the enriched population
+        :param kwargs: additional parameters for the PopulationAnalysis instanciation
+
+        :return: PopulationAnalysis for the current enriched population
         """
+        if self.enriched_population is None:
+            raise ValueError("No enriched population to analyze")
+
+        return self._get_analysis_instance(enriched_population_name, **kwargs)
+
+    def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
         raise NotImplementedError
 
     # utils

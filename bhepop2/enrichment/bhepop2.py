@@ -7,6 +7,7 @@ from abc import ABC
 from .base import SyntheticPopulationEnrichment, QuantitativeAttributes
 from bhepop2 import functions
 from bhepop2.optim import minxent_gradient
+from bhepop2.analysis import QualitativeAnalysis, QuantitativeAnalysis
 
 
 class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
@@ -433,6 +434,16 @@ class QualitativeBhepop2(Bhepop2Enrichment):
 
         return res
 
+    def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
+        # return a QualitativeAnalysis instance
+        return QualitativeAnalysis(
+            populations={enriched_population_name: self.enriched_population},
+            modalities=self.modalities,
+            feature_column=self.feature_name,
+            distributions=self.distributions,
+            **kwargs,
+        )
+
 
 class QuantitativeBhepop2(Bhepop2Enrichment, QuantitativeAttributes):
     """
@@ -620,3 +631,13 @@ class QuantitativeBhepop2(Bhepop2Enrichment, QuantitativeAttributes):
         prob_df = functions.compute_features_prob(self.feature_values, total_population_decile)
 
         return prob_df
+
+    def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
+        # return a QuantitativeAnalysis instance
+        return QuantitativeAnalysis(
+            populations={enriched_population_name: self.enriched_population},
+            modalities=self.modalities,
+            feature_column=self.feature_name,
+            distributions=self.distributions,
+            **kwargs
+        )
