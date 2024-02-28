@@ -6,7 +6,6 @@ from os import path
 
 from bhepop2.functions import get_feature_from_qualitative_distribution
 
-DEFAULT_PLOT_TITLE_FORMAT = "Modality {modality} from attribute {attribute}"
 DEFAULT_OUTPUT_FOLDER = "outputs/"
 
 
@@ -33,6 +32,9 @@ class PopulationAnalysis:
 
     # column describing the value corresponding to the class
     VALUE_COLUMN = "value"
+
+    # default format string for the plot title
+    DEFAULT_PLOT_TITLE_FORMAT = "Modality {modality} from attribute {attribute}"
 
     def __init__(
         self,
@@ -85,7 +87,11 @@ class PopulationAnalysis:
         self.plot_title_format = plot_title_format
 
         # analysis table
-        self.analysis_table = self._evaluate_analysis_table()
+        self._analysis_table = self._evaluate_analysis_table()
+
+    @property
+    def analysis_table(self):
+        return self._analysis_table
 
     def set_output_folder(self, output_folder):
         """
@@ -233,19 +239,19 @@ class PopulationAnalysis:
         """
         raise NotImplementedError
 
-    def get_plot_title(self, attribute: str, modality: str) -> str:
+    def get_plot_title(self, **kwargs) -> str:
         """
-        Get the plot title for the given attribute and modality.
+        Get the plot title for the given keys.
 
-        Based on the plot_title_format parameter.
+        This on the `plot_title_format` attribute, which can be
+        set externally.
 
-        :param attribute: attribute value
-        :param modality: attribute modality
+        :param kwargs: keys provided to the plot_title_format string
 
         :return: plot title
         """
         return self.plot_title_format.format(
-            observed_name=self.distributions_name, attribute=attribute, modality=modality
+            observed_name=self.distributions_name, **kwargs
         )
 
 
@@ -262,7 +268,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
         :return: Plotly figure
         """
 
-        analysis_table = self.analysis_table
+        analysis_table = self._analysis_table
         analysis_table = analysis_table[
             (analysis_table["attribute"] == attribute) & (analysis_table["modality"] == modality)
         ]
@@ -285,7 +291,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
 
         # configure plot
         fig.update_layout(
-            title=self.get_plot_title(attribute, modality),
+            title=self.get_plot_title(attribute=attribute, modality=modality),
             xaxis_title=f"Observation ({self.distributions_name})",
             yaxis_title="Simulation",
         )
@@ -302,7 +308,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
         """
         self.assert_output_folder()
 
-        analysis_df = self.analysis_table
+        analysis_df = self._analysis_table
         # evaluate distance to distributions
         for population_name in self.populations.keys():
             analysis_df[f"{population_name}_perc_error"] = abs(
@@ -378,7 +384,7 @@ class QualitativeAnalysis(PopulationAnalysis):
         :return: Plotly figure
         """
 
-        analysis_table = self.analysis_table
+        analysis_table = self._analysis_table
         analysis_table = analysis_table.copy()[
             (analysis_table["attribute"] == attribute) & (analysis_table["modality"] == modality)
         ]
@@ -393,7 +399,7 @@ class QualitativeAnalysis(PopulationAnalysis):
 
         # configure plot
         fig.update_layout(
-            title=self.get_plot_title(attribute, modality),
+            title=self.get_plot_title(attribute=attribute, modality=modality),
             xaxis_title="Values",
             yaxis_title="Distribution (%)",
         )
