@@ -135,10 +135,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
             total = res.iloc[i, :].sum()
             res.iloc[i, :] = res.iloc[i, :] / total
 
-        pd.set_option("display.max_rows", 500)
-        pd.set_option("display.max_columns", 500)
-        pd.set_option("display.width", 1000)
-
         return res
 
     def _validate_and_process_inputs(self):
