@@ -22,7 +22,13 @@ class SyntheticPopulationEnrichment(ABC):
     are core to the SyntheticPopulationEnrichment classes.
     """
 
-    def __init__(self, population: pd.DataFrame, feature_name: str = None, seed=None):
+    def __init__(
+            self,
+            population: pd.DataFrame,
+            distributions,
+            feature_name: str = None,
+            seed=None,
+    ):
 
         # random seed (maybe use a random generator instead)
         self.seed = seed
@@ -32,17 +38,14 @@ class SyntheticPopulationEnrichment(ABC):
         # original population DataFrame, to be enriched
         self.population: pd.DataFrame = population
 
+        # enrichment data source
+        self.distributions = distributions
+
         # name of the added column containing the new feature values
         feature_name = "feature" if feature_name is None else feature_name
         if feature_name in self.population.columns:
             raise ValueError(f"'{feature_name}' column already exists in population")
         self.feature_name: str = feature_name
-
-        # list of possible feature values
-        self._feature_values = None
-
-        # number of feature values
-        self._nb_features = None
 
         # resulting enriched population
         self.enriched_population = None
@@ -50,18 +53,6 @@ class SyntheticPopulationEnrichment(ABC):
         # input validation
         self.log("Input data validation and preprocessing", lg.INFO)
         self._validate_and_process_inputs()
-
-    @property
-    def feature_values(self):
-        if self._feature_values is None:
-            self.log("Computing vector of all feature values", lg.INFO)
-            self._feature_values = self._evaluate_feature_values()
-            self._nb_features = len(self._feature_values)
-        return self._feature_values
-
-    @property
-    def nb_features(self):
-        return self._nb_features
 
     # feature assignment
 
@@ -89,13 +80,9 @@ class SyntheticPopulationEnrichment(ABC):
     def _validate_and_process_inputs(self):
         pass
 
-    @abstractmethod
-    def _evaluate_feature_values(self):
-        pass
-
     # analysis
 
-    def get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
+    def compare_with_distributions(self, enriched_population_name: str = "enriched_population", **kwargs):
         """
         Create a PopulationAnalysis instance for the enriched population.
 
@@ -107,10 +94,11 @@ class SyntheticPopulationEnrichment(ABC):
         if self.enriched_population is None:
             raise ValueError("No enriched population to analyze")
 
-        return self._get_analysis_instance(enriched_population_name, **kwargs)
-
-    def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
-        raise NotImplementedError
+        return self.distributions.compare_with_populations(
+            {enriched_population_name: self.enriched_population},
+            self.feature_name,
+            **kwargs
+        )
 
     # utils
 

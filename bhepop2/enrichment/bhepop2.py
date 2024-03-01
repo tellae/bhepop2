@@ -2,21 +2,19 @@ import numpy as np
 import pandas as pd
 import random
 import logging as lg
-from abc import ABC
 
-from .base import SyntheticPopulationEnrichment, QuantitativeAttributes
+from .base import SyntheticPopulationEnrichment
+from bhepop2.distributions.modalities import ModalitiesDistributions
 from bhepop2 import functions
 from bhepop2.optim import minxent_gradient
-from bhepop2.analysis import QualitativeAnalysis, QuantitativeAnalysis
 
 
-class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
+class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
     def __init__(
         self,
         population: pd.DataFrame,
-        distributions: pd.DataFrame,
-        attribute_selection: list = None,
+        distributions: ModalitiesDistributions,
         feature_name=None,
         seed=None,
     ):
@@ -25,19 +23,8 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
 
         :param population: enriched population
         :param distributions: enriching data distributions
-        :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
         :param seed: random seed
         """
-
-        # distributions of the feature values by modality
-        self.distributions = distributions
-
-        # distribution attributes used for feature evaluation
-        self.attribute_selection = attribute_selection
-
-        # attributes considered for the assignment, with their modalities
-        # { attribute: [modalities] }
-        self.modalities = None
 
         # algorithm data
 
@@ -53,7 +40,11 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
         # optimization result
         self.optim_result = None
 
-        super().__init__(population, feature_name=feature_name, seed=seed)
+        super().__init__(population, distributions, feature_name=feature_name, seed=seed)
+
+    @property
+    def modalities(self):
+        return self.distributions.modalities
 
     def _assign_features(self):
         """
@@ -74,16 +65,43 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
         merge = self.population.merge(
             self.crossed_modalities_frequencies,
             how="left",
-            on=functions.get_attributes(self.modalities),
+            on=functions.get_attributes(self.distributions.modalities),
         )
 
         # associate a feature value to the population individuals
-        merge[self.feature_name] = merge["index"].apply(lambda x: self._draw_feature(res, x))
+        merge[self.feature_name] = merge["index"].apply(lambda x: self._draw_feature_value(res.loc[x,].to_numpy()))
 
         # remove irrelevant columns
         merge.drop(["index", "probability"], axis=1, inplace=True)
 
         return merge
+
+    def _draw_feature_value(self, probs):
+        """
+        Return a feature value using the given probabilities.
+
+        First draw the feature index.
+        Then get a feature value from the distributions.
+
+        :return: feature value to assign to individual
+        """
+
+        # get the non-null probs and their indexes
+        filtered_probs = []
+        feature_indexes = []
+        for i in range(len(probs)):
+            if pd.isna(probs[i]):
+                continue
+            filtered_probs.append(probs[i])
+            feature_indexes.append(i)
+
+        # draw a feature index using the probs
+        feature_index = random.choices(feature_indexes, filtered_probs)[0]
+
+        # get feature value from distribution
+        value = self.distributions.get_value_for_feature(feature_index)
+
+        return value
 
     def _get_feature_probs(self):
         """
@@ -101,7 +119,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
         :return: DataFrame
         """
 
-        feature_probs = self._compute_feature_probabilities_from_distributions()
+        feature_probs = self.distributions.compute_feature_prob()
 
         res = self.optim_result
 
@@ -124,7 +142,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
         return res
 
     def _validate_and_process_inputs(self):
-        self._init_distributions()
         self._init_population()
 
     def _init_population(self):
@@ -185,7 +202,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
         lambda_ = np.zeros(nb_lines - 1)
 
         # loop on features
-        for i in range(self.nb_features):
+        for i in range(self.distributions.nb_feature_values):
             # run optimization model on the current feature
             self.log("Running optimization algorithm on feature " + str(i))
 
@@ -230,7 +247,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
                 self.log("Computing constraints for modality: {} = {}".format(attribute, modality))
 
                 # compute probability of each feature interval when being in a modality
-                ech[attribute][modality] = self._compute_feature_prob(attribute, modality)
+                ech[attribute][modality] = self.distributions.compute_feature_prob(attribute, modality)
 
                 # multiply frequencies by each element of ech_compo
                 value = attribute_freq[attribute_freq[attribute].isin([modality])]
@@ -308,336 +325,202 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment, ABC):
 
         return crossed_modalities_matrix
 
-    def _draw_feature(self, res, index):
-        raise NotImplementedError
 
-    def _compute_feature_prob(self, attribute, modality):
-        raise NotImplementedError
-
-    def _compute_feature_probabilities_from_distributions(self):
-        raise NotImplementedError
-
-
-class QualitativeBhepop2(Bhepop2Enrichment):
-    """
-    A class for enriching population using entropy maximisation.
-
-    Notations used in this class documentation:
-
-    - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
-    - :math:`F_{i}` : feature value i
-    """
-
-    mode = "qualitative"
-
-    def _evaluate_feature_values(self):
-        return functions.get_feature_from_qualitative_distribution(self.distributions)
-
-    def _init_distributions(self):
-        """
-        Validate and filter the input distributions.
-
-        When done, set the *distributions* field.
-        """
-
-        self.log("Setup distributions data")
-
-        # validate distributions format and contents
-        functions.validate_distributions(self.distributions, self.attribute_selection, self.mode)
-
-        # filter distributions and infer modalities
-        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
-            self.distributions, self.attribute_selection
-        )
-
-        # check that there are modalities at the end
-        assert (
-            len(self.modalities.keys()) > 0
-        ), "No attributes found in distributions for enriching population"
-
-    # Modification by POV
-
-    def _compute_feature_prob(self, attribute, modality):
-        """
-        Compute the probability of being in each feature interval with the given modality.
-
-        :param attribute: attribute name
-        :param modality: attribute modality
-
-        :return: DataFrame
-        """
-
-        prob_df = self.distributions[
-            self.distributions["modality"].isin([modality])
-            & self.distributions["attribute"].isin([attribute])
-        ]
-
-        res = pd.DataFrame({"feature": self.feature_values})
-        res["prob"] = res["feature"].apply(lambda x: prob_df[x])
-
-        return res
-
-    def _draw_feature(self, res, index):
-        """
-        Draw a feature value using the given distribution.
-
-        :param res: feature distributions by crossed modality
-        :param index: index of the crossed modality
-
-        :return: Drawn feature value
-        """
-
-        # get probs
-        probs = res.loc[index,].to_numpy()
-        # interval_values = [self.parameters["abs_minimum"]] + self.feature_values POV
-
-        # get the non-null probs and values
-        probs2 = []
-        values2 = []
-        for i in range(len(probs)):
-            if pd.isna(probs[i]):
-                continue
-            probs2.append(probs[i])
-            values2.append(self.feature_values[i])
-        #    values2.append(interval_values[i]) POV
-
-        # TODO : probs don't sum to 1, this isn't reassuring
-
-        # draw a feature interval using the probs
-        # values = list(range(len(values2))) POV
-        final = random.choices(values2, probs2)[0]
-        # feature_interval = random.choices(values, probs2)[0]
-
-        # draw a feature value using a uniform distribution in the interval POV
-        # lower, upper = interval_values[feature_interval], interval_values[feature_interval + 1]
-        # draw = random.random()
-        # final = lower + round((upper - lower) * draw)
-
-        return final
-
-    def _compute_feature_probabilities_from_distributions(self):
-        """
-        Compute the probability of each feature interval.
-
-        Use the global distribution of the features to interpolate the interval probabilities.
-
-        The resulting DataFrame contains :math:`P(f < F_{i})` for i in N
-
-        :return: DataFrame
-        """
-        distrib_all_df = self.distributions[self.distributions["attribute"] == "all"]
-
-        assert len(distrib_all_df) == 1
-
-        res = pd.DataFrame({"feature": self.feature_values})
-        res["prob"] = res["feature"].apply(lambda x: distrib_all_df[x])
-
-        return res
-
-    def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
-        # return a QualitativeAnalysis instance
-        return QualitativeAnalysis(
-            populations={enriched_population_name: self.enriched_population},
-            modalities=self.modalities,
-            feature_column=self.feature_name,
-            distributions=self.distributions,
-            **kwargs,
-        )
-
-
-class QuantitativeBhepop2(Bhepop2Enrichment, QuantitativeAttributes):
-    """
-    A class for enriching population using entropy maximisation.
-
-    Notations used in this class documentation:
-
-    - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
-
-    - :math:`F_{i}` : feature class i
-
-        - For quantitative features, corresponds to a numeric interval.
-        - For qualitative features, corresponds to one of the feature values.
-    """
-
-    mode = "quantitative"
-
-    def __init__(
-        self,
-        population,
-        distributions,
-        attribute_selection=None,
-        feature_name=None,
-        seed=None,
-        abs_minimum: int = 0,
-        relative_maximum: float = 1.5,
-        delta_min: int = None,
-    ):
-        """
-
-        :param population:
-        :param distributions:
-        :param attribute_selection:
-        :param feature_name:
-        :param seed:
-        :param abs_minimum: Minimum value of the feature distributions.
-            This value is absolute, and thus equal for all distributions
-        :param relative_maximum: Maximum value of the feature distributions.
-            This value is relative and will be multiplied to the last value of each distribution
-        :param delta_min: Minimum size of the feature intervals
-        """
-
-        QuantitativeAttributes.__init__(
-            self,
-            abs_minimum,
-            relative_maximum,
-            delta_min,
-        )
-
-        Bhepop2Enrichment.__init__(
-            self,
-            population,
-            distributions,
-            attribute_selection=attribute_selection,
-            feature_name=feature_name,
-            seed=seed,
-        )
-
-    def _evaluate_feature_values(self):
-        return functions.compute_feature_values(
-            self.distributions, self._relative_maximum, self._delta_min
-        )
-
-    def _init_distributions(self):
-        """
-        Validate and filter the input distributions.
-
-        When done, set the *distributions* field.
-        """
-
-        self.log("Setup distributions data")
-
-        # validate distributions format and contents
-        functions.validate_distributions(self.distributions, self.attribute_selection, self.mode)
-
-        # filter distributions and infer modalities
-        self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
-            self.distributions, self.attribute_selection
-        )
-
-        # check that there are modalities at the end
-        assert (
-            len(self.modalities.keys()) > 0
-        ), "No attributes found in distributions for enriching population"
-
-    def _compute_feature_prob(self, attribute, modality):
-        """
-        Compute the probability of being in each feature interval with the given modality.
-
-        :param attribute: attribute name
-        :param modality: attribute modality
-
-        :return: DataFrame
-        """
-
-        decile_tmp = self.distributions[
-            self.distributions["modality"].isin([modality])
-            & self.distributions["attribute"].isin([attribute])
-        ]
-
-        total_population_decile_tmp = [
-            float(decile_tmp["D1"].iloc[0]),
-            float(decile_tmp["D2"].iloc[0]),
-            float(decile_tmp["D3"].iloc[0]),
-            float(decile_tmp["D4"].iloc[0]),
-            float(decile_tmp["D5"].iloc[0]),
-            float(decile_tmp["D6"].iloc[0]),
-            float(decile_tmp["D7"].iloc[0]),
-            float(decile_tmp["D8"].iloc[0]),
-            float(decile_tmp["D9"].iloc[0]),
-            self.feature_values[-1],
-        ]
-
-        prob_df = functions.compute_features_prob(self.feature_values, total_population_decile_tmp)
-
-        return prob_df
-
-    def _draw_feature(self, res, index):
-        """
-        Draw a feature value using the given distribution.
-
-        :param res: feature distributions by crossed modality
-        :param index: index of the crossed modality
-
-        :return: Drawn feature value
-        """
-
-        # get probs
-        probs = res.loc[index,].to_numpy()
-        interval_values = [self._abs_minimum] + self.feature_values
-
-        # get the non-null probs and values
-        probs2 = []
-        values2 = [self._abs_minimum]
-        for i in range(len(probs)):
-            if pd.isna(probs[i]):
-                continue
-            probs2.append(probs[i])
-            values2.append(interval_values[i + 1])
-        # TODO : probs don't sum to 1, this isn't reassuring
-
-        # draw a feature interval using the probs
-        values = list(range(len(probs2)))
-        feature_interval = random.choices(values, probs2)[0]
-        assert len(probs2) == len(values2) - 1
-
-        # draw a feature value using a uniform distribution in the interval
-        lower, upper = values2[feature_interval], values2[feature_interval + 1]
-
-        draw = random.random()
-
-        final = round(
-            lower + (upper - lower) * draw
-        )  # POV : pourquoi on arrondit ? Cela n'explique pas les problèmes
-
-        return final
-
-    def _compute_feature_probabilities_from_distributions(self):
-        """
-        Compute the probability of each feature interval.
-
-        Use the global distribution of the features to interpolate the interval probabilities.
-
-        The resulting DataFrame contains :math:`P(f \\in F_{i})` for i in N
-
-        :return: DataFrame
-        """
-        distrib_all_df = self.distributions[self.distributions["attribute"] == "all"]
-
-        assert len(distrib_all_df) == 1
-
-        total_population_decile = [
-            self.distributions["D1"].iloc[0],
-            self.distributions["D2"].iloc[0],
-            self.distributions["D3"].iloc[0],
-            self.distributions["D4"].iloc[0],
-            self.distributions["D5"].iloc[0],
-            self.distributions["D6"].iloc[0],
-            self.distributions["D7"].iloc[0],
-            self.distributions["D8"].iloc[0],
-            self.distributions["D9"].iloc[0],
-            self.feature_values[-1],  # maximum value of all deciles
-        ]
-
-        prob_df = functions.compute_features_prob(self.feature_values, total_population_decile)
-
-        return prob_df
-
-    def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
-        # return a QuantitativeAnalysis instance
-        return QuantitativeAnalysis(
-            populations={enriched_population_name: self.enriched_population},
-            modalities=self.modalities,
-            feature_column=self.feature_name,
-            distributions=self.distributions,
-            **kwargs
-        )
+# class QualitativeBhepop2(Bhepop2Enrichment):
+#     """
+#     A class for enriching population using entropy maximisation.
+#
+#     Notations used in this class documentation:
+#
+#     - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
+#     - :math:`F_{i}` : feature value i
+#     """
+#
+#     # Modification by POV
+#
+#     def _compute_feature_probabilities_from_distributions(self):
+#         """
+#         Compute the probability of each feature interval.
+#
+#         Use the global distribution of the features to interpolate the interval probabilities.
+#
+#         The resulting DataFrame contains :math:`P(f < F_{i})` for i in N
+#
+#         :return: DataFrame
+#         """
+#         distrib_all_df = self.distributions[self.distributions["attribute"] == "all"]
+#
+#         assert len(distrib_all_df) == 1
+#
+#         res = pd.DataFrame({"feature": self.feature_values})
+#         res["prob"] = res["feature"].apply(lambda x: distrib_all_df[x])
+#
+#         return res
+#
+#     def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
+#         # return a QualitativeAnalysis instance
+#         return QualitativeAnalysis(
+#             populations={enriched_population_name: self.enriched_population},
+#             modalities=self.modalities,
+#             feature_column=self.feature_name,
+#             distributions=self.distributions,
+#             **kwargs,
+#         )
+#
+#
+# class QuantitativeBhepop2(Bhepop2Enrichment, QuantitativeAttributes):
+#     """
+#     A class for enriching population using entropy maximisation.
+#
+#     Notations used in this class documentation:
+#
+#     - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
+#
+#     - :math:`F_{i}` : feature class i
+#
+#         - For quantitative features, corresponds to a numeric interval.
+#         - For qualitative features, corresponds to one of the feature values.
+#     """
+#
+#     mode = "quantitative"
+#
+#     def __init__(
+#         self,
+#         population,
+#         distributions,
+#         attribute_selection=None,
+#         feature_name=None,
+#         seed=None,
+#         abs_minimum: int = 0,
+#         relative_maximum: float = 1.5,
+#         delta_min: int = None,
+#     ):
+#         """
+#
+#         :param population:
+#         :param distributions:
+#         :param attribute_selection:
+#         :param feature_name:
+#         :param seed:
+#         :param abs_minimum: Minimum value of the feature distributions.
+#             This value is absolute, and thus equal for all distributions
+#         :param relative_maximum: Maximum value of the feature distributions.
+#             This value is relative and will be multiplied to the last value of each distribution
+#         :param delta_min: Minimum size of the feature intervals
+#         """
+#
+#         QuantitativeAttributes.__init__(
+#             self,
+#             abs_minimum,
+#             relative_maximum,
+#             delta_min,
+#         )
+#
+#         Bhepop2Enrichment.__init__(
+#             self,
+#             population,
+#             distributions,
+#             attribute_selection=attribute_selection,
+#             feature_name=feature_name,
+#             seed=seed,
+#         )
+#
+#     def _evaluate_feature_values(self):
+#         return functions.compute_feature_values(
+#             self.distributions, self._relative_maximum, self._delta_min
+#         )
+#
+#     def _init_distributions(self):
+#         """
+#         Validate and filter the input distributions.
+#
+#         When done, set the *distributions* field.
+#         """
+#
+#         self.log("Setup distributions data")
+#
+#         # validate distributions format and contents
+#         functions.validate_distributions(self.distributions, self.attribute_selection, self.mode)
+#
+#         # filter distributions and infer modalities
+#         self.distributions, self.modalities = functions.filter_distributions_and_infer_modalities(
+#             self.distributions, self.attribute_selection
+#         )
+#
+#         # check that there are modalities at the end
+#         assert (
+#             len(self.modalities.keys()) > 0
+#         ), "No attributes found in distributions for enriching population"
+#
+#     def _compute_feature_prob(self, attribute, modality):
+#         """
+#         Compute the probability of being in each feature interval with the given modality.
+#
+#         :param attribute: attribute name
+#         :param modality: attribute modality
+#
+#         :return: DataFrame
+#         """
+#
+#         decile_tmp = self.distributions[
+#             self.distributions["modality"].isin([modality])
+#             & self.distributions["attribute"].isin([attribute])
+#         ]
+#
+#         total_population_decile_tmp = [
+#             float(decile_tmp["D1"].iloc[0]),
+#             float(decile_tmp["D2"].iloc[0]),
+#             float(decile_tmp["D3"].iloc[0]),
+#             float(decile_tmp["D4"].iloc[0]),
+#             float(decile_tmp["D5"].iloc[0]),
+#             float(decile_tmp["D6"].iloc[0]),
+#             float(decile_tmp["D7"].iloc[0]),
+#             float(decile_tmp["D8"].iloc[0]),
+#             float(decile_tmp["D9"].iloc[0]),
+#             self.feature_values[-1],
+#         ]
+#
+#         prob_df = functions.compute_features_prob(self.feature_values, total_population_decile_tmp)
+#
+#         return prob_df
+#
+#     def _compute_feature_probabilities_from_distributions(self):
+#         """
+#         Compute the probability of each feature interval.
+#
+#         Use the global distribution of the features to interpolate the interval probabilities.
+#
+#         The resulting DataFrame contains :math:`P(f \\in F_{i})` for i in N
+#
+#         :return: DataFrame
+#         """
+#         distrib_all_df = self.distributions[self.distributions["attribute"] == "all"]
+#
+#         assert len(distrib_all_df) == 1
+#
+#         total_population_decile = [
+#             self.distributions["D1"].iloc[0],
+#             self.distributions["D2"].iloc[0],
+#             self.distributions["D3"].iloc[0],
+#             self.distributions["D4"].iloc[0],
+#             self.distributions["D5"].iloc[0],
+#             self.distributions["D6"].iloc[0],
+#             self.distributions["D7"].iloc[0],
+#             self.distributions["D8"].iloc[0],
+#             self.distributions["D9"].iloc[0],
+#             self.feature_values[-1],  # maximum value of all deciles
+#         ]
+#
+#         prob_df = functions.compute_features_prob(self.feature_values, total_population_decile)
+#
+#         return prob_df
+#
+#     def _get_analysis_instance(self, enriched_population_name: str = "enriched_population", **kwargs):
+#         # return a QuantitativeAnalysis instance
+#         return QuantitativeAnalysis(
+#             populations={enriched_population_name: self.enriched_population},
+#             modalities=self.modalities,
+#             feature_column=self.feature_name,
+#             distributions=self.distributions,
+#             **kwargs
+#         )
