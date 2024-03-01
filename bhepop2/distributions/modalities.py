@@ -192,7 +192,7 @@ class QuantitativeModalitiesDistributions(ModalitiesDistributions, QuantitativeA
 
         interval_values = [self._abs_minimum] + self.feature_values
 
-        lower, upper = interval_values[feature_index - 1], interval_values[feature_index]
+        lower, upper = interval_values[feature_index], interval_values[feature_index + 1]
 
         draw = random.random()
 
