@@ -5,9 +5,8 @@ In this scope, specific source distributions are known for population subsets.
 This allows a more precise feature value association than a global, population wide distribution.
 """
 
-from .base import EnrichmentSource
+from .base import EnrichmentSource, QuantitativeAttributes
 from bhepop2 import functions
-from bhepop2.enrichment.base import QuantitativeAttributes
 from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 
 import pandas as pd
@@ -20,6 +19,8 @@ ALL_LABEL = "all"
 
 class MarginalDistributions(EnrichmentSource):
     """
+    This class describes a group of marginal distributions used as an enrichment source.
+
     In this class, the distributions subsets are known
     for population individuals presenting a specific attribute.
     For instance, the Filosofi data source (INSEE) stores distributions of
@@ -40,7 +41,7 @@ class MarginalDistributions(EnrichmentSource):
     and can be matched with distributions corresponding to their known attributes.
     """
 
-    def __init__(self, data, attribute_selection: list = None):
+    def __init__(self, data, name=None, attribute_selection: list = None):
         """
         Store modality distributions and attribute selection.
 
@@ -54,6 +55,7 @@ class MarginalDistributions(EnrichmentSource):
         as an enrichment source. If no selection is provided, all attributes are used.
 
         :param data: DataFrame describing feature values distributions for each modality
+        :param name: name of the enrichment source
         :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
         """
         # distribution attributes used for feature evaluation
@@ -63,7 +65,7 @@ class MarginalDistributions(EnrichmentSource):
         # { attribute: [modalities] }
         self.modalities = None
 
-        super().__init__(data)
+        super().__init__(data, name=name)
 
     def _validate_data(self):
         # quantitative or qualitative check
@@ -173,6 +175,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
     def __init__(
             self,
             data,
+            name=None,
             attribute_selection: list = None,
             abs_minimum: int = 0,
             relative_maximum: float = 1.5,
@@ -189,7 +192,8 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         MarginalDistributions.__init__(
             self,
             data,
-            attribute_selection,
+            name=name,
+            attribute_selection=attribute_selection,
         )
 
     def _evaluate_feature_values(self):
