@@ -23,11 +23,11 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
     """
 
     def __init__(
-            self,
-            population: pd.DataFrame,
-            source,
-            feature_name: str = None,
-            seed=None,
+        self,
+        population: pd.DataFrame,
+        source,
+        feature_name: str = None,
+        seed=None,
     ):
         # init logging class
         Bhepop2Logger.__init__(self)
@@ -100,7 +100,5 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
             raise ValueError("No enriched population to analyze")
 
         return self.source.compare_with_populations(
-            {enriched_population_name: self.enriched_population},
-            self.feature_name,
-            **kwargs
+            {enriched_population_name: self.enriched_population}, self.feature_name, **kwargs
         )

@@ -1,4 +1,3 @@
-
 from .base import EnrichmentSource, QuantitativeAttributes
 import random
 import numpy as np
@@ -11,12 +10,13 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
     For now, only deciles distributions are managed.
     """
 
-    def __init__(self, data, name=None, abs_minimum: int = 0,
-        relative_maximum: float = 1.5):
+    def __init__(self, data, name=None, abs_minimum: int = 0, relative_maximum: float = 1.5):
 
         EnrichmentSource.__init__(self, data, name=name)
 
-        QuantitativeAttributes.__init__(self, abs_minimum=abs_minimum, relative_maximum=relative_maximum)
+        QuantitativeAttributes.__init__(
+            self, abs_minimum=abs_minimum, relative_maximum=relative_maximum
+        )
 
     def _evaluate_feature_values(self):
         """
@@ -24,7 +24,9 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
 
         :return: list of feature values
         """
-        values = list(self.data[["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]].iloc[0].values)
+        values = list(
+            self.data[["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]].iloc[0].values
+        )
         values.append(np.max(values) * self._relative_maximum)
 
         return values
@@ -54,9 +56,6 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
         draw = random.random()
 
         # TODO : pas d'arrondi
-        drawn_feature_value = round(
-            lower + (upper - lower) * draw
-        )
+        drawn_feature_value = round(lower + (upper - lower) * draw)
 
         return drawn_feature_value
-

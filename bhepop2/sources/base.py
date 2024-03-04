@@ -111,10 +111,10 @@ class QuantitativeAttributes:
     """
 
     def __init__(
-            self,
-            abs_minimum: int = 0,
-            relative_maximum: float = 1.5,
-            delta_min: int = None,
+        self,
+        abs_minimum: int = 0,
+        relative_maximum: float = 1.5,
+        delta_min: int = None,
     ):
         """
         Store parameters used for quantitative enrichment.

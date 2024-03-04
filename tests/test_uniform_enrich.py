@@ -7,7 +7,9 @@ def test_uniform_enrich(synthetic_population_nantes, filosofi_distributions_nant
         filosofi_distributions_nantes["modality"] == "all"
     ]
 
-    global_distribution = QuantitativeGlobalDistribution(filosofi_distributions_nantes, abs_minimum=0, relative_maximum=1.2)
+    global_distribution = QuantitativeGlobalDistribution(
+        filosofi_distributions_nantes, abs_minimum=0, relative_maximum=1.2
+    )
 
     enrich_class = SimpleUniformEnrichment(synthetic_population_nantes, global_distribution)
 

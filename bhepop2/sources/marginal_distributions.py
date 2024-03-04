@@ -116,8 +116,7 @@ class MarginalDistributions(EnrichmentSource):
         :return:
         """
         return self.data[
-            self.data["modality"].isin([modality])
-            & self.data["attribute"].isin([attribute])
+            self.data["modality"].isin([modality]) & self.data["attribute"].isin([attribute])
         ]
 
 
@@ -172,14 +171,15 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
     The input DataFrame has deciles numbers as columns (D1, D2 to D9),
     and values as column values, for each attribute/modality pair
     """
+
     def __init__(
-            self,
-            data,
-            name=None,
-            attribute_selection: list = None,
-            abs_minimum: int = 0,
-            relative_maximum: float = 1.5,
-            delta_min: int = None,
+        self,
+        data,
+        name=None,
+        attribute_selection: list = None,
+        abs_minimum: int = 0,
+        relative_maximum: float = 1.5,
+        delta_min: int = None,
     ):
 
         QuantitativeAttributes.__init__(
@@ -202,9 +202,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
 
         :return: list of feature values
         """
-        return functions.compute_feature_values(
-            self.data, self._relative_maximum, self._delta_min
-        )
+        return functions.compute_feature_values(self.data, self._relative_maximum, self._delta_min)
 
     def _validate_data_type(self):
         functions.validate_distributions(self.data, self.attribute_selection, "quantitative")
@@ -248,9 +246,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         draw = random.random()
 
         # TODO : pas d'arrondi
-        drawn_feature_value = round(
-            lower + (upper - lower) * draw
-        )
+        drawn_feature_value = round(lower + (upper - lower) * draw)
 
         return drawn_feature_value
 

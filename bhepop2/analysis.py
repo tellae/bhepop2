@@ -268,9 +268,7 @@ class PopulationAnalysis:
 
         :return: plot title
         """
-        return self.plot_title_format.format(
-            observed_name=self.distributions_name, **kwargs
-        )
+        return self.plot_title_format.format(observed_name=self.distributions_name, **kwargs)
 
 
 class QuantitativeAnalysis(PopulationAnalysis):

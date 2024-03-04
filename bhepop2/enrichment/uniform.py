@@ -19,7 +19,9 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
     """
 
     def _assign_features(self):
-        self.population[self.feature_name] = [self._draw_feature_value() for _ in range(len(self.population))]
+        self.population[self.feature_name] = [
+            self._draw_feature_value() for _ in range(len(self.population))
+        ]
 
         return self.population
 
