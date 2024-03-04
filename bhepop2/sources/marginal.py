@@ -1,4 +1,4 @@
-from .base import EnrichmentSource, ALL_LABEL
+from .base import EnrichmentSource
 from bhepop2 import functions
 from bhepop2.enrichment.base import QuantitativeAttributes
 from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
@@ -6,6 +6,8 @@ from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 import pandas as pd
 from abc import abstractmethod
 import random
+
+ALL_LABEL = "all"
 
 
 class MarginalDistributions(EnrichmentSource):

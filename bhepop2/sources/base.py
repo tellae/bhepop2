@@ -2,8 +2,6 @@
 from abc import ABC, abstractmethod
 import logging as lg
 
-ALL_LABEL = "all"
-
 
 class EnrichmentSource(ABC):
 
