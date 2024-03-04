@@ -47,6 +47,8 @@ class MarginalDistributions(EnrichmentSource):
         Modality distributions come as a DataFrame with *attribute* and *modality*
         columns. The rest of the columns should describe the distribution associated
         to this modality.
+        An additional row with attribute and modality equal to ALL_LABEL is
+        expected to contain a distribution describing the global population.
 
         Attribute selection is used to indicate the distributions that will be used
         as an enrichment source. If no selection is provided, all attributes are used.
@@ -64,8 +66,7 @@ class MarginalDistributions(EnrichmentSource):
         super().__init__(data)
 
     def _validate_data(self):
-
-        # TODO : qualitative or quantitative
+        # quantitative or qualitative check
         self._validate_data_type()
 
         # filter the distributions to keep only those corresponding to the attribute selection
@@ -157,6 +158,7 @@ class QualitativeMarginalDistributions(MarginalDistributions):
             modalities=self.modalities,
             feature_column=feature_name,
             distributions=self.data,
+            distributions_name=self.name,
             **kwargs
         )
 
@@ -254,5 +256,6 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
             modalities=self.modalities,
             feature_column=feature_name,
             distributions=self.data,
+            distributions_name=self.name,
             **kwargs
         )

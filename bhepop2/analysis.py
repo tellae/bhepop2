@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from os import path
 
 from bhepop2.functions import get_feature_from_qualitative_distribution
+from bhepop2.sources.base import DEFAULT_SOURCE_NAME
 
 DEFAULT_OUTPUT_FOLDER = "outputs/"
 
@@ -42,7 +43,7 @@ class PopulationAnalysis:
         modalities: dict,
         feature_column: str,
         distributions: pd.DataFrame,
-        distributions_name: str = "reference",
+        distributions_name: str = DEFAULT_SOURCE_NAME,
         plot_title_format: str = DEFAULT_PLOT_TITLE_FORMAT,
         output_folder: str = None,
     ):

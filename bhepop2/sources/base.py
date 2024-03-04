@@ -5,6 +5,8 @@ This module contains the abstract classes describing an enrichment source.
 from abc import ABC, abstractmethod
 import logging as lg
 
+DEFAULT_SOURCE_NAME = "Enrichment source"
+
 
 class EnrichmentSource(ABC):
     """
@@ -14,14 +16,19 @@ class EnrichmentSource(ABC):
     Sources describe a specific feature, for instance *declared income*.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, name: str = None):
         """
         Store the source data.
 
         Possible values of the described feature are evaluated from the source data.
 
         :param data: source data
+        :param name: name of the source, used in displays such as analysis plots and tables
         """
+
+        if name is None:
+            name = DEFAULT_SOURCE_NAME
+        self.name: str = name
 
         self.data = data
 

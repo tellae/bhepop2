@@ -67,6 +67,22 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
     def modalities(self):
         return self.source.modalities
 
+    def _validate_and_process_inputs(self):
+        """
+        Validate the provided inputs and set the relevant fields.
+
+        Since Bhepop2 uses marginal distributions to enrich the population,
+        we ensure that:
+
+        * the selected attributes are present in the population
+        * the population attributes take values in the modalities corresponding to this attribute
+        """
+        self.log("Setup population data")
+
+        functions.validate_population(self.population, self.modalities)
+
+        self.population = self.population.copy()
+
     def _assign_features(self):
         """
         Assign feature values to the population individuals using the algorithm results.
@@ -157,20 +173,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
             res.iloc[i, :] = res.iloc[i, :] / total
 
         return res
-
-    def _validate_and_process_inputs(self):
-        """
-        Validate the provided inputs and set the relevant fields.
-
-        Since Bhepop2 uses marginal distributions to enrich the population,
-        we ensure that the selected attributes (see MarginalDistributions.modalities)
-        are present in the population.
-        """
-        self.log("Setup population data")
-
-        functions.validate_population(self.population, self.modalities)
-
-        self.population = self.population.copy()
 
     def _optimise(self):
         """

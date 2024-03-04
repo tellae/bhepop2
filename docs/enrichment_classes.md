@@ -15,7 +15,7 @@ classDiagram
         <<Abstract>>
         +DataFrame population
         +EnrichmentSource source
-        +String feature_name
+        +str feature_name
         +int seed
         +assign_features()
         +compare_with_source()
@@ -32,6 +32,7 @@ namespace Enrichment sources {
 
     class EnrichmentSource{
         <<Abstract>>
+        +str name
         +any data
         +list feature_values
         +int nb_feature_values

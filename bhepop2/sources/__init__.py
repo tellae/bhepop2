@@ -3,3 +3,5 @@ This package contains classes describing data sources used to enrich synthetic p
 
 Data sources are usually distributions, which allow associating feature values to the population individuals.
 """
+
+from .marginal import QualitativeMarginalDistributions, QuantitativeMarginalDistributions
