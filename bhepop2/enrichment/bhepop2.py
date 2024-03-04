@@ -15,7 +15,7 @@ import random
 import logging as lg
 
 from .base import SyntheticPopulationEnrichment
-from bhepop2.sources.marginal import MarginalDistributions
+from bhepop2.sources.marginal_distributions import MarginalDistributions
 from bhepop2 import functions
 from bhepop2.optim import minxent_gradient
 
@@ -26,7 +26,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
     as an enrichment class.
 
     It allows enriching a population using marginal distributions
-    of a specific feature (see bhepop2.sources.marginal module).
+    of a specific feature (see bhepop2.sources.marginal_distributions module).
     """
 
     def __init__(

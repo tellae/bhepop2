@@ -1,5 +1,5 @@
 from bhepop2.enrichment.bhepop2 import Bhepop2Enrichment
-from bhepop2.sources.marginal import QuantitativeMarginalDistributions
+from bhepop2.sources.marginal_distributions import QuantitativeMarginalDistributions
 
 import numpy as np
 

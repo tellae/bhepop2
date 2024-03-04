@@ -104,33 +104,3 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
             self.feature_name,
             **kwargs
         )
-
-
-class QuantitativeAttributes:
-
-    def __init__(
-            self,
-            abs_minimum: int = 0,
-            relative_maximum: float = 1.5,
-            delta_min: int = None,
-    ):
-        """
-        Store parameters used for quantitative enrichment.
-
-        :param abs_minimum: Minimum value of the feature distributions.
-            This value is absolute, and thus equal for all distributions
-        :param relative_maximum: Maximum value of the feature distributions.
-            This value is relative and will be multiplied to the last value of each distribution
-        :param delta_min: Minimum size of the feature intervals
-        """
-
-        self._abs_minimum = abs_minimum
-        self._relative_maximum = relative_maximum
-        self._delta_min = delta_min
-
-    def _validate_quantitative_parameters(self):
-        """
-        Validate quantitative attributes' values.
-        """
-        assert self._relative_maximum >= 1
-        assert self._delta_min is None or self._delta_min >= 0
