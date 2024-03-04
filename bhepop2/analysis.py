@@ -1,3 +1,13 @@
+"""
+This module provides tools to analyse populations.
+
+Most of the time, population analysis is done by comparing
+it with reference data.
+
+For enriched populations, comparison with the enrichment source data
+can be a good way to assert the quality of the enrichment.
+"""
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -7,11 +17,18 @@ from os import path
 from bhepop2.functions import get_feature_from_qualitative_distribution
 from bhepop2.sources.base import DEFAULT_SOURCE_NAME
 
-DEFAULT_OUTPUT_FOLDER = "outputs/"
-
 
 class PopulationAnalysis:
     """
+    DISCLAIMER: This class only works with MarginalDistributions data.
+
+    This class and its subclasses was implemented before the
+    refactoring of the enrichment classes, which led to the composition
+    of SyntheticPopulationEnrichment with EnrichmentSource, which is more generic.
+    Therefore, this class expects distributions as in MarginalDistributions.data
+    rather than a generic enrichment source data.
+    ---------
+
     Analysis class for synthetic populations.
 
     Synthetic populations must be identical except for their feature columns.

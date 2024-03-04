@@ -44,7 +44,6 @@ class Bhepop2Logger:
         self._logger.log(level, message)
 
 
-
 def log(message, level):
     """
     Log a message using the logging library.
