@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath("../"))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "bhepop2"
-copyright = "2023, UGE & Tellae"
+copyright = "2024, UGE & Tellae"
 author = "UGE & Tellae"
 
 # Get the version from the __init__ module
