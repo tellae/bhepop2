@@ -3,12 +3,12 @@ This module contains the abstract classes describing an enrichment source.
 """
 
 from abc import ABC, abstractmethod
-import logging as lg
+from bhepop2.utils import Bhepop2Logger, lg
 
 DEFAULT_SOURCE_NAME = "Enrichment source"
 
 
-class EnrichmentSource(ABC):
+class EnrichmentSource(ABC, Bhepop2Logger):
     """
     EnrichmentSource classes are supposed to provide ways
     to enrich or analyze a population.
@@ -25,6 +25,9 @@ class EnrichmentSource(ABC):
         :param data: source data
         :param name: name of the source, used in displays such as analysis plots and tables
         """
+
+        # init logging class
+        Bhepop2Logger.__init__(self)
 
         if name is None:
             name = DEFAULT_SOURCE_NAME
@@ -100,7 +103,3 @@ class EnrichmentSource(ABC):
         :return: PopulationAnalysis subclass instance.
         """
         raise NotImplementedError
-
-    def log(self, message, level):
-        pass
-

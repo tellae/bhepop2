@@ -2,14 +2,14 @@
 This module contains base code for synthetic population enrichment classes.
 """
 
-from bhepop2.utils import log, lg
+from bhepop2.utils import Bhepop2Logger, lg
 
 from abc import ABC, abstractmethod
 import pandas as pd
 import random
 
 
-class SyntheticPopulationEnrichment(ABC):
+class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
     """
     This abstract class describes the base attributes and methods of
     synthetic population enrichment classes.
@@ -29,6 +29,8 @@ class SyntheticPopulationEnrichment(ABC):
             feature_name: str = None,
             seed=None,
     ):
+        # init logging class
+        Bhepop2Logger.__init__(self)
 
         # random seed (maybe use a random generator instead)
         self.seed = seed
@@ -102,22 +104,6 @@ class SyntheticPopulationEnrichment(ABC):
             self.feature_name,
             **kwargs
         )
-
-    # utils
-
-    def log(message: str, level: int = lg.DEBUG):
-        """
-        Log a message using the package logger.
-
-        See logging library.
-
-        :param message: message to be logged
-        :param level: logging level
-        """
-
-        log(message, level)
-
-    log = staticmethod(log)
 
 
 class QuantitativeAttributes:
