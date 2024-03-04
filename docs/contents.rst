@@ -7,7 +7,6 @@ Documentation of Bhepop2
    :caption: Contents:
 
    index
-   algorithm
    inputs
    apiref
    about
