@@ -10,11 +10,11 @@ This package treats the problem to **enrich an initial synthetic population from
 flowchart LR
   subgraph data_prep [Data preparation]
     pop[("Population \n (Eqasim, ..)")] --> read_pop
-    distribs[("Distributions \n (Filosofi, ..)")] --> read_distribs
+    distribs[("Enrichment source \n (Filosofi, ..)")] --> read_distribs
   end
   subgraph Assignment
     formated_pop(Formated population)
-    formated_distribs(Formated distributions)
+    formated_distribs(Formated source)
     formated_pop & formated_distribs --> assignment[/Assignment algorithm/]
   end
   read_pop --> formated_pop

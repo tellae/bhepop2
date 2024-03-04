@@ -1,14 +1,14 @@
-from .base import Distributions, ALL_LABEL
+from .base import EnrichmentSource, ALL_LABEL
 from bhepop2 import functions
+from bhepop2.enrichment.base import QuantitativeAttributes
+from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 
 import pandas as pd
 from abc import abstractmethod
-from bhepop2.enrichment.base import QuantitativeAttributes
-from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 import random
 
 
-class ModalitiesDistributions(Distributions):
+class MarginalDistributions(EnrichmentSource):
     """
 
     """
@@ -84,7 +84,7 @@ class ModalitiesDistributions(Distributions):
         ]
 
 
-class QualitativeModalitiesDistributions(ModalitiesDistributions):
+class QualitativeMarginalDistributions(MarginalDistributions):
 
     def _evaluate_feature_values(self):
         """
@@ -100,7 +100,7 @@ class QualitativeModalitiesDistributions(ModalitiesDistributions):
     def compute_feature_prob(self, attribute=ALL_LABEL, modality=ALL_LABEL):
         # get distribution for the given modality
         prob_df = self.get_modality_distribution(attribute, modality)
-        print(prob_df)
+
         # get probabilities with direct application of the distributions
         res = pd.DataFrame({"feature": self.feature_values})
         res["prob"] = res["feature"].apply(lambda x: prob_df[x])
@@ -121,7 +121,7 @@ class QualitativeModalitiesDistributions(ModalitiesDistributions):
         )
 
 
-class QuantitativeModalitiesDistributions(ModalitiesDistributions, QuantitativeAttributes):
+class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttributes):
 
     def __init__(
             self,
@@ -139,7 +139,7 @@ class QuantitativeModalitiesDistributions(ModalitiesDistributions, QuantitativeA
             delta_min,
         )
 
-        ModalitiesDistributions.__init__(
+        MarginalDistributions.__init__(
             self,
             data,
             attribute_selection,

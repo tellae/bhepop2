@@ -4,7 +4,7 @@ import random
 import logging as lg
 
 from .base import SyntheticPopulationEnrichment
-from bhepop2.distributions.modalities import ModalitiesDistributions
+from bhepop2.sources.marginal import MarginalDistributions
 from bhepop2 import functions
 from bhepop2.optim import minxent_gradient
 
@@ -14,7 +14,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
     def __init__(
         self,
         population: pd.DataFrame,
-        distributions: ModalitiesDistributions,
+        distributions: MarginalDistributions,
         feature_name=None,
         seed=None,
     ):
@@ -44,7 +44,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
     @property
     def modalities(self):
-        return self.distributions.modalities
+        return self.source.modalities
 
     def _assign_features(self):
         """
@@ -65,7 +65,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         merge = self.population.merge(
             self.crossed_modalities_frequencies,
             how="left",
-            on=functions.get_attributes(self.distributions.modalities),
+            on=functions.get_attributes(self.source.modalities),
         )
 
         # associate a feature value to the population individuals
@@ -99,7 +99,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         feature_index = random.choices(feature_indexes, filtered_probs)[0]
 
         # get feature value from distribution
-        value = self.distributions.get_value_for_feature(feature_index)
+        value = self.source.get_value_for_feature(feature_index)
 
         return value
 
@@ -119,7 +119,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         :return: DataFrame
         """
 
-        feature_probs = self.distributions.compute_feature_prob()
+        feature_probs = self.source.compute_feature_prob()
 
         res = self.optim_result
 
@@ -198,7 +198,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         lambda_ = np.zeros(nb_lines - 1)
 
         # loop on features
-        for i in range(self.distributions.nb_feature_values):
+        for i in range(self.source.nb_feature_values):
             # run optimization model on the current feature
             self.log("Running optimization algorithm on feature " + str(i))
 
@@ -243,7 +243,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
                 self.log("Computing constraints for modality: {} = {}".format(attribute, modality))
 
                 # compute probability of each feature interval when being in a modality
-                ech[attribute][modality] = self.distributions.compute_feature_prob(attribute, modality)
+                ech[attribute][modality] = self.source.compute_feature_prob(attribute, modality)
 
                 # multiply frequencies by each element of ech_compo
                 value = attribute_freq[attribute_freq[attribute].isin([modality])]

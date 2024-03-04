@@ -5,7 +5,7 @@ import logging as lg
 ALL_LABEL = "all"
 
 
-class Distributions(ABC):
+class EnrichmentSource(ABC):
 
     def __init__(self, data):
 

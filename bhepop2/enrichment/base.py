@@ -25,7 +25,7 @@ class SyntheticPopulationEnrichment(ABC):
     def __init__(
             self,
             population: pd.DataFrame,
-            distributions,
+            source,
             feature_name: str = None,
             seed=None,
     ):
@@ -39,7 +39,7 @@ class SyntheticPopulationEnrichment(ABC):
         self.population: pd.DataFrame = population
 
         # enrichment data source
-        self.distributions = distributions
+        self.source = source
 
         # name of the added column containing the new feature values
         feature_name = "feature" if feature_name is None else feature_name
@@ -82,7 +82,7 @@ class SyntheticPopulationEnrichment(ABC):
 
     # analysis
 
-    def compare_with_distributions(self, enriched_population_name: str = "enriched_population", **kwargs):
+    def compare_with_source(self, enriched_population_name: str = "enriched_population", **kwargs):
         """
         Create a PopulationAnalysis instance for the enriched population.
 
@@ -94,7 +94,7 @@ class SyntheticPopulationEnrichment(ABC):
         if self.enriched_population is None:
             raise ValueError("No enriched population to analyze")
 
-        return self.distributions.compare_with_populations(
+        return self.source.compare_with_populations(
             {enriched_population_name: self.enriched_population},
             self.feature_name,
             **kwargs
