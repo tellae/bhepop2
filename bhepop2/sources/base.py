@@ -1,11 +1,27 @@
+"""
+This module contains the abstract classes describing an enrichment source.
+"""
 
 from abc import ABC, abstractmethod
 import logging as lg
 
 
 class EnrichmentSource(ABC):
+    """
+    EnrichmentSource classes are supposed to provide ways
+    to enrich or analyze a population.
+
+    Sources describe a specific feature, for instance *declared income*.
+    """
 
     def __init__(self, data):
+        """
+        Store the source data.
+
+        Possible values of the described feature are evaluated from the source data.
+
+        :param data: source data
+        """
 
         self.data = data
 
@@ -28,10 +44,24 @@ class EnrichmentSource(ABC):
 
     @abstractmethod
     def _evaluate_feature_values(self):
+        """
+        Evaluate the values that can be taken by the described feature.
+
+        The result will be stored in the feature_values property.
+
+        :return: object describing the feature values
+        """
         pass
 
     @abstractmethod
     def _validate_data(self):
+        """
+        Validate the source data.
+
+        Raise a ValueError if data is invalid.
+
+        :raises: ValueError
+        """
         pass
 
     @abstractmethod
@@ -49,6 +79,19 @@ class EnrichmentSource(ABC):
         pass
 
     def compare_with_populations(self, populations, feature_name, **kwargs):
+        """
+        Compare the source data with populations containing the described feature (enriched or original)
+
+        The class returns an instance of a PopulationAnalysis subclass, which
+        can be used to generate different kinds of comparisons between the
+        populations and the source data.
+
+        :param populations: dict of populations {population_name: population}
+        :param feature_name: population column containing the feature values
+        :param kwargs: additional arguments for the analysis instance
+
+        :return: PopulationAnalysis subclass instance.
+        """
         raise NotImplementedError
 
     def log(self, message, level):

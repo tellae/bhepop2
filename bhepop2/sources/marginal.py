@@ -1,3 +1,10 @@
+"""
+This module contains classes describing marginal distributions sources.
+
+In this scope, specific source distributions are known for population subsets.
+This allows a more precise feature value association than a global, population wide distribution.
+"""
+
 from .base import EnrichmentSource
 from bhepop2 import functions
 from bhepop2.enrichment.base import QuantitativeAttributes
@@ -7,17 +14,42 @@ import pandas as pd
 from abc import abstractmethod
 import random
 
+#: attribute and modality corresponding to the global distribution
 ALL_LABEL = "all"
 
 
 class MarginalDistributions(EnrichmentSource):
     """
+    In this class, the distributions subsets are known
+    for population individuals presenting a specific attribute.
+    For instance, the Filosofi data source (INSEE) stores distributions of
+    declared income in administrative areas, for the whole population and for
+    population subsets, such as tenants or owners.
 
+    In this scope, we use the following terms to describe such marginal distributions:
+
+    - An **attribute** refers to an information in the initial sample or in the aggregate data.
+        For instance: age, profession, ownership, etc.
+    - **Modalities** are the partition of one attribute.
+        For instance, in Filosofi, the *ownership* attribute can take the values *Owner* and *Tenant*.
+    - **Cross modalities** are the intersection of two or more modalities.
+        For instance, *Owner* and *above 65 years old*.
+
+
+    Then, population individuals are part of a single cross modality,
+    and can be matched with distributions corresponding to their known attributes.
     """
 
     def __init__(self, data, attribute_selection: list = None):
         """
         Store modality distributions and attribute selection.
+
+        Modality distributions come as a DataFrame with *attribute* and *modality*
+        columns. The rest of the columns should describe the distribution associated
+        to this modality.
+
+        Attribute selection is used to indicate the distributions that will be used
+        as an enrichment source. If no selection is provided, all attributes are used.
 
         :param data: DataFrame describing feature values distributions for each modality
         :param attribute_selection: distribution attributes used. By default, use all attributes of the distribution
@@ -87,6 +119,12 @@ class MarginalDistributions(EnrichmentSource):
 
 
 class QualitativeMarginalDistributions(MarginalDistributions):
+    """
+    This class uses distributions describing qualitative features.
+
+    The input DataFrame has feature values as columns, and probabilities as
+    column values, for each attribute/modality pair.
+    """
 
     def _evaluate_feature_values(self):
         """
@@ -124,7 +162,12 @@ class QualitativeMarginalDistributions(MarginalDistributions):
 
 
 class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttributes):
+    """
+    This class uses distributions describing quantitative features.
 
+    The input DataFrame has deciles numbers as columns (D1, D2 to D9),
+    and values as column values, for each attribute/modality pair
+    """
     def __init__(
             self,
             data,

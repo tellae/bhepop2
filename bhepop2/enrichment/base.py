@@ -72,12 +72,15 @@ class SyntheticPopulationEnrichment(ABC):
 
     @abstractmethod
     def _assign_features(self):
+        # implement feature assignment using a dedicated algorithm
         pass
 
     # validation and read
 
     @abstractmethod
     def _validate_and_process_inputs(self):
+        # validate and process the provided inputs for the feature assignment
+        # both the population and the enrichment source may need to be validated
         pass
 
     # analysis
@@ -87,7 +90,7 @@ class SyntheticPopulationEnrichment(ABC):
         Create a PopulationAnalysis instance for the enriched population.
 
         :param enriched_population_name: display name of the enriched population
-        :param kwargs: additional parameters for the PopulationAnalysis instanciation
+        :param kwargs: additional parameters for the PopulationAnalysis instantiation
 
         :return: PopulationAnalysis for the current enriched population
         """
