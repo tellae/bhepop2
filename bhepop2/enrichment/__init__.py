@@ -3,4 +3,4 @@ This package contains classes used to enrich synthetic populations, using variou
 """
 
 from .bhepop2 import Bhepop2Enrichment
-# from .uniform import QuantitativeUniform
+from .uniform import SimpleUniformEnrichment
