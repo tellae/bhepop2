@@ -14,7 +14,7 @@ def test_bhepop2_enrich(
 ):
     synthetic_population_nantes.drop("sex", axis=1, inplace=True)
 
-    distributions = QuantitativeMarginalDistributions(filosofi_distributions_nantes, list(test_modalities.keys()), **test_parameters)
+    distributions = QuantitativeMarginalDistributions(filosofi_distributions_nantes, attribute_selection=list(test_modalities.keys()), **test_parameters)
 
     enrich_class = Bhepop2Enrichment(
         synthetic_population_nantes,
