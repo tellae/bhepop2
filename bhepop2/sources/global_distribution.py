@@ -1,3 +1,10 @@
+"""
+This module contains classes describing global distributions sources.
+
+The distributions are global in the sense that they describe a complete population ,
+and can then be used by themselves for population enrichment.
+"""
+
 from .base import EnrichmentSource, QuantitativeAttributes
 import random
 import numpy as np
@@ -5,7 +12,7 @@ import numpy as np
 
 class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
     """
-    This class describes a global distribution used as an enrichment source.
+    A single global distribution used as an enrichment source.
 
     For now, only deciles distributions are managed.
     """

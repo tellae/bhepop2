@@ -1,6 +1,7 @@
 """
-Implementation of the Bhepop2 (Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization) methodology.
-It is theoretically described, justified and discussed in
+Implementation of the Bhepop2 methodology.
+
+Bhepop2 stands for Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization. It is theoretically described, justified and discussed in
 
 * Boyam Fabrice Yaméogo, Pierre-Olivier Vandanjon, Pierre Hankach, Pascal Gastineau. `Methodology for Adding a Variable to a Synthetic Population from Aggregate Data: Example of the Income Variable <https://hal.archives-ouvertes.fr/hal-03282111>`_. 2021. ⟨hal-03282111⟩. Paper in review.
 
@@ -35,11 +36,10 @@ from bhepop2.optim import minxent_gradient
 
 class Bhepop2Enrichment(SyntheticPopulationEnrichment):
     """
-    Implementation of the Bhepop2 methodology (see module description)
-    as an enrichment class.
+    Implementation of the Bhepop2 methodology as an enrichment class.
 
     It allows enriching a population using marginal distributions
-    of a specific feature (see bhepop2.sources.marginal_distributions module).
+    of a specific feature (see :mod:`bhepop2.sources.marginal_distributions`).
 
     The variables of interest (attributes) are degrees of freedom of the optimisation problem.
     """

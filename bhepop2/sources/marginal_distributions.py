@@ -122,7 +122,7 @@ class MarginalDistributions(EnrichmentSource):
 
 class QualitativeMarginalDistributions(MarginalDistributions):
     """
-    This class uses distributions describing qualitative features.
+    Marginal distributions describing qualitative features.
 
     The input DataFrame has feature values as columns, and probabilities as
     column values, for each attribute/modality pair.
@@ -166,7 +166,7 @@ class QualitativeMarginalDistributions(MarginalDistributions):
 
 class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttributes):
     """
-    This class uses distributions describing quantitative features.
+    Marginal distributions describing quantitative features.
 
     The input DataFrame has deciles numbers as columns (D1, D2 to D9),
     and values as column values, for each attribute/modality pair

@@ -1,68 +1,39 @@
 .. _inputs:
 
-######
-Inputs
-######
 
-The two main inputs of the enrichment algorithm are the population to be enriched and the aggregated data.
+Usage
+_____
 
-They are linked by a set of **attributes** and their possible values (**modalities**). For instance:
+Input data
+##########
 
-- Attribute ``ownership``, with values in
+The two main inputs of the enrichment algorithms are the population to be enriched and the aggregated data.
 
-    - ``Owner``
-    - ``Tenant``
+Enrichment source
+*****************
 
-- Attribute ``age``, with values in
+The enrichment source contain the **information used by the algorithm to enrich the population**.
+Source data for such data can be *INSEE* databases (*Filosofi*, ..) or other aggregated data sources.
 
-    - ``0_29``
-    - ...
-    - ``60_74``
-    - ``75_or_more``
+The source data formatting is not fixed, as it depends on the
 
-**********
-Population
-**********
+.. note::
 
-This is the **synthetic population to be enriched** using Bhepop2.
+    The source data format is not fixed. It depends of the method used for population enrichment.
 
-It is represented by a DataFrame containing one entry per population individual.
-Columns of the same name than the attributes are expected. Entries contain a value (modality) of each attribute.
+Example
+-------
 
-.. list-table:: Example of population table
-   :widths: 25 25 25
-   :header-rows: 1
+When enriching populations with :class:`~bhepop2.enrichment.bhepop2.Bhepop2Enrichment`, we use marginal distributions,
+meaning distributions that describe a subset of the population with a specific attribute value.
 
-   * - ...
-     - ownership
-     - age
-   * - ...
-     - Owner
-     - 60_74
-   * - ...
-     - Tenant
-     - 0_29
-   * - ...
-     - Tenant
-     - 40_49
+For instance, we may use distributions that describe a population depending on its age, and other distributions may
+use the individuals ownership situation.
 
-Source data for the formatted population can be *Eqasim* population/households or any source of synthetic population.
-
-*************
-Distributions
-*************
-
-Distributions contain the **information used by the algorithm to enrich the population**.
-
-They are represented by a DataFrame containing one entry per distribution. The expected columns are the following:
+They are represented by a DataFrame containing one entry per distribution, for each attribute and its values (called modalities).
 
 
-* Columns ``D1``; ``D2``; ...; ``D9`` : deciles of the distribution
-* A ``attribute`` column : name of the attribute associated to this distribution
-* A ``modality`` column : name of the modality associated to this distribution
-
-
-.. list-table:: Example of distribution table
+.. list-table:: Example of a table containing marginal distributions for attributes **ownership** and **age**
    :widths: 25 10 25 40 40
    :header-rows: 1
 
@@ -82,9 +53,71 @@ They are represented by a DataFrame containing one entry per distribution. The e
      - ownership
      - Tenant
 
-.. note::
+Population
+**********
 
-    The values of the ``modality`` column define the possible values that can be taken by the corresponding attribute in
-    the population data.
+This is the **synthetic population to be enriched** using Bhepop2.
+Sources for synthetic populations can be *Eqasim* population/households, but any list of individuals is virtually
+a synthetic population.
 
-Source data for the formatted distributions can be *INSEE* databases (*Filosofi*, ..) or other aggregated data sources.
+Synthetic populations are represented by a **DataFrame containing one entry per population individual**.
+Some other characteristics may be required on the population depending on the enrichment methodology and data source.
+
+Example
+-------
+
+Following our previous example, we have marginal distributions depending on age and ownership.
+
+In order to match the distributions with the population, the DataFrame must have columns describing these attributes.
+
+.. list-table:: Example of population table with **ownership** and **age** columns (the **id** column is not mandatory)
+   :widths: 30 10 25 25
+   :header-rows: 1
+
+   * - id
+     - ...
+     - ownership
+     - age
+   * - u-1.1
+     - ...
+     - Owner
+     - 60_74
+   * - u-1.2
+     - ...
+     - Tenant
+     - 0_29
+   * - u-1.3
+     - ...
+     - Tenant
+     - 40_49
+
+
+Using the Bhepop2 library
+#########################
+
+Enrichment method
+*****************
+
+Enrichment classes are used
+
+.. autosummary::
+    :nosignatures:
+
+    ~bhepop2.enrichment.uniform.SimpleUniformEnrichment
+    ~bhepop2.enrichment.bhepop2.Bhepop2Enrichment
+
+Enrichment source data
+**********************
+
+Encapsulates aggregated data.
+
+.. autosummary::
+    :nosignatures:
+
+    ~bhepop2.sources.global_distribution.QuantitativeGlobalDistribution
+    ~bhepop2.sources.marginal_distributions.QualitativeMarginalDistributions
+    ~bhepop2.sources.marginal_distributions.QuantitativeMarginalDistributions
+
+
+
+

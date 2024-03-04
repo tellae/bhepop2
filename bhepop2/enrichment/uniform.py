@@ -1,3 +1,7 @@
+"""
+Simple uniform enrichment using a global distribution.
+"""
+
 from .base import SyntheticPopulationEnrichment
 from bhepop2.sources.global_distribution import QuantitativeGlobalDistribution
 

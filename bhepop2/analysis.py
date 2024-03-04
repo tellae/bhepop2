@@ -22,11 +22,12 @@ class PopulationAnalysis:
     """
     DISCLAIMER: This class only works with MarginalDistributions data.
 
-    This class and its subclasses was implemented before the
+    The PopulationAnalysis class and its subclasses were implemented before the
     refactoring of the enrichment classes, which led to the composition
     of SyntheticPopulationEnrichment with EnrichmentSource, which is more generic.
     Therefore, this class expects distributions as in MarginalDistributions.data
     rather than a generic enrichment source data.
+
     ---------
 
     Analysis class for synthetic populations.
@@ -41,8 +42,8 @@ class PopulationAnalysis:
 
     The following analysis are available:
         - Graphs comparing the distributions in the population(s) to the original distributions (one per modality)
-        - A table describing the error of the population(s) in comparison to the distributions (one line per modality),
-        ordered by number of individuals in the modality
+        - A table describing the error of the population(s) in comparison to the distributions (one line per modality), ordered by number of individuals in the modality
+
     """
 
     # column describing the analysis class (depends on the feature's type)
