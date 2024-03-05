@@ -169,25 +169,6 @@ def get_feature_from_qualitative_distribution(distribution: pd.DataFrame):
     return features
 
 
-def compute_features_prob_qualitative(feature_values: list, distribution: list):
-    """
-    Create a DataFrame containing probabilities for the given feature values.
-
-    :param feature_values: list of feature values
-    :param distribution: list of distribution values
-
-    :return: DataFrame of feature probabilities
-    """
-    # set features column
-    probs_df = pd.DataFrame({"feature": feature_values})
-
-    # compute prob of being in each feature interval
-    probs_df["prob"] = probs_df.apply(
-        lambda x: interpolate_feature_prob(x["feature"], distribution),
-        axis=1,
-    )
-
-
 def compute_features_prob(feature_values: list, distribution: list):
     """
     Create a DataFrame containing probabilities for the given feature values.
@@ -218,12 +199,15 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
     """
     Linear interpolation of a feature value probability.
 
+    First and last distribution values represent minimum and maximum values
+    that can be taken.
+
     :param feature_value: value of feature to interpolate
-    :param distribution: feature values for each decile from 1 to 10 (without value for 0)
+    :param distribution: feature values for each decile from 0 to 10
 
     :return: probability of being lower than the input feature value
     """
-    distribution = [0] + distribution
+
     if feature_value > distribution[10]:
         return 1
     if feature_value < distribution[0]:

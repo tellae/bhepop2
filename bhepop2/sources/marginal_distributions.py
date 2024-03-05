@@ -184,6 +184,7 @@ class QualitativeMarginalDistributions(MarginalDistributions):
         return functions.get_feature_from_qualitative_distribution(self.data)
 
     def _validate_data_type(self):
+        # TODO : test that self._abs_minimum is inferior to all distribution values
         functions.validate_distributions(self.data, self.attribute_selection, "qualitative")
 
     def compute_feature_prob(self, attribute=ALL_LABEL, modality=ALL_LABEL):
@@ -307,6 +308,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
 
         # interpolate feature probabilities from distributions
         total_population_decile_tmp = [
+            self._abs_minimum,
             float(decile_tmp["D1"].iloc[0]),
             float(decile_tmp["D2"].iloc[0]),
             float(decile_tmp["D3"].iloc[0]),

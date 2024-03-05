@@ -112,7 +112,7 @@ class QuantitativeAttributes:
 
     def __init__(
         self,
-        abs_minimum: int = 0,
+        abs_minimum: int = 0,  # TODO: make it mandatory (no default value) ?
         relative_maximum: float = 1.5,
         delta_min: int = None,
     ):
