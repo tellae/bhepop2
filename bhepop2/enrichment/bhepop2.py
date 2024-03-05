@@ -37,11 +37,27 @@ from bhepop2.optim import minxent_gradient
 class Bhepop2Enrichment(SyntheticPopulationEnrichment):
     """
     Implementation of the Bhepop2 methodology as an enrichment class.
+    See :mod:`bhepop2.enrichment.bhepop2` module documentation for details about the algorithm.
 
-    It allows enriching a population using marginal distributions
-    of a specific feature (see :mod:`bhepop2.sources.marginal_distributions`).
+    **Expected source types**:
 
-    The variables of interest (attributes) are degrees of freedom of the optimisation problem.
+    .. autosummary::
+        :nosignatures:
+
+        ~bhepop2.sources.marginal_distributions.QualitativeMarginalDistributions
+        ~bhepop2.sources.marginal_distributions.QuantitativeMarginalDistributions
+
+    ----
+
+    This class documentation uses the following notations:
+
+    - :math:`M_{k}` : crossed modality k (combination of attribute modalities)
+
+    - :math:`F_{i}` : feature class i
+
+        - For quantitative features, corresponds to a numeric interval.
+        - For qualitative features, corresponds to one of the feature values.
+
     """
 
     def __init__(
@@ -80,6 +96,9 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
     @property
     def modalities(self):
+        """
+        Dict containing list of modalities for each attribute.
+        """
         return self.source.modalities
 
     def _validate_and_process_inputs(self):
@@ -167,7 +186,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
         .. math::
 
-            P(f < F_{i} \mid M_{k}) = P(M_{k} \mid f < F_{i}) \\cdot \\frac{P(f < F_{i})}{P(M_{k})}
             P(f \\in F_{i} \\mid M_{k}) = P(M_{k} \\mid f \\in F_{i}) \\cdot \\frac{P(f \\in F_{i})}{P(M_{k})}
 
         :return: DataFrame

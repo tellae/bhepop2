@@ -19,7 +19,7 @@ ALL_LABEL = "all"
 
 class MarginalDistributions(EnrichmentSource):
     """
-    This class describes a group of marginal distributions used as an enrichment source.
+    Abstract class describing marginal distributions source.
 
     In this class, the distributions subsets are known
     for population individuals presenting a specific attribute.
@@ -124,8 +124,55 @@ class QualitativeMarginalDistributions(MarginalDistributions):
     """
     Marginal distributions describing qualitative features.
 
-    The input DataFrame has feature values as columns, and probabilities as
-    column values, for each attribute/modality pair.
+    **Input data**:
+
+    DataFrame with feature values as columns, and probabilities as
+    column values, for each attribute/modality pair. An additional row containing
+    a global distribution (for the whole population) must be present, with
+    attribute and modality equal to :attr:`~bhepop2.sources.marginal_distributions.ALL_LABEL`.
+
+    **Example**:
+
+    .. list-table:: Table containing qualitative marginal distributions for attributes **ownership** and **age**
+        :widths: 10 10 10 20 20
+        :header-rows: 1
+
+        * - Red
+          - Green
+          - Blue
+          - attribute
+          - modality
+        * - 0.3
+          - 0.3
+          - 0.4
+          - all
+          - all
+        * - 0.5
+          - 0.2
+          - 0.3
+          - ownership
+          - Owner
+        * - 0.4
+          - 0.4
+          - 0.2
+          - ownership
+          - Tenant
+        * - 0
+          - 0.5
+          - 0.5
+          - age
+          - 0_29
+        * - ...
+          - ...
+          - ...
+          - ...
+          - ...
+        * - 0.7
+          - 0.1
+          - 0.2
+          - age
+          - 75_or_more
+
     """
 
     def _evaluate_feature_values(self):
@@ -168,8 +215,55 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
     """
     Marginal distributions describing quantitative features.
 
-    The input DataFrame has deciles numbers as columns (D1, D2 to D9),
-    and values as column values, for each attribute/modality pair
+    **Input data**:
+
+    DataFrame with deciles numbers as columns (D1, D2 to D9),
+    and values as column values, for each attribute/modality pair. An additional row containing
+    a global distribution (for the whole population) must be present, with
+    attribute and modality equal to :attr:`~bhepop2.sources.marginal_distributions.ALL_LABEL`.
+
+    **Example**:
+
+    .. list-table:: Table containing quantitative marginal distributions for attributes **ownership** and **age**
+        :widths: 25 10 25 40 40
+        :header-rows: 1
+
+        * - D1
+          - ...
+          - D9
+          - attribute
+          - modality
+        * - 18 852
+          - ...
+          - 46 522
+          - all
+          - all
+        * - 16 542
+          - ...
+          - 50 060
+          - ownership
+          - Owner
+        * - 8 764
+          - ...
+          - 29 860
+          - ownership
+          - Tenant
+        * - 15 000
+          - ...
+          - 45 000
+          - age
+          - 0_29
+        * - ...
+          - ...
+          - ...
+          - ...
+          - ...
+        * - 20 000
+          - ...
+          - 65 000
+          - age
+          - 75_or_more
+
     """
 
     def __init__(

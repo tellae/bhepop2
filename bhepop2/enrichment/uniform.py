@@ -1,5 +1,9 @@
 """
 Simple uniform enrichment using a global distribution.
+
+This enrichment method is not very interesting, but it provides a simple
+implementation of the enrichment logic. It also provides a good comparison
+point with other enrichment methods.
 """
 
 from .base import SyntheticPopulationEnrichment
@@ -12,8 +16,17 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
     """
     This class implements a simple enrichment using a global distribution.
 
+    **Expected source types**:
+
+    .. autosummary::
+        :nosignatures:
+
+        ~bhepop2.sources.global_distribution.QuantitativeGlobalDistribution
+
+    ------
+
     The global distribution describes the feature values of the whole population,
-    using deciles (see GlobalDistribution).
+    using deciles (see :mod:`~bhepop2.sources.global_distribution`).
 
     To evaluate a feature value for an individual, we randomly choose one of the deciles,
     and then draw a random value between its two boundaries.

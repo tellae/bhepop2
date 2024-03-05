@@ -8,8 +8,8 @@ In many cases, practitioners only have access to aggregated data for important s
 
 Bhepop2 treats the problem to **enrich an initial synthetic population from an aggregated data** provided in the form of a distribution (for instance deciles).
 
-See a detailed description of the algorithm inputs in the :ref:`inputs` section
+For more information on how to use the bhepop2 library, see the :ref:`usage` section.
 
-You can find a detailed documentation of the code and algorithms in the :ref:`api-ref`.
+You can find a detailed documentation of the code, classes and algorithms in the :ref:`api-ref`.
 
 More information about Bhepop2 :ref:`here <about>`.

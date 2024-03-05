@@ -7,7 +7,7 @@ Documentation of Bhepop2
    :caption: Contents:
 
    index
-   inputs
+   usage
    apiref
    about
 
