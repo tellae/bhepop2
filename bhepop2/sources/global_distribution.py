@@ -6,7 +6,6 @@ and can then be used by themselves for population enrichment.
 """
 
 from .base import EnrichmentSource, QuantitativeAttributes
-import random
 import numpy as np
 
 
@@ -60,7 +59,7 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
 
         lower, upper = interval_values[feature_index], interval_values[feature_index + 1]
 
-        draw = random.random()
+        draw = self.rng.uniform()
 
         drawn_feature_value = lower + (upper - lower) * draw
 

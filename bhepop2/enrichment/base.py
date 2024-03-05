@@ -6,7 +6,7 @@ from bhepop2.utils import Bhepop2Logger, lg
 
 from abc import ABC, abstractmethod
 import pandas as pd
-import random
+from numpy import random
 
 
 class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
@@ -32,16 +32,17 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         # init logging class
         Bhepop2Logger.__init__(self)
 
-        # random seed (maybe use a random generator instead)
-        self.seed = seed
-        if seed is not None:
-            random.seed(seed)
-
         # original population DataFrame, to be enriched
         self.population: pd.DataFrame = population
 
         # enrichment data source
         self.source = source
+
+        # random state
+        self.seed = seed
+        self.rng = random.default_rng(seed)
+        if self.source.rng is None:
+            self.source.rng = self.rng
 
         # name of the added column containing the new feature values
         feature_name = "feature" if feature_name is None else feature_name

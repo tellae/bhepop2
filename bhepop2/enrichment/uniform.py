@@ -43,8 +43,7 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
         return self.population
 
     def _draw_feature_value(self):
-        rng = np.random.RandomState(self.seed)
-        feature_index = rng.randint(len(self.source.feature_values))
+        feature_index = self.rng.integers(len(self.source.feature_values))
         return self.source.get_value_for_feature(feature_index)
 
     def _validate_and_process_inputs(self):

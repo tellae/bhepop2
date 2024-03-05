@@ -25,7 +25,6 @@ Diagram representation of the algorithm:
 
 import numpy as np
 import pandas as pd
-import random
 import logging as lg
 
 from .base import SyntheticPopulationEnrichment
@@ -172,7 +171,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
             feature_indexes.append(i)
 
         # draw a feature index using the probs
-        feature_index = random.choices(feature_indexes, filtered_probs)[0]
+        feature_index = self.rng.choice(feature_indexes, p=filtered_probs)
 
         # get feature value from distribution
         value = self.source.get_value_for_feature(feature_index)

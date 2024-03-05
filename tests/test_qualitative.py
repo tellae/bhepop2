@@ -70,10 +70,10 @@ def test_qualitative(synth_pop_defected, distributions, test_seed):
     pop = enrich_class.assign_features()
 
     nb_cars_dict = pop.groupby("feature").agg("size").to_dict()
-    assert nb_cars_dict["0voit"] == 88802
-    assert nb_cars_dict["1voit"] == 299877
-    assert nb_cars_dict["2voit"] == 206976
-    assert nb_cars_dict["3voit"] == 33677
+    assert nb_cars_dict["0voit"] == 89197
+    assert nb_cars_dict["1voit"] == 299405
+    assert nb_cars_dict["2voit"] == 207335
+    assert nb_cars_dict["3voit"] == 33395
     assert sum(nb_cars_dict.values()) == len(pop)
 
 

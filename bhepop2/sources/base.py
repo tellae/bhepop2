@@ -33,6 +33,10 @@ class EnrichmentSource(ABC, Bhepop2Logger):
             name = DEFAULT_SOURCE_NAME
         self.name: str = name
 
+        # random number generator.
+        # Set by the SyntheticPopulationEnrichment class is used with one.
+        self.rng = None
+
         self.data = data
 
         self._feature_values = None
