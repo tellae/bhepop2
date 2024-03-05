@@ -62,7 +62,6 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
 
         draw = random.random()
 
-        # TODO : pas d'arrondi
-        drawn_feature_value = round(lower + (upper - lower) * draw)
+        drawn_feature_value = lower + (upper - lower) * draw
 
         return drawn_feature_value

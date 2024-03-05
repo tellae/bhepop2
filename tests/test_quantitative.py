@@ -30,4 +30,6 @@ def test_bhepop2_enrich(
 
     # pop.to_csv("tests/data/nantes_enriched.csv", index=False)
 
+    pop["feature"] = round(pop["feature"])
+
     assert np.all((pop == expected_enriched_population_nantes).to_numpy())
