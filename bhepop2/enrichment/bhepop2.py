@@ -112,7 +112,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         * the population attributes take values in the modalities corresponding to this attribute
         """
 
-        assert issubclass(self.source, MarginalDistributions), "Bhepop2Enrichment needs a MarginalDistributions source"
+        assert isinstance(self.source, MarginalDistributions), "Bhepop2Enrichment needs a MarginalDistributions source"
 
         self.log("Setup population data")
 
