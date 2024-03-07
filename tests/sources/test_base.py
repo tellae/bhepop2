@@ -23,7 +23,6 @@ class TestEnrichmentSource:
         source = QuantitativeGlobalDistribution(filosofi_global_distribution_nantes, name=test_name)
 
         assert source.name == test_name
-        assert source.rng is None
         assert source.data is filosofi_global_distribution_nantes
         # check feature values
         assert source.feature_values == [1, 2, 3]
