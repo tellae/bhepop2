@@ -16,7 +16,7 @@ class TestEnrichmentSource:
             "bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._validate_data"
         )
         mocker.patch(
-            "bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._evaluate_feature_on_population",
+            "bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._evaluate_feature_values",
             return_value=[1, 2, 3],
         )
 
