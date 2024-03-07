@@ -316,15 +316,15 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
             ech_list = []
             for modality in ech[attribute]:
                 ech_list.append(ech[attribute][modality])
-            C = pd.concat(
+            probs = pd.concat(
                 ech_list,
                 axis=1,
             )
             # Somme P(feature & modality) sur les modality = P(feature)
-            C = C.iloc[:, 1::2]
-            C.columns = list(range(0, len(ech[attribute])))
-            C["Proba"] = C.sum(axis=1)
-            p = C[["Proba"]]
+            probs = probs.iloc[:, 1::2]
+            probs.columns = list(range(0, len(ech[attribute])))
+            probs["Proba"] = probs.sum(axis=1)
+            p = probs[["Proba"]]
 
             # constraint
             constraints[attribute] = {}
