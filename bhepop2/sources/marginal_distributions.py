@@ -196,7 +196,7 @@ class QualitativeMarginalDistributions(MarginalDistributions):
 
         return res
 
-    def get_value_for_feature(self, feature_index):
+    def get_value_for_feature(self, feature_index, rng):
         # directly return the stored feature value
         return self.feature_values[feature_index]
 
@@ -323,7 +323,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
 
         return prob_df
 
-    def get_value_for_feature(self, feature_index):
+    def get_value_for_feature(self, feature_index, rng):
         """
         Return a value drawn from the interval corresponding to the feature index.
 
@@ -331,6 +331,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         and so on. The value is drawn using a uniform rule.
 
         :param feature_index:
+        :param rng:
         :return:
         """
 
@@ -338,7 +339,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
 
         lower, upper = interval_values[feature_index], interval_values[feature_index + 1]
 
-        draw = self.rng.uniform()
+        draw = rng.uniform()
 
         drawn_feature_value = lower + (upper - lower) * draw
 

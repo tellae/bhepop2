@@ -84,6 +84,19 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         # implement feature evaluation using a dedicated algorithm
         raise NotImplementedError
 
+    def _get_value_for_feature(self, feature_id):
+        """
+        Get a feature value for the given feature id.
+
+        This method is a helper that class self.source.get_value_for_feature
+        with feature id and self.rng.
+
+        :param feature_id:
+
+        :return: feature value
+        """
+        return self.source.get_value_for_feature(feature_id, self.rng)
+
     # validation and read
 
     @abstractmethod

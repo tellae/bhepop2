@@ -167,7 +167,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         feature_index = self.rng.choice(feature_indexes, p=filtered_probs)
 
         # get feature value from distribution
-        value = self.source.get_value_for_feature(feature_index)
+        value = self._get_value_for_feature(feature_index)
 
         return value
 

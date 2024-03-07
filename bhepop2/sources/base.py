@@ -31,10 +31,6 @@ class EnrichmentSource(ABC, Bhepop2Logger):
 
         self.name: str = DEFAULT_SOURCE_NAME if name is None else name
 
-        # random number generator.
-        # Set by the SyntheticPopulationEnrichment class is used with one.
-        self.rng = None
-
         self.data = data
 
         self._feature_values = None
@@ -77,7 +73,7 @@ class EnrichmentSource(ABC, Bhepop2Logger):
         pass
 
     @abstractmethod
-    def get_value_for_feature(self, feature_index):
+    def get_value_for_feature(self, feature_index, rng):
         """
         Return a feature value for the given feature index.
 
@@ -85,6 +81,7 @@ class EnrichmentSource(ABC, Bhepop2Logger):
         corresponding to the given index.
 
         :param feature_index: index of the feature in self.feature_values
+        :param rng: Numpy random Generator
 
         :return: feature value
         """

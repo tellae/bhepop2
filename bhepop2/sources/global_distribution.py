@@ -44,7 +44,7 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
         assert set(self.data.columns) >= {f"D{i}" for i in range(1, 10)}
         assert len(self.data) == 1
 
-    def get_value_for_feature(self, feature_index):
+    def get_value_for_feature(self, feature_index, rng):
         """
         Return a value drawn from the interval corresponding to the feature index.
 
@@ -52,14 +52,15 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
         and so on. The value is drawn using a uniform rule.
 
         :param feature_index:
+        :param rng:
         :return:
         """
 
         interval_values = [self._abs_minimum] + self.feature_values
-
+        print(interval_values)
         lower, upper = interval_values[feature_index], interval_values[feature_index + 1]
 
-        draw = self.rng.uniform()
+        draw = rng.uniform()
 
         drawn_feature_value = lower + (upper - lower) * draw
 

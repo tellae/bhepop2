@@ -40,7 +40,7 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
 
     def _draw_feature_value(self):
         feature_index = self.rng.integers(len(self.source.feature_values))
-        return self.source.get_value_for_feature(feature_index)
+        return self._get_value_for_feature(feature_index)
 
     def _validate_and_process_inputs(self):
         assert isinstance(self.source, QuantitativeGlobalDistribution)
