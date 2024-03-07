@@ -9,8 +9,6 @@ point with other enrichment methods.
 from .base import SyntheticPopulationEnrichment
 from bhepop2.sources.global_distribution import QuantitativeGlobalDistribution
 
-import numpy as np
-
 
 class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
     """

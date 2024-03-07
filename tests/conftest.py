@@ -88,6 +88,13 @@ def filosofi_distributions_nantes(test_insee_code):
     return filosofi
 
 
+@pytest.fixture(scope="session")
+def filosofi_global_distribution_nantes(filosofi_distributions_nantes):
+    return filosofi_distributions_nantes[
+            filosofi_distributions_nantes["modality"] == "all"
+        ]
+
+
 @pytest.fixture(scope="function")
 def quantitative_marginal_distributions(
     filosofi_distributions_nantes, test_modalities, test_parameters

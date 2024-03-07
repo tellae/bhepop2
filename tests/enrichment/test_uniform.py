@@ -7,18 +7,15 @@ class TestSimpleUniformEnrichment:
     def test_uniform_enrichment(
         self,
         synthetic_population_nantes,
-        filosofi_distributions_nantes,
+        filosofi_global_distribution_nantes,
         test_feature_name,
         test_seed,
     ):
         """
         Integration test of uniform enrichment.
         """
-        filosofi_distributions_nantes = filosofi_distributions_nantes[
-            filosofi_distributions_nantes["modality"] == "all"
-        ]
         global_distribution = QuantitativeGlobalDistribution(
-            filosofi_distributions_nantes, abs_minimum=0, relative_maximum=1.2
+            filosofi_global_distribution_nantes, abs_minimum=0, relative_maximum=1.2
         )
         enrich_class = SimpleUniformEnrichment(
             synthetic_population_nantes,
