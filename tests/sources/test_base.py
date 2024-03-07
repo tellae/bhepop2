@@ -1,4 +1,7 @@
-from bhepop2.sources.global_distribution import QuantitativeGlobalDistribution,QuantitativeAttributes
+from bhepop2.sources.global_distribution import (
+    QuantitativeGlobalDistribution,
+    QuantitativeAttributes,
+)
 
 import pytest
 
@@ -9,8 +12,13 @@ class TestEnrichmentSource:
         test_name = "test_name"
 
         # mock feature values evaluation and validation
-        mocker.patch("bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._validate_data")
-        mocker.patch("bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._evaluate_feature_values", return_value=[1, 2, 3])
+        mocker.patch(
+            "bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._validate_data"
+        )
+        mocker.patch(
+            "bhepop2.sources.global_distribution.QuantitativeGlobalDistribution._evaluate_feature_values",
+            return_value=[1, 2, 3],
+        )
 
         source = QuantitativeGlobalDistribution(filosofi_global_distribution_nantes, name=test_name)
 
@@ -43,4 +51,3 @@ class TestQuantitativeAttributes:
         with pytest.raises(AssertionError):
             QuantitativeAttributes(delta_min=None)
             QuantitativeAttributes(delta_min=-1)
-

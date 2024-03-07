@@ -309,6 +309,7 @@ def build_cross_table(pop: pd.DataFrame, names_attribute: list):
 
     return table_percentage
 
+
 # check functions
 
 

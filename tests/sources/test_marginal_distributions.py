@@ -1,6 +1,9 @@
 import pandas as pd
 
-from bhepop2.sources.marginal_distributions import QuantitativeMarginalDistributions, QualitativeMarginalDistributions
+from bhepop2.sources.marginal_distributions import (
+    QuantitativeMarginalDistributions,
+    QualitativeMarginalDistributions,
+)
 from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 from bhepop2.functions import build_cross_table
 
@@ -15,8 +18,7 @@ class TestMarginalDistributions:
         attribute_selection = list(test_modalities.keys())
 
         source = QuantitativeMarginalDistributions(
-            filosofi_distributions_nantes,
-            attribute_selection=attribute_selection
+            filosofi_distributions_nantes, attribute_selection=attribute_selection
         )
 
         # check class attributes
@@ -24,9 +26,7 @@ class TestMarginalDistributions:
         assert source.modalities == test_modalities
 
     def test_get_modality_distribution(self, filosofi_distributions_nantes):
-        source = QuantitativeMarginalDistributions(
-            filosofi_distributions_nantes
-        )
+        source = QuantitativeMarginalDistributions(filosofi_distributions_nantes)
 
         modality_distribution = source.get_modality_distribution("ownership", "Tenant")
 
@@ -39,19 +39,25 @@ class TestQuantitativeMarginalDistributions:
 
     @pytest.fixture(scope="class")
     def quantitative_marginal_distribution(self, filosofi_distributions_nantes):
-        return QuantitativeMarginalDistributions(
-            filosofi_distributions_nantes,
-            delta_min=1000
-        )
+        return QuantitativeMarginalDistributions(filosofi_distributions_nantes, delta_min=1000)
 
     def test_feature_values(self, quantitative_marginal_distribution):
 
         assert len(quantitative_marginal_distribution.feature_values) == 50
-        assert round(sum(quantitative_marginal_distribution.feature_values)/len(quantitative_marginal_distribution.feature_values), 2) == 40296.2
+        assert (
+            round(
+                sum(quantitative_marginal_distribution.feature_values)
+                / len(quantitative_marginal_distribution.feature_values),
+                2,
+            )
+            == 40296.2
+        )
 
     def test_compute_feature_prob(self, quantitative_marginal_distribution):
 
-        feature_prob = quantitative_marginal_distribution.compute_feature_prob("ownership", "Tenant")
+        feature_prob = quantitative_marginal_distribution.compute_feature_prob(
+            "ownership", "Tenant"
+        )
 
         assert len(feature_prob) == quantitative_marginal_distribution.nb_feature_values
         assert set(feature_prob.columns) == {"feature", "prob"}
@@ -64,16 +70,15 @@ class TestQuantitativeMarginalDistributions:
 
         assert round(value, 2) == 10589.92
 
-    def test_compare_with_populations(self, quantitative_marginal_distribution, test_feature_name, mocker):
+    def test_compare_with_populations(
+        self, quantitative_marginal_distribution, test_feature_name, mocker
+    ):
         # avoid the analysis table evaluation, we just want the class instance
         mocker.patch("bhepop2.analysis.PopulationAnalysis._evaluate_analysis_table")
-        enriched = pd.DataFrame({
-            test_feature_name: [10, 20]
-        })
+        enriched = pd.DataFrame({test_feature_name: [10, 20]})
 
         analysis = quantitative_marginal_distribution.compare_with_populations(
-            {"pop": enriched},
-            feature_name=test_feature_name
+            {"pop": enriched}, feature_name=test_feature_name
         )
 
         assert isinstance(analysis, QuantitativeAnalysis)
@@ -105,7 +110,12 @@ class TestQualitativeMarginalDistributions:
         )
 
     def test_feature_values(self, qualitative_marginal_distribution):
-        assert qualitative_marginal_distribution.feature_values == ['0voit', '1voit', '2voit', '3voit']
+        assert qualitative_marginal_distribution.feature_values == [
+            "0voit",
+            "1voit",
+            "2voit",
+            "3voit",
+        ]
 
     def test_compute_feature_prob(self, qualitative_marginal_distribution):
 
@@ -120,20 +130,18 @@ class TestQualitativeMarginalDistributions:
 
         assert value == qualitative_marginal_distribution.feature_values[2]
 
-    def test_compare_with_populations(self, qualitative_marginal_distribution, test_feature_name, mocker):
+    def test_compare_with_populations(
+        self, qualitative_marginal_distribution, test_feature_name, mocker
+    ):
         # avoid the analysis table evaluation, we just want the class instance
         mocker.patch("bhepop2.analysis.PopulationAnalysis._evaluate_analysis_table")
-        enriched = pd.DataFrame({
-            test_feature_name: [10, 20]
-        })
+        enriched = pd.DataFrame({test_feature_name: [10, 20]})
 
         analysis = qualitative_marginal_distribution.compare_with_populations(
-            {"pop": enriched},
-            feature_name=test_feature_name
+            {"pop": enriched}, feature_name=test_feature_name
         )
 
         assert isinstance(analysis, QualitativeAnalysis)
-
 
 
 # def test_qualitative_enrich(

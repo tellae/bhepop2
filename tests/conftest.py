@@ -90,9 +90,7 @@ def filosofi_distributions_nantes(test_insee_code):
 
 @pytest.fixture(scope="session")
 def filosofi_global_distribution_nantes(filosofi_distributions_nantes):
-    return filosofi_distributions_nantes[
-            filosofi_distributions_nantes["modality"] == "all"
-        ]
+    return filosofi_distributions_nantes[filosofi_distributions_nantes["modality"] == "all"]
 
 
 @pytest.fixture(scope="function")
