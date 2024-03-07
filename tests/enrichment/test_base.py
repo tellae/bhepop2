@@ -28,7 +28,7 @@ class TestSyntheticPopulationEnrichment:
         test_feature_name,
         mocker,
     ):
-        # mock validation call
+        # mock validation
         mocker.patch("bhepop2.enrichment.bhepop2.Bhepop2Enrichment._validate_and_process_inputs")
 
         enrich_class = Bhepop2Enrichment(
@@ -44,7 +44,6 @@ class TestSyntheticPopulationEnrichment:
         assert enrich_class.feature_name == test_feature_name
         assert enrich_class.seed == test_seed
         assert enrich_class.rng == quantitative_marginal_distributions.rng
-
         # check validation call was made
         enrich_class._validate_and_process_inputs.assert_called_once_with()
 
