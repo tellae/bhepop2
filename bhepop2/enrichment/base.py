@@ -108,8 +108,6 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
 
         :return: PopulationAnalysis for the current enriched population
         """
-        if self.population is None:
-            raise ValueError("No enriched population to analyze")
 
         return self.source.compare_with_populations(
             {enriched_population_name: self.population}, self.feature_name, **kwargs
