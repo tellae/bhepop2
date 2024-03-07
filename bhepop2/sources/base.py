@@ -29,9 +29,7 @@ class EnrichmentSource(ABC, Bhepop2Logger):
         # init logging class
         Bhepop2Logger.__init__(self)
 
-        if name is None:
-            name = DEFAULT_SOURCE_NAME
-        self.name: str = name
+        self.name: str = DEFAULT_SOURCE_NAME if name is None else name
 
         # random number generator.
         # Set by the SyntheticPopulationEnrichment class is used with one.
