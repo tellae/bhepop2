@@ -82,7 +82,7 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         :return: iterable with same size and order than the population
         """
         # implement feature evaluation using a dedicated algorithm
-        pass
+        raise NotImplementedError
 
     # validation and read
 
