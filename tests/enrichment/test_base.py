@@ -65,7 +65,7 @@ class TestSyntheticPopulationEnrichment:
     ):
         # mock Bhepop2 feature evaluation
         mocker.patch(
-            "bhepop2.enrichment.bhepop2.Bhepop2Enrichment._evaluate_feature_values", return_value=0
+            "bhepop2.enrichment.bhepop2.Bhepop2Enrichment._evaluate_feature_on_population", return_value=0
         )
 
         population = enrich_class_test_instance.assign_feature_values()
