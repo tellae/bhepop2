@@ -1,3 +1,13 @@
+"""
+This module provides tools to analyse populations.
+
+Most of the time, population analysis is done by comparing
+it with reference data.
+
+For enriched populations, comparison with the enrichment source data
+can be a good way to assert the quality of the enrichment.
+"""
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -5,13 +15,21 @@ import plotly.graph_objects as go
 from os import path
 
 from bhepop2.functions import get_feature_from_qualitative_distribution
-
-DEFAULT_PLOT_TITLE_FORMAT = "Modality {modality} from attribute {attribute}"
-DEFAULT_OUTPUT_FOLDER = "outputs/"
+from bhepop2.sources.base import DEFAULT_SOURCE_NAME
 
 
 class PopulationAnalysis:
     """
+    DISCLAIMER: This class only works with MarginalDistributions data.
+
+    The PopulationAnalysis class and its subclasses were implemented before the
+    refactoring of the enrichment classes, which led to the composition
+    of SyntheticPopulationEnrichment with EnrichmentSource, which is more generic.
+    Therefore, this class expects distributions as in MarginalDistributions.data
+    rather than a generic enrichment source data.
+
+    ---------
+
     Analysis class for synthetic populations.
 
     Synthetic populations must be identical except for their feature columns.
@@ -24,8 +42,8 @@ class PopulationAnalysis:
 
     The following analysis are available:
         - Graphs comparing the distributions in the population(s) to the original distributions (one per modality)
-        - A table describing the error of the population(s) in comparison to the distributions (one line per modality),
-        ordered by number of individuals in the modality
+        - A table describing the error of the population(s) in comparison to the distributions (one line per modality), ordered by number of individuals in the modality
+
     """
 
     # column describing the analysis class (depends on the feature's type)
@@ -34,13 +52,16 @@ class PopulationAnalysis:
     # column describing the value corresponding to the class
     VALUE_COLUMN = "value"
 
+    # default format string for the plot title
+    DEFAULT_PLOT_TITLE_FORMAT = "Modality {modality} from attribute {attribute}"
+
     def __init__(
         self,
         populations: dict,
         modalities: dict,
         feature_column: str,
         distributions: pd.DataFrame,
-        distributions_name: str = "reference",
+        distributions_name: str = DEFAULT_SOURCE_NAME,
         plot_title_format: str = DEFAULT_PLOT_TITLE_FORMAT,
         output_folder: str = None,
     ):
@@ -85,7 +106,11 @@ class PopulationAnalysis:
         self.plot_title_format = plot_title_format
 
         # analysis table
-        self.analysis_table = self._evaluate_analysis_table()
+        self._analysis_table = self._evaluate_analysis_table()
+
+    @property
+    def analysis_table(self):
+        return self._analysis_table
 
     def set_output_folder(self, output_folder):
         """
@@ -233,20 +258,18 @@ class PopulationAnalysis:
         """
         raise NotImplementedError
 
-    def get_plot_title(self, attribute: str, modality: str) -> str:
+    def get_plot_title(self, **kwargs) -> str:
         """
-        Get the plot title for the given attribute and modality.
+        Get the plot title for the given keys.
 
-        Based on the plot_title_format parameter.
+        This on the `plot_title_format` attribute, which can be
+        set externally.
 
-        :param attribute: attribute value
-        :param modality: attribute modality
+        :param kwargs: keys provided to the plot_title_format string
 
         :return: plot title
         """
-        return self.plot_title_format.format(
-            observed_name=self.distributions_name, attribute=attribute, modality=modality
-        )
+        return self.plot_title_format.format(observed_name=self.distributions_name, **kwargs)
 
 
 class QuantitativeAnalysis(PopulationAnalysis):
@@ -262,7 +285,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
         :return: Plotly figure
         """
 
-        analysis_table = self.analysis_table
+        analysis_table = self._analysis_table
         analysis_table = analysis_table[
             (analysis_table["attribute"] == attribute) & (analysis_table["modality"] == modality)
         ]
@@ -285,7 +308,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
 
         # configure plot
         fig.update_layout(
-            title=self.get_plot_title(attribute, modality),
+            title=self.get_plot_title(attribute=attribute, modality=modality),
             xaxis_title=f"Observation ({self.distributions_name})",
             yaxis_title="Simulation",
         )
@@ -302,7 +325,7 @@ class QuantitativeAnalysis(PopulationAnalysis):
         """
         self.assert_output_folder()
 
-        analysis_df = self.analysis_table
+        analysis_df = self._analysis_table
         # evaluate distance to distributions
         for population_name in self.populations.keys():
             analysis_df[f"{population_name}_perc_error"] = abs(
@@ -378,7 +401,7 @@ class QualitativeAnalysis(PopulationAnalysis):
         :return: Plotly figure
         """
 
-        analysis_table = self.analysis_table
+        analysis_table = self._analysis_table
         analysis_table = analysis_table.copy()[
             (analysis_table["attribute"] == attribute) & (analysis_table["modality"] == modality)
         ]
@@ -393,8 +416,8 @@ class QualitativeAnalysis(PopulationAnalysis):
 
         # configure plot
         fig.update_layout(
-            title=self.get_plot_title(attribute, modality),
-            xaxis_title="Values",
+            title=self.get_plot_title(attribute=attribute, modality=modality),
+            xaxis_title=self.feature_column,
             yaxis_title="Distribution (%)",
         )
 

@@ -10,11 +10,11 @@ This package treats the problem to **enrich an initial synthetic population from
 flowchart LR
   subgraph data_prep [Data preparation]
     pop[("Population \n (Eqasim, ..)")] --> read_pop
-    distribs[("Distributions \n (Filosofi, ..)")] --> read_distribs
+    distribs[("Enrichment source \n (Filosofi, ..)")] --> read_distribs
   end
   subgraph Assignment
     formated_pop(Formated population)
-    formated_distribs(Formated distributions)
+    formated_distribs(Formated source)
     formated_pop & formated_distribs --> assignment[/Assignment algorithm/]
   end
   read_pop --> formated_pop
@@ -50,17 +50,6 @@ This project is licensed under the CeCILL-B License - see the [LICENSE.txt](LICE
 
 This package is the product of the joint work of the Gustave Eiffel university and the company Tellae.
 
-It is based on a methodology called Bhepop2 (Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization) and theoritically described, justified and discussed in 
-
-* Boyam Fabrice Yaméogo, Pierre-Olivier Vandanjon, Pierre Hankach, Pascal Gastineau. Methodology for Adding a Variable to a Synthetic Population from Aggregate Data: Example of the Income Variable. 2021. ⟨hal-03282111⟩. Paper in review. 
- https://hal.archives-ouvertes.fr/hal-03282111
-
-* Boyam Fabrice Yaméogo, Méthodologie de calibration d’un modèle multimodal des déplacements pour l’évaluation des externalités environnementales à partir de données ouvertes (open data) : le cas de l’aire urbaine de Nantes [Thèse], 2021
-https://www.theses.fr/2021NANT4085
-
-Vocabulary
-* Attributes refer to  information in the initial sample or in the aggregate data, such as : age, profession, sex, etc
-* Modalities are the partition of one attribute : sex has in our case study two modalities, female and male
-* Cross Modalities are the intersection of two or more modalities, such as : female and above 65 years old
-* Variable of interest are the degrees fo freedom of the optimisation problem
-* Variables refer to the usual meaning of variables in a computer program
+It was originally created as an implementation the Bhepop2
+(Bayesian Heuristic to Enrich POPulation by EntroPy OPtimization) methodology. 
+See the [bhepop2 module doc](https://bhepop2.readthedocs.io/en/latest/autoapi/bhepop2/enrichment/bhepop2/index.html) for more information.

@@ -2,9 +2,7 @@
 Utility functions
 """
 
-import pandas as pd
 import logging as lg
-from jsonschema import validate, ValidationError
 
 # log utils (see logging library)
 
@@ -13,6 +11,37 @@ logger_level = lg.WARNING
 
 #: logger name
 logger_name = "bhepop2_logger"
+
+
+class Bhepop2Logger:
+    """
+    Logging helper class for Bhepop2.
+
+    See logging library for more information.
+    """
+
+    def __init__(self, default_log_level=lg.DEBUG):
+        """
+        Get the bhepop2 logger and store a default log level.
+
+        :param default_log_level: default level of logged messages
+        """
+
+        self._logger = _get_logger()
+        self._default_log_level = default_log_level
+
+    def log(self, message: str, level: int = None):
+        """
+        Log a message using the package logger.
+
+        :param message: message to be logged
+        :param level: logging level
+        """
+
+        if level is None:
+            level = self._default_log_level
+
+        self._logger.log(level, message)
 
 
 def log(message, level):
@@ -55,28 +84,29 @@ def _get_logger():
 # json schema utils
 
 
-def add_defaults_and_validate_against_schema(instance, schema):
-    """
-    Add default values then validate instance against the schema.
-
-    :param instance: data instance
-    :param schema: json schema
-
-    :return: result data (copy of instance)
-    """
-
-    result = instance.copy()
-
-    # superficial default values set
-    for key in schema["properties"]:
-        if "default" in schema["properties"][key] and not key in result:
-            result[key] = schema["properties"][key]["default"]
-
-    # validate instance against schema
-    try:
-        validate(result, schema)
-    except ValidationError as e:
-        msg = e.message
-        raise ValueError(msg) from None
-
-    return result
+# deprecated
+# def add_defaults_and_validate_against_schema(instance, schema):
+#     """
+#     Add default values then validate instance against the schema.
+#
+#     :param instance: data instance
+#     :param schema: json schema
+#
+#     :return: result data (copy of instance)
+#     """
+#
+#     result = instance.copy()
+#
+#     # superficial default values set
+#     for key in schema["properties"]:
+#         if "default" in schema["properties"][key] and not key in result:
+#             result[key] = schema["properties"][key]["default"]
+#
+#     # validate instance against schema
+#     try:
+#         validate(result, schema)
+#     except ValidationError as e:
+#         msg = e.message
+#         raise ValueError(msg) from None
+#
+#     return result

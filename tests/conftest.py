@@ -1,4 +1,5 @@
 from bhepop2.tools import read_filosofi, filosofi_attributes
+from bhepop2.sources.marginal_distributions import QuantitativeMarginalDistributions
 from bhepop2.functions import get_attributes
 
 import pytest
@@ -69,6 +70,11 @@ def test_parameters():
 
 
 @pytest.fixture(scope="session")
+def test_feature_name():
+    return "test_feature"
+
+
+@pytest.fixture(scope="session")
 def test_seed():
     return SEED
 
@@ -80,6 +86,22 @@ def filosofi_distributions_nantes(test_insee_code):
     )
 
     return filosofi
+
+
+@pytest.fixture(scope="session")
+def filosofi_global_distribution_nantes(filosofi_distributions_nantes):
+    return filosofi_distributions_nantes[filosofi_distributions_nantes["modality"] == "all"]
+
+
+@pytest.fixture(scope="function")
+def quantitative_marginal_distributions(
+    filosofi_distributions_nantes, test_modalities, test_parameters
+):
+    return QuantitativeMarginalDistributions(
+        filosofi_distributions_nantes,
+        attribute_selection=list(test_modalities.keys()),
+        **test_parameters
+    )
 
 
 @pytest.fixture(scope="session")
