@@ -119,7 +119,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
         functions.validate_population(self.population, self.modalities)
 
-    def _evaluate_features(self):
+    def _evaluate_feature_values(self):
         """
         Assign feature values to the population individuals using the algorithm results.
 

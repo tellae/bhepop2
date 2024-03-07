@@ -35,7 +35,7 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
     over the total population, but no more.
     """
 
-    def _evaluate_features(self):
+    def _evaluate_feature_values(self):
         feature_values = [
             self._draw_feature_value() for _ in range(len(self.population))
         ]

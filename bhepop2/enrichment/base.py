@@ -56,7 +56,7 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
 
     # feature assignment
 
-    def assign_features(self):
+    def assign_feature_values(self):
         """
         Assign feature values to the population individuals.
 
@@ -70,12 +70,12 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         :return: enriched population
         """
 
-        self.population[self.feature_name] = self._evaluate_features()
+        self.population[self.feature_name] = self._evaluate_feature_values()
 
         return self.population
 
     @abstractmethod
-    def _evaluate_features(self):
+    def _evaluate_feature_values(self):
         """
         Evaluate a list of feature values for each individual.
 

@@ -26,7 +26,7 @@ def test_bhepop2_enrich(
         seed=test_seed,
     )
 
-    pop = enrich_class.assign_features()
+    pop = enrich_class.assign_feature_values()
 
     pop["feature"] = pop["feature"].astype(int)
 

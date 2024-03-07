@@ -67,7 +67,7 @@ def test_qualitative(synth_pop_defected, distributions, test_seed):
     enrich_class = Bhepop2Enrichment(synth_pop_defected, distributions, seed=test_seed)
     # Run optimisation
 
-    pop = enrich_class.assign_features()
+    pop = enrich_class.assign_feature_values()
 
     nb_cars_dict = pop.groupby("feature").agg("size").to_dict()
     assert nb_cars_dict["0voit"] == 89197

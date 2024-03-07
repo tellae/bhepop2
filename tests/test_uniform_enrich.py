@@ -13,4 +13,4 @@ def test_uniform_enrich(synthetic_population_nantes, filosofi_distributions_nant
 
     enrich_class = SimpleUniformEnrichment(synthetic_population_nantes, global_distribution)
 
-    pop = enrich_class.assign_features()
+    pop = enrich_class.assign_feature_values()
