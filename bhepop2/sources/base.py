@@ -132,6 +132,8 @@ class QuantitativeAttributes:
         self._relative_maximum = relative_maximum
         self._delta_min = delta_min
 
+        self._validate_quantitative_parameters()
+
     def _validate_quantitative_parameters(self):
         """
         Validate quantitative attributes' values.
