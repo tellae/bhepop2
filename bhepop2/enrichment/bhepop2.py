@@ -119,9 +119,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
 
         functions.validate_population(self.population, self.modalities)
 
-        self.population = self.population.copy()
-
-    def _assign_features(self):
+    def _evaluate_features(self):
         """
         Assign feature values to the population individuals using the algorithm results.
 
@@ -144,14 +142,9 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         )
 
         # associate a feature value to the population individuals
-        merge[self.feature_name] = merge["index"].apply(
+        return merge["index"].apply(
             lambda x: self._draw_feature_value(res.loc[x,].to_numpy())
         )
-
-        # remove irrelevant columns
-        merge.drop(["index", "probability"], axis=1, inplace=True)
-
-        return merge
 
     def _draw_feature_value(self, probs):
         """

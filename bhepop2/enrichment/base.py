@@ -33,7 +33,7 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         Bhepop2Logger.__init__(self)
 
         # original population DataFrame, to be enriched
-        self.population: pd.DataFrame = population
+        self.population: pd.DataFrame = population.copy()
 
         # enrichment data source
         self.source = source
@@ -50,9 +50,6 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
             raise ValueError(f"'{feature_name}' column already exists in population")
         self.feature_name: str = feature_name
 
-        # resulting enriched population
-        self.enriched_population = None
-
         # input validation
         self.log("Input data validation and preprocessing", lg.INFO)
         self._validate_and_process_inputs()
@@ -64,18 +61,27 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         Assign feature values to the population individuals.
 
         This method evaluates and adds feature values for each
-        population individual.
+        population individual. The name of the added column is
+        defined by the feature_name class parameter.
 
-        The name of the added column is defined by the feature_name class parameter.
+        Returned enriched population is a copy of the original population.
+        The original population is not modified.
+
+        :return: enriched population
         """
 
-        self.enriched_population = self._assign_features()
+        self.population[self.feature_name] = self._evaluate_features()
 
-        return self.enriched_population
+        return self.population
 
     @abstractmethod
-    def _assign_features(self):
-        # implement feature assignment using a dedicated algorithm
+    def _evaluate_features(self):
+        """
+        Evaluate a list of feature values for each individual.
+
+        :return: iterable with same size and order than the population
+        """
+        # implement feature evaluation using a dedicated algorithm
         pass
 
     # validation and read
@@ -97,9 +103,9 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
 
         :return: PopulationAnalysis for the current enriched population
         """
-        if self.enriched_population is None:
+        if self.population is None:
             raise ValueError("No enriched population to analyze")
 
         return self.source.compare_with_populations(
-            {enriched_population_name: self.enriched_population}, self.feature_name, **kwargs
+            {enriched_population_name: self.population}, self.feature_name, **kwargs
         )
