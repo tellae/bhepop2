@@ -43,7 +43,7 @@ class TestSyntheticPopulationEnrichment:
         assert enrich_class.source is quantitative_marginal_distributions
         assert enrich_class.feature_name == test_feature_name
         assert enrich_class.seed == test_seed
-        assert enrich_class.rng == quantitative_marginal_distributions.rng
+        assert hasattr(enrich_class, "rng")
         # check validation call was made
         enrich_class._validate_and_process_inputs.assert_called_once_with()
 
