@@ -70,12 +70,12 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         :return: enriched population
         """
 
-        self.population[self.feature_name] = self._evaluate_feature_values()
+        self.population[self.feature_name] = self._evaluate_feature_on_population()
 
         return self.population
 
     @abstractmethod
-    def _evaluate_feature_values(self):
+    def _evaluate_feature_on_population(self):
         """
         Evaluate a list of feature values for each individual.
 
