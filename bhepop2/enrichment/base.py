@@ -38,17 +38,17 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         # enrichment data source
         self.source = source
 
-        # random state
-        self.seed = seed
-        self.rng = random.default_rng(seed)
-        if self.source.rng is None:
-            self.source.rng = self.rng
-
         # name of the added column containing the new feature values
         feature_name = "feature" if feature_name is None else feature_name
         if feature_name in self.population.columns:
             raise ValueError(f"'{feature_name}' column already exists in population")
         self.feature_name: str = feature_name
+
+        # random state
+        self.seed = seed
+        self.rng = random.default_rng(seed)
+        if self.source.rng is None:
+            self.source.rng = self.rng
 
         # input validation
         self.log("Input data validation and preprocessing", lg.INFO)
@@ -60,7 +60,7 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         """
         Assign feature values to the population individuals.
 
-        This method evaluates and adds feature values for each
+        This method evaluates and adds feature values to each
         population individual. The name of the added column is
         defined by the feature_name class parameter.
 
@@ -88,8 +88,13 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
 
     @abstractmethod
     def _validate_and_process_inputs(self):
-        # validate and process the provided inputs for the feature assignment
-        # both the population and the enrichment source may need to be validated
+        """
+        Validate and process the provided enrichment inputs.
+
+        Both the population and the enrichment source may need to be validated.
+
+        :raise: ValueError if validation fails
+        """
         pass
 
     # analysis
