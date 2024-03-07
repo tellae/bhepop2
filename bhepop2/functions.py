@@ -277,6 +277,38 @@ def compute_crossed_modalities_frequencies(
     return freq_df
 
 
+def build_cross_table(pop: pd.DataFrame, names_attribute: list):
+    """
+
+
+    Parameters
+    ----------
+    pop : DataFrame synthesis population
+    names_attribute: list of two strings
+           name of attribute1 and name of attribute 2
+
+    Returns
+    -------
+    table_percentage : DataFrame
+          proportion of modalities of attribute 2 given attribute 1
+
+
+    """
+
+    name_attribute1 = names_attribute[0]
+    name_attribute2 = names_attribute[1]
+    table_numbers = pd.crosstab(pop[name_attribute2], pop[name_attribute1])
+    table_percentage_attribute2 = (
+        table_numbers.transpose().sum() / table_numbers.transpose().sum().sum()
+    )
+    table_percentage = table_numbers / table_numbers.sum()
+    table_percentage["all"] = table_percentage_attribute2
+    table_percentage = table_percentage.transpose()
+    table_percentage["modality"] = table_percentage.index
+    table_percentage["attribute"] = name_attribute1
+
+    return table_percentage
+
 # check functions
 
 
