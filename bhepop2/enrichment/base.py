@@ -47,8 +47,6 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         # random state
         self.seed = seed
         self.rng = random.default_rng(seed)
-        if self.source.rng is None:
-            self.source.rng = self.rng
 
         # input validation
         self.log("Input data validation and preprocessing", lg.INFO)
