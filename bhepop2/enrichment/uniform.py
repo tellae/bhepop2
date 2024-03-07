@@ -36,9 +36,7 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
     """
 
     def _evaluate_feature_values(self):
-        feature_values = [
-            self._draw_feature_value() for _ in range(len(self.population))
-        ]
+        feature_values = [self._draw_feature_value() for _ in range(len(self.population))]
 
         return feature_values
 

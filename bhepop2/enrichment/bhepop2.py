@@ -142,9 +142,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         )
 
         # associate a feature value to the population individuals
-        return merge["index"].apply(
-            lambda x: self._draw_feature_value(res.loc[x,].to_numpy())
-        )
+        return merge["index"].apply(lambda x: self._draw_feature_value(res.loc[x,].to_numpy()))
 
     def _draw_feature_value(self, probs):
         """
