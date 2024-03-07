@@ -1,6 +1,7 @@
 from bhepop2.sources.global_distribution import QuantitativeGlobalDistribution
 
 import pytest
+from numpy.random import default_rng
 
 
 class TestQuantitativeGlobalDistribution:
@@ -33,3 +34,13 @@ class TestQuantitativeGlobalDistribution:
             QuantitativeGlobalDistribution(
                 filosofi_global_distribution_nantes.drop([filosofi_global_distribution_nantes.index[0]], axis=0)
             )
+
+    def test_get_value_for_feature(self, filosofi_global_distribution_nantes, test_seed, mocker):
+        rng = default_rng(test_seed)
+        global_distribution = QuantitativeGlobalDistribution(
+            filosofi_global_distribution_nantes
+        )
+
+        assert round(global_distribution.get_value_for_feature(5, rng), 2) == 23526.75
+
+
