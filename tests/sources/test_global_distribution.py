@@ -21,6 +21,10 @@ class TestQuantitativeGlobalDistribution:
         assert global_distribution._abs_minimum == abs_min
         assert global_distribution._relative_maximum == relative_max
 
+        # check feature values
+        assert len(global_distribution.feature_values) == 10
+        assert round(sum(global_distribution.feature_values), 2) == 267409.84
+
     def test_validate_data(self, filosofi_global_distribution_nantes):
 
         # DataFrame with missing decile should raise an error

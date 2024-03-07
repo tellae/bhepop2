@@ -57,7 +57,7 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
         """
 
         interval_values = [self._abs_minimum] + self.feature_values
-        print(interval_values)
+
         lower, upper = interval_values[feature_index], interval_values[feature_index + 1]
 
         draw = rng.uniform()
