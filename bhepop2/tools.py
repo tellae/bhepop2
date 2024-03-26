@@ -173,7 +173,7 @@ def add_household_type_attribute(
     assert combined[household_id].is_unique
 
     population = population.merge(combined, how="left", on=household_id)
-    population[column_name].fillna("complex_hh", inplace=True)
+    population[column_name] = population[column_name].fillna("complex_hh")
 
     return population
 
