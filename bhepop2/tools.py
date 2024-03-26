@@ -257,25 +257,12 @@ def read_filosofi(filepath: str, year: str, attributes: list, communes=None):
         sheet_list = sheet_list + [x["sheet"] for x in attribute["modalities"]]
 
     # read Filosofi excel file
-    filosofi_sheets = read_filosofi_excel(filepath, sheet_list)
+    filosofi_sheets = pd.read_excel(filepath, sheet_name=sheet_list, skiprows=5)
 
     # fetch distributions for the given attributes
     distributions = read_filosofi_attributes(filosofi_sheets, year, attributes, communes)
 
     return distributions
-
-
-def read_filosofi_excel(filepath: str, sheet_list: list):
-    """
-    Read list of sheets from Filosofi excel file.
-
-    :param filepath: path to Filosofi excel file (DISP_COM)
-    :param sheet_list: list of sheets to be read
-
-    :return: DataFrame indexed by sheet
-    """
-    excel_df = pd.read_excel(filepath, sheet_name=sheet_list, skiprows=5)
-    return excel_df
 
 
 def read_filosofi_attributes(filosofi_sheets, year, attributes: list, communes=None):
