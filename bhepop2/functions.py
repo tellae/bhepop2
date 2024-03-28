@@ -3,7 +3,6 @@ import numpy as np
 from scipy.optimize import linprog
 
 
-
 # generic functions
 
 
@@ -19,6 +18,7 @@ def get_attributes(modalities: dict) -> list:
 
 
 # distribution functions
+
 
 def filter_distributions_and_infer_modalities(distributions: pd.DataFrame, attribute_selection):
     """
@@ -177,6 +177,7 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
 
 
 # population functions
+
 
 def compute_crossed_modalities_frequencies(
     population: pd.DataFrame, modalities: dict

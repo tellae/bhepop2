@@ -43,8 +43,10 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
 
         # enrichment data source
         if not isinstance(source, self._required_source_class):
-            raise SourceValidationError(f"{self.__class__.__name__} requires an instance "
-                                        f"of {self._required_source_class} as a source")
+            raise SourceValidationError(
+                f"{self.__class__.__name__} requires an instance "
+                f"of {self._required_source_class} as a source"
+            )
         self.source = source
 
         # name of the added column containing the new feature values

@@ -7,6 +7,7 @@ import logging as lg
 
 # bhepop2 exceptions
 
+
 class PopulationValidationError(Exception):
     """
     Raised when a population fails validation.

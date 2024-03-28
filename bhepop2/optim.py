@@ -62,7 +62,10 @@ def minxent_gradient(
                         )
                         break
                     else:
-                        log(f"This warning was caught during gradient descent: {w[0].category.__name__}('{w[0].message}')", lg.WARN)
+                        log(
+                            f"This warning was caught during gradient descent: {w[0].category.__name__}('{w[0].message}')",
+                            lg.WARN,
+                        )
 
             level_objective_new = lambda0 + np.sum(lambda_new * eta)
 

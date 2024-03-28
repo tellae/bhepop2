@@ -75,14 +75,18 @@ class MarginalDistributions(EnrichmentSource):
 
         # check that the ALL_LABEL attribute is in the columns
         if ALL_LABEL not in list(self.data["attribute"]):
-            raise SourceValidationError(f"Missing required '{ALL_LABEL}' attribute, "
-                                        f"used to describe the global population")
+            raise SourceValidationError(
+                f"Missing required '{ALL_LABEL}' attribute, "
+                f"used to describe the global population"
+            )
 
         # check that provided attribute selection exists in distributions
         if self.attribute_selection is not None:
             if not set(self.attribute_selection) <= set(self.data["attribute"]):
-                raise SourceValidationError(f"Source distributions table does not "
-                                            f"include selected attributes {self.attribute_selection}")
+                raise SourceValidationError(
+                    f"Source distributions table does not "
+                    f"include selected attributes {self.attribute_selection}"
+                )
 
         # quantitative or qualitative check
         self._validate_data_type()
@@ -249,7 +253,7 @@ class QualitativeMarginalDistributions(MarginalDistributions):
             feature_column=feature_name,
             distributions=self.data,
             distributions_name=self.name,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -344,7 +348,9 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         # TODO : test that self._abs_minimum is inferior to all distribution values
         required_columns = ["attribute", "modality"] + ["D{}".format(i) for i in range(1, 10)]
         if not {*required_columns} <= set(self.data.columns):
-            raise SourceValidationError(f"Distributions table lacks the required columns: {required_columns}")
+            raise SourceValidationError(
+                f"Distributions table lacks the required columns: {required_columns}"
+            )
 
         # we could validate the distributions columns (positive, monotony ?)
 
@@ -400,5 +406,5 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
             feature_column=feature_name,
             distributions=self.data,
             distributions_name=self.name,
-            **kwargs
+            **kwargs,
         )

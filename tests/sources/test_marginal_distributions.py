@@ -17,9 +17,7 @@ class TestMarginalDistributions:
     @pytest.fixture(scope="class")
     def source_example(self, filosofi_distributions_nantes):
         return QuantitativeMarginalDistributions(
-            filosofi_distributions_nantes,
-            attribute_selection=["ownership", "age"],
-            delta_min=1000
+            filosofi_distributions_nantes, attribute_selection=["ownership", "age"], delta_min=1000
         )
 
     def test_init(self, filosofi_distributions_nantes, test_modalities):
@@ -36,15 +34,12 @@ class TestMarginalDistributions:
 
     def test_usable_with_population(self, source_example):
         with pytest.raises(PopulationValidationError):
-            source_example.usable_with_population(pd.DataFrame({
-                "ownership": ["Tenant"],
-                "age": ["UNKNOWN"]
-            }))
+            source_example.usable_with_population(
+                pd.DataFrame({"ownership": ["Tenant"], "age": ["UNKNOWN"]})
+            )
 
         with pytest.raises(PopulationValidationError):
-            source_example.usable_with_population(pd.DataFrame({
-                "ownership": ["Tenant"]
-            }))
+            source_example.usable_with_population(pd.DataFrame({"ownership": ["Tenant"]}))
 
     def test_get_modality_distribution(self, source_example):
         modality_distribution = source_example.get_modality_distribution("ownership", "Tenant")
