@@ -58,7 +58,7 @@ def minxent_gradient(
                     if issubclass(w[0].category, RuntimeWarning):
                         log(
                             "Leaving gradient descent due to exp exceeding float64 max size",
-                            lg.WARN,
+                            lg.DEBUG,
                         )
                         break
                     else:
