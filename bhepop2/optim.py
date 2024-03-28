@@ -2,6 +2,7 @@ import numpy as np
 from numpy.linalg import norm
 from .utils import log
 import logging as lg
+import warnings
 
 
 def minxent_gradient(
@@ -48,7 +49,21 @@ def minxent_gradient(
 
         while not (did_ascent and did_descent):
             lambda_new = lambda_old - alpha * f_old
-            lambda0 = np.log(q.T.dot(np.exp(-matrix.T.dot(lambda_new))))
+            # exp can sometime exceed float64 max size
+            # for now, we just catch the warning and
+            with warnings.catch_warnings(record=True) as w:
+                lambda0 = np.log(q.T.dot(np.exp(-matrix.T.dot(lambda_new))))
+                if len(w) > 0:
+                    # in python 3.11 : catch_warnings(category=RuntimeWarning)
+                    if issubclass(w[0].category, RuntimeWarning):
+                        log(
+                            "Leaving gradient descent due to exp exceeding float64 max size",
+                            lg.WARN,
+                        )
+                        break
+                    else:
+                        log(f"This warning was caught during gradient descent: {w[0].category.__name__}('{w[0].message}')", lg.WARN)
+
             level_objective_new = lambda0 + np.sum(lambda_new * eta)
 
             # level_objective_new = objective(q=q, G=G, eta=eta, lambda_=lambda_new)
