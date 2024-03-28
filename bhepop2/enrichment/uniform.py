@@ -7,7 +7,6 @@ point with other enrichment methods.
 """
 
 from .base import SyntheticPopulationEnrichment
-from bhepop2.sources.global_distribution import QuantitativeGlobalDistribution
 
 
 class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
@@ -41,6 +40,3 @@ class SimpleUniformEnrichment(SyntheticPopulationEnrichment):
     def _draw_feature_value(self):
         feature_index = self.rng.integers(len(self.source.feature_values))
         return self._get_value_for_feature(feature_index)
-
-    def _validate_and_process_inputs(self):
-        assert isinstance(self.source, QuantitativeGlobalDistribution)

@@ -7,6 +7,8 @@ from bhepop2.utils import Bhepop2Logger, lg
 from abc import ABC, abstractmethod
 import pandas as pd
 from numpy import random
+from bhepop2.sources.base import EnrichmentSource
+from bhepop2.utils import PopulationValidationError, SourceValidationError
 
 
 class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
@@ -22,6 +24,8 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
     are core to the SyntheticPopulationEnrichment classes.
     """
 
+    _required_source_class = EnrichmentSource
+
     def __init__(
         self,
         population: pd.DataFrame,
@@ -33,9 +37,14 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         Bhepop2Logger.__init__(self)
 
         # original population DataFrame, to be enriched
+        if population.empty:  # pragma: no cover
+            raise PopulationValidationError("Population to enrich is empty")
         self.population: pd.DataFrame = population.copy()
 
         # enrichment data source
+        if not isinstance(source, self._required_source_class):
+            raise SourceValidationError(f"{self.__class__.__name__} requires an instance "
+                                        f"of {self._required_source_class} as a source")
         self.source = source
 
         # name of the added column containing the new feature values
@@ -51,6 +60,7 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
         # input validation
         self.log("Input data validation and preprocessing", lg.INFO)
         self._validate_and_process_inputs()
+        self.source.usable_with_population(self.population)
 
     # feature assignment
 
@@ -97,7 +107,6 @@ class SyntheticPopulationEnrichment(ABC, Bhepop2Logger):
 
     # validation and read
 
-    @abstractmethod
     def _validate_and_process_inputs(self):
         """
         Validate and process the provided enrichment inputs.

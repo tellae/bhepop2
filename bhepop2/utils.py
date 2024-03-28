@@ -1,8 +1,23 @@
 """
-Utility functions
+Utility classes, functions and constants.
 """
 
 import logging as lg
+
+
+# bhepop2 exceptions
+
+class PopulationValidationError(Exception):
+    """
+    Raised when a population fails validation.
+    """
+
+
+class SourceValidationError(Exception):
+    """
+    Raised when an enrichment source fails validation.
+    """
+
 
 # log utils (see logging library)
 

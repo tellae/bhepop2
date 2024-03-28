@@ -3,6 +3,7 @@ import numpy as np
 from scipy.optimize import linprog
 
 
+
 # generic functions
 
 
@@ -17,53 +18,7 @@ def get_attributes(modalities: dict) -> list:
     return list(modalities.keys())
 
 
-def modality_feature(attribute, modality) -> callable:
-    """
-    Create a function that checks if a sample belongs to the given attribute and modality.
-
-    :param attribute: attribute value
-    :param modality: modality value
-
-    :return: feature checking function
-    """
-
-    def feature(x):
-        return x[attribute] == modality
-
-    return feature
-
-
 # distribution functions
-
-
-def validate_distributions(distributions: pd.DataFrame, attribute_selection, mode):
-    """
-    Validate the format and contents of the given distribution.
-
-    :param distributions: distribution DataFrame
-    :param attribute_selection: list of attributes to keep in the distribution, or None
-    :param mode: "qualitative" or "quantitative"
-    :raises: AssertionError
-    """
-
-    assert not distributions.empty, "Empty distributions table provided"
-
-    if mode == "quantitative":
-        # we could validate the distributions columns (positive, monotony ?)
-        assert {*["D{}".format(i) for i in range(1, 10)], "attribute", "modality"} <= set(
-            distributions.columns
-        ), "Distributions table lacks the required columns"
-    elif mode == "qualitative":
-        assert "attribute" in distributions.columns and "modality" in distributions.columns
-    else:
-        raise ValueError(f"Unknown mode '{mode}'")
-
-    if attribute_selection is not None:
-        # check that the distributions contain the selected attributes
-        assert set(attribute_selection + ["all"]) <= set(
-            distributions["attribute"]
-        ), "Distributions table does not include selected attributes"
-
 
 def filter_distributions_and_infer_modalities(distributions: pd.DataFrame, attribute_selection):
     """
@@ -164,8 +119,6 @@ def get_feature_from_qualitative_distribution(distribution: pd.DataFrame):
     features.remove("attribute")
     features.remove("modality")
 
-    assert (distribution[features].apply(lambda row: np.isclose(row.sum(), 1), axis=1)).all()
-
     return features
 
 
@@ -224,29 +177,6 @@ def interpolate_feature_prob(feature_value: float, distribution: list):
 
 
 # population functions
-
-
-def validate_population(population: pd.DataFrame, modalities: dict):
-    """
-    Validate the format and contents of the given population.
-
-    Check that the population is compatible with the chosen modalities.
-
-    :param population: distribution DataFrame
-    :param modalities:
-    :raises: AssertionError
-    """
-
-    attributes = get_attributes(modalities)
-
-    assert {*attributes} <= set(population.columns)
-
-    for attribute in attributes:
-        assert population[attribute].isin(modalities[attribute]).all(), (
-            f"Population validation: one of the modality values was not "
-            f"found in distributions for the attribute '{attribute}'"
-        )
-
 
 def compute_crossed_modalities_frequencies(
     population: pd.DataFrame, modalities: dict

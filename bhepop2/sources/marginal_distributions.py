@@ -7,9 +7,11 @@ This allows a more precise feature value association than a global, population w
 
 from .base import EnrichmentSource, QuantitativeAttributes
 from bhepop2 import functions
+from bhepop2.utils import PopulationValidationError, SourceValidationError
 from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 
 import pandas as pd
+import numpy as np
 from abc import abstractmethod
 
 #: attribute and modality corresponding to the global distribution
@@ -67,6 +69,21 @@ class MarginalDistributions(EnrichmentSource):
         super().__init__(data, name=name)
 
     def _validate_data(self):
+        # check "attribute" and "modality" columns existence
+        if not ("attribute" in self.data.columns and "modality" in self.data.columns):
+            raise SourceValidationError("Missing 'attribute' or 'modality' column")
+
+        # check that the ALL_LABEL attribute is in the columns
+        if ALL_LABEL not in list(self.data["attribute"]):
+            raise SourceValidationError(f"Missing required '{ALL_LABEL}' attribute, "
+                                                  f"used to describe the global population")
+
+        # check that provided attribute selection exists in distributions
+        if self.attribute_selection is not None:
+            if not set(self.attribute_selection) <= set(self.data["attribute"]):
+                raise ValueError(f"Source distributions table does not "
+                                 f"include selected attributes {self.attribute_selection}")
+
         # quantitative or qualitative check
         self._validate_data_type()
 
@@ -76,10 +93,34 @@ class MarginalDistributions(EnrichmentSource):
             self.data, self.attribute_selection
         )
 
-        # check that there are modalities at the end
-        assert (
-            len(self.modalities.keys()) > 0
-        ), "No attributes found in distributions for enriching population"
+    def usable_with_population(self, population):
+        """
+        Check that the population attributes are compatible with the source.
+
+        Check that the source attributes are present in the population.
+        Check that the population values of each attribute are in the source distributions.
+
+        :param population: population DataFrame
+        :raises: PopulationValidationError
+        """
+
+        attributes = list(self.modalities.keys())
+
+        if not {*attributes} <= set(population.columns):
+            raise PopulationValidationError(
+                "Some of the source attributes are missing from the population columns.\n\n"
+                f"Source attributes: {attributes}\n"
+                f"Population columns: {population.columns}"
+            )
+
+        for attribute in attributes:
+            if not population[attribute].isin(self.modalities[attribute]).all():
+                raise PopulationValidationError(
+                    f"Population validation: one of the values "
+                    f"for the '{attribute}' attribute was not found in source distributions.\n"
+                    f"Population values: {population[attribute].unique()}\n"
+                    f"Source values: {self.modalities[attribute]}"
+                )
 
     @abstractmethod
     def _validate_data_type(self):
@@ -183,8 +224,9 @@ class QualitativeMarginalDistributions(MarginalDistributions):
         return functions.get_feature_from_qualitative_distribution(self.data)
 
     def _validate_data_type(self):
-        # TODO : test that self._abs_minimum is inferior to all distribution values
-        functions.validate_distributions(self.data, self.attribute_selection, "qualitative")
+        features = functions.get_feature_from_qualitative_distribution(self.data)
+        if not (self.data[features].apply(lambda row: np.isclose(row.sum(), 1), axis=1)).all():
+            raise SourceValidationError("Some distributions don't sum to 1")
 
     def compute_feature_prob(self, attribute=ALL_LABEL, modality=ALL_LABEL):
         # get distribution for the given modality
@@ -299,7 +341,12 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         return functions.compute_feature_values(self.data, self._relative_maximum, self._delta_min)
 
     def _validate_data_type(self):
-        functions.validate_distributions(self.data, self.attribute_selection, "quantitative")
+        # TODO : test that self._abs_minimum is inferior to all distribution values
+        required_columns = ["attribute", "modality"] + ["D{}".format(i) for i in range(1, 10)]
+        if not {*required_columns} <= set(self.data.columns):
+            raise SourceValidationError(f"Distributions table lacks the required columns: {required_columns}")
+
+        # we could validate the distributions columns (positive, monotony ?)
 
     def compute_feature_prob(self, attribute=ALL_LABEL, modality=ALL_LABEL):
         # get distribution for the given modality
@@ -334,6 +381,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         :param rng:
         :return:
         """
+        self.log(feature_index)
 
         interval_values = [self._abs_minimum] + self.feature_values
 
@@ -342,7 +390,7 @@ class QuantitativeMarginalDistributions(MarginalDistributions, QuantitativeAttri
         draw = rng.uniform()
 
         drawn_feature_value = lower + (upper - lower) * draw
-
+        self.log(drawn_feature_value)
         return drawn_feature_value
 
     def compare_with_populations(self, populations, feature_name, **kwargs):

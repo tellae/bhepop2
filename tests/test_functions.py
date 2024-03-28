@@ -14,22 +14,6 @@ def test_get_attributes(test_modalities):
     assert get_attributes(test_modalities) == ["ownership", "age", "size", "family_comp"]
 
 
-def test_modality_feature():
-    """
-    Test that the result is a function with expected behaviour.
-    """
-
-    attribute = "my_attribute"
-    modality_0 = "modality_0"
-    modality_1 = "modality_1"
-
-    feature = modality_feature(attribute, modality_0)
-
-    assert callable(feature)
-    assert feature({attribute: modality_0})
-    assert not feature({attribute: modality_1})
-
-
 def test_compute_crossed_modalities_frequencies(
     synthetic_population_nantes, test_modalities, test_attributes
 ):
@@ -87,11 +71,6 @@ def test_get_feature_from_qualitative_distribution():
     features = get_feature_from_qualitative_distribution(distribution)
 
     assert features == ["0voit", "1voit", "2voit", "3voit"]
-
-    distribution.loc[0, "2voit"] = 0.5
-
-    with pytest.raises(AssertionError):
-        get_feature_from_qualitative_distribution(distribution)
 
 
 def test_interpolate_feature_prob():

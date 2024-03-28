@@ -1,5 +1,5 @@
 from bhepop2.sources.global_distribution import QuantitativeGlobalDistribution
-
+from bhepop2.utils import SourceValidationError
 import pytest
 from numpy.random import default_rng
 
@@ -31,11 +31,11 @@ class TestQuantitativeGlobalDistribution:
     def test_validate_data(self, filosofi_global_distribution_nantes):
 
         # DataFrame with missing decile should raise an error
-        with pytest.raises(AssertionError):
+        with pytest.raises(SourceValidationError):
             QuantitativeGlobalDistribution(filosofi_global_distribution_nantes.drop(["D5"], axis=1))
 
         # empty DataFrame should raise an error
-        with pytest.raises(AssertionError):
+        with pytest.raises(SourceValidationError):
             QuantitativeGlobalDistribution(
                 filosofi_global_distribution_nantes.drop(
                     [filosofi_global_distribution_nantes.index[0]], axis=0

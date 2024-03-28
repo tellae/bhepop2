@@ -6,6 +6,7 @@ and can then be used by themselves for population enrichment.
 """
 
 from .base import EnrichmentSource, QuantitativeAttributes
+from bhepop2.utils import SourceValidationError
 import numpy as np
 
 
@@ -41,8 +42,10 @@ class QuantitativeGlobalDistribution(EnrichmentSource, QuantitativeAttributes):
         """
         Check that the deciles columns are present and that length is 1.
         """
-        assert set(self.data.columns) >= {f"D{i}" for i in range(1, 10)}
-        assert len(self.data) == 1
+        if not set(self.data.columns) >= {f"D{i}" for i in range(1, 10)}:
+            raise SourceValidationError("Distribution table lacks the required columns")
+        if len(self.data) != 1:
+            raise SourceValidationError("Distribution table is expected to have exactly one row")
 
     def get_value_for_feature(self, feature_index, rng):
         """
