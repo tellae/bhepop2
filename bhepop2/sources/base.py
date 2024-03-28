@@ -68,7 +68,7 @@ class EnrichmentSource(ABC, Bhepop2Logger):
 
         Raise a ValueError if data is invalid.
 
-        :raises: ValueError
+        :raises: SourceValidationError
         """
         pass
 
