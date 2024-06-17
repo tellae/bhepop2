@@ -68,9 +68,19 @@ class EnrichmentSource(ABC, Bhepop2Logger):
 
         Raise a ValueError if data is invalid.
 
-        :raises: ValueError
+        :raises: SourceValidationError
         """
         pass
+
+    def usable_with_population(self, population):
+        """
+        Validate that this source is compatible with the given population.
+
+        Raise a PopulationValidationError if an incompatibility is found.
+
+        :param population: population DataFrame
+        :raises PopulationValidationError:
+        """
 
     @abstractmethod
     def get_value_for_feature(self, feature_index, rng):

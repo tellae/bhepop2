@@ -1,4 +1,7 @@
+import pandas as pd
+
 from bhepop2.enrichment import Bhepop2Enrichment
+from bhepop2.utils import SourceValidationError
 
 import pytest
 
@@ -46,6 +49,13 @@ class TestSyntheticPopulationEnrichment:
         assert hasattr(enrich_class, "rng")
         # check validation call was made
         enrich_class._validate_and_process_inputs.assert_called_once_with()
+
+    def test_source_class_validation(self):
+        with pytest.raises(SourceValidationError):
+            Bhepop2Enrichment(
+                pd.DataFrame({"id": [1]}),
+                None,
+            )
 
     def test_feature_exists_error(
         self, synthetic_population_nantes, quantitative_marginal_distributions

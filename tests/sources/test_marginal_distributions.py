@@ -6,12 +6,19 @@ from bhepop2.sources.marginal_distributions import (
 )
 from bhepop2.analysis import QuantitativeAnalysis, QualitativeAnalysis
 from bhepop2.functions import build_cross_table
+from bhepop2.utils import PopulationValidationError
 
 from numpy.random import default_rng
 import pytest
 
 
 class TestMarginalDistributions:
+
+    @pytest.fixture(scope="class")
+    def source_example(self, filosofi_distributions_nantes):
+        return QuantitativeMarginalDistributions(
+            filosofi_distributions_nantes, attribute_selection=["ownership", "age"], delta_min=1000
+        )
 
     def test_init(self, filosofi_distributions_nantes, test_modalities):
 
@@ -25,10 +32,17 @@ class TestMarginalDistributions:
         assert source.attribute_selection == attribute_selection
         assert source.modalities == test_modalities
 
-    def test_get_modality_distribution(self, filosofi_distributions_nantes):
-        source = QuantitativeMarginalDistributions(filosofi_distributions_nantes)
+    def test_usable_with_population(self, source_example):
+        with pytest.raises(PopulationValidationError):
+            source_example.usable_with_population(
+                pd.DataFrame({"ownership": ["Tenant"], "age": ["UNKNOWN"]})
+            )
 
-        modality_distribution = source.get_modality_distribution("ownership", "Tenant")
+        with pytest.raises(PopulationValidationError):
+            source_example.usable_with_population(pd.DataFrame({"ownership": ["Tenant"]}))
+
+    def test_get_modality_distribution(self, source_example):
+        modality_distribution = source_example.get_modality_distribution("ownership", "Tenant")
 
         assert len(modality_distribution) == 1
         assert modality_distribution["attribute"].iloc[0] == "ownership"

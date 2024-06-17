@@ -100,25 +100,6 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         """
         return self.source.modalities
 
-    def _validate_and_process_inputs(self):
-        """
-        Validate the provided inputs and set the relevant fields.
-
-        Since Bhepop2 uses marginal distributions to enrich the population,
-        we ensure that:
-
-        * the selected attributes are present in the population
-        * the population attributes take values in the modalities corresponding to this attribute
-        """
-
-        assert isinstance(
-            self.source, MarginalDistributions
-        ), "Bhepop2Enrichment needs a MarginalDistributions source"
-
-        self.log("Setup population data")
-
-        functions.validate_population(self.population, self.modalities)
-
     def _evaluate_feature_on_population(self):
         """
         Assign feature values to the population individuals using the algorithm results.
@@ -134,6 +115,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         res = self._get_feature_probs()
 
         # associate each individual to a crossed modality
+        # TODO : fails if "index" column already exists
         self.crossed_modalities_frequencies["index"] = self.crossed_modalities_frequencies.index
         merge = self.population.merge(
             self.crossed_modalities_frequencies,
@@ -356,7 +338,7 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
         # add a feature for all modalities except one for all variables
         for attribute in attributes:
             for modality in self.modalities[attribute][:-1]:
-                features.append(functions.modality_feature(attribute, modality))
+                features.append(modality_feature(attribute, modality))
 
         nb_lines = len(features)
         nb_cols = len(samplespace_reducted)
@@ -369,3 +351,19 @@ class Bhepop2Enrichment(SyntheticPopulationEnrichment):
                     crossed_modalities_matrix[i, j] = f_i_x
 
         return crossed_modalities_matrix
+
+
+def modality_feature(attribute, modality) -> callable:
+    """
+    Create a function that checks if a sample belongs to the given attribute and modality.
+
+    :param attribute: attribute value
+    :param modality: modality value
+
+    :return: feature checking function
+    """
+
+    def feature(x):
+        return x[attribute] == modality
+
+    return feature
