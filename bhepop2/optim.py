@@ -103,3 +103,43 @@ def minxent_gradient(
     test_pierreolivier = matrix.dot(pk) - eta
     # log("test PO : " + str(test_pierreolivier/eta), 10)
     return pk.tolist(), lambda_
+
+
+# while not (did_ascent and did_descent):
+#     log(
+#         "not did ascent and did descent",
+#         lg.DEBUG,
+#     )
+#     lambda_new = lambda_old - alpha * f_old
+#     # exp can sometime exceed float64 max size
+#     # for now, we just catch the warning and
+#
+#     converged = False
+#     while not converged:
+#         with warnings.catch_warnings(record=True) as w:
+#
+#             lambda0 = np.log(q.T.dot(np.exp(-matrix.T.dot(lambda_new))))
+#
+#             if len(w) > 0:
+#                 log("", lg.DEBUG)
+#                 log(
+#                     lambda_new,
+#                     lg.DEBUG,
+#                 )
+#                 log(
+#                     lambda0,
+#                     lg.DEBUG,
+#                 )
+#                 # in python 3.11 : catch_warnings(category=RuntimeWarning)
+#                 if issubclass(w[0].category, RuntimeWarning):
+#                     alpha *= common_ratio_descending
+#                     lambda_new = lambda_old - alpha * f_old
+#
+#                 else:
+#                     log(
+#                         f"This warning was caught during gradient descent: {w[0].category.__name__}('{w[0].message}')",
+#                         lg.WARN,
+#                     )
+#                     exit(0)
+#             else:
+#                 converged = True
