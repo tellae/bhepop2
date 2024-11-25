@@ -1,3 +1,13 @@
+# analysis outputs
+/outputs
+
+# test tmp folder
+tests/tmp/
+
+# example data and outputs
+examples/*.feather
+examples/*.tex
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -137,9 +147,3 @@ dmypy.json
 # Generated html notebooks
 *.html
 *_files/
-
-# analysis outputs
-/outputs
-
-# test tmp folder
-tests/tmp/
