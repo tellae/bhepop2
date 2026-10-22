@@ -4,7 +4,6 @@ Utility classes, functions and constants.
 
 import logging as lg
 
-
 # bhepop2 exceptions
 
 
